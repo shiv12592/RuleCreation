@@ -278,118 +278,119 @@ const MyComponent = () => {
     }
   };
 
-      // Handle the click of the submit button
-        const handleSubmit = () => {
-          // Convert the rows data into JSON format
-          const jsonData = rows.map((row) => {
-            // Check if the row is a group
-            if (row.selectCondition === "group") {
-              // Return an array of the rows in the group
-              return row.rows.map((subRow) => ({
-                selectCondition: subRow.selectCondition,
-                requestAttribute: subRow.requestAttribute,
-                reqOp: subRow.reqOp,
-                reqValue: subRow.reqValue,
-                groupAttrbute: subRow.groupAttrbute,
-                grOp: subRow.grOp,
-                grValue: subRow.grValue,
-              }));
-            } else {
-              // Return an object with the row data
-              return {
-                selectCondition: row.selectCondition,
-                requestAttribute: row.requestAttribute,
-                reqOp: row.reqOp,
-                reqValue: row.reqValue,
-                groupAttrbute: row.groupAttrbute,
-                grOp: row.grOp,
-                grValue: row.grValue,
-              };
-            }
-          });
-          // Display the JSON data in the console
-          console.log(jsonData);
+// Handle the click of the submit button
+  const handleSubmit = () => {
+    // Convert the rows data into JSON format
+    const jsonData = rows.map((row) => {
+      // Check if the row is a group
+      if (row.selectCondition === "group") {
+        // Return an array of the rows in the group
+        return row.rows.map((subRow) => ({
+          selectCondition: subRow.selectCondition,
+          requestAttribute: subRow.requestAttribute,
+          reqOp: subRow.reqOp,
+          reqValue: subRow.reqValue,
+          groupAttrbute: subRow.groupAttrbute,
+          grOp: subRow.grOp,
+          grValue: subRow.grValue,
+        }));
+      } else {
+        // Return an object with the row data
+        return {
+          selectCondition: row.selectCondition,
+          requestAttribute: row.requestAttribute,
+          reqOp: row.reqOp,
+          reqValue: row.reqValue,
+          groupAttrbute: row.groupAttrbute,
+          grOp: row.grOp,
+          grValue: row.grValue,
         };
+      }
+    });
+    // Display the JSON data in the console
+    console.log(jsonData);
+  };
 
-        // Return the JSX for the main component
-        return (
-          <div className="col-md-12">
-            <Container className="col-md-12">
-              <Row className="border-dash-tb margin-1-t margin-1-b">
-                <label className="margin-1-lr">Add Condition</label>
-                <select
-                  name="selectCondition"
-                  value={selectedCondition}
-                  onChange={handleConditionChange}
-                >
-                  {selectCondition.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+  // Return the JSX for the main component
+  return (
+    <div className="col-md-12">
+      <Container className="col-md-12">
+        <Row className="border-dash-tb margin-1-t margin-1-b">
+          <label className="margin-1-lr">Add Condition</label>
+          <select
+            name="selectCondition"
+            value={selectedCondition}
+            onChange={handleConditionChange}
+          >
+            {selectCondition.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          <Button
+            className="rounded"
+            variant="primary"
+            onClick={handleAddRow}
+          >
+            Add Row
+          </Button>
+        </Row>
+        {rows.map((row, index) => (
+          <div key={index}>
+            {row.selectCondition === "group" ? (
+              <>
                 <Button
                   className="rounded"
-                  variant="primary"
-                  onClick={handleAddRow}
+                  variant="warning"
+                  onClick={() => handleUngroup(index)}
                 >
-                  Add Row
+                  Ungroup
                 </Button>
-              </Row>
-              {rows.map((row, index) => (
-                <div key={index}>
-                  {row.selectCondition === "group" ? (
-                    <>
-                      <Button
-                        className="rounded"
-                        variant="warning"
-                        onClick={() => handleUngroup(index)}
-                      >
-                        Ungroup
-                      </Button>
-                      {row.rows.map((subRow, subIndex) => (
-                        <ConditionRow
-                          key={subIndex}
-                          data={subRow}
-                          index={subIndex}
-                          onChange={handleRowChange}
-                          onRemove={handleRowRemove}
-                        />
-                      ))}
-                    </>
-                  ) : (
-                    <ConditionRow
-                      data={row}
-                      index={index}
-                      onChange={handleRowChange}
-                      onRemove={handleRowRemove}
-                    />
-                  )}
-                  {index < rows.length - 1 && (
-                    <OperationRow
-                      data={row}
-                      index={index}
-                      onChange={handleRowChange}
-                    />
-                  )}
-                </div>
-              ))}
-              <Button
-                className="rounded"
-                variant="success"
-                onClick={handleGroup}
-              >
-                Group
-              </Button>
-              <Button
-                className="rounded"
-                variant="info"
-                onClick={handleSubmit}
-              >
-                Submit
-              </Button>
-            </Container>
+                {row.rows.map((subRow, subIndex) => (
+                  <ConditionRow
+                    key={subIndex}
+                    data={subRow}
+                    index={subIndex}
+                    onChange={handleRowChange}
+                    onRemove={handleRowRemove}
+                  />
+                ))}
+              </>
+            ) : (
+              <ConditionRow
+                data={row}
+                index={index}
+                onChange={handleRowChange}
+                onRemove={handleRowRemove}
+              />
+            )}
+            {index < rows.length - 1 && (
+              <OperationRow
+                data={row}
+                index={index}
+                onChange={handleRowChange}
+              />
+            )}
           </div>
-        );
-      };
-      export default MyComponent;
+        ))}
+        <Button
+          className="rounded"
+          variant="success"
+          onClick={handleGroup}
+        >
+          Group
+        </Button>
+        <Button
+          className="rounded"
+          variant="info"
+          onClick={handleSubmit}
+        >
+          Submit
+        </Button>
+      </Container>
+    </div>
+  );
+};
+
+                              
