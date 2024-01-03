@@ -1,0 +1,224 @@
+import React, { useState } from "react";
+import { Row, Col, Button, Container } from "react-bootstrap";
+
+// The initial data for the form
+const initialData = {
+  selectCondition: "select",
+  requestAttribute: "select",
+  groupAttribute: "select",
+  reqOp: "select",
+  grOp: "select",
+  reqValue: "",
+  grValue: "",
+  operation: "select",
+};
+
+// The options for the select inputs
+const selectOptions = {
+  selectCondition: ["select", "Request", "group"],
+  requestAttribute: ["select", "rqAtt1", "reqAtt2"],
+  groupAttribute: ["select", "grpAtt1", "grpAtt2"],
+  reqOp: ["select", "equal", "noEqual"],
+  grOp: ["select", "and", "or", "not"],
+  operation: ["select", "AND", "OR"],
+};
+
+const MyComponent = () => {
+  // The state for the form data
+  const [formData, setFormData] = useState([initialData]);
+
+  // The state for the grouped rows
+  const [groupedRows, setGroupedRows] = useState([]);
+
+  // The handler for changing the form data
+  const handleChange = (e, index) => {
+    const { name, value } = e.target;
+    const newData = [...formData];
+    newData[index][name] = value;
+    setFormData(newData);
+  };
+
+  // The handler for adding a new row
+  const handleAddRow = () => {
+    setFormData([...formData, initialData]);
+  };
+
+  // The handler for removing a row
+  const handleRemoveRow = (index) => {
+    const newData = [...formData];
+    newData.splice(index, 1);
+    setFormData(newData);
+  };
+
+  // The handler for grouping selected rows
+  const handleGroupRows = () => {
+    const selectedRows = formData.filter((row) => row.selected);
+    if (selectedRows.length > 1) {
+      const newData = formData.filter((row) => !row.selected);
+      setFormData(newData);
+      setGroupedRows([...groupedRows, selectedRows]);
+    }
+  };
+
+  // The handler for ungrouping a group of rows
+  const handleUngroupRows = (index) => {
+    const newGroupedRows = [...groupedRows];
+    const ungroupedRows = newGroupedRows.splice(index, 1)[0];
+    setGroupedRows(newGroupedRows);
+    setFormData([...formData, ...ungroupedRows]);
+  };
+
+  // The handler for submitting the form
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Convert the form data to JSON format
+    const json = formData.map((row) => {
+      // Remove the selected property from the row
+      const { selected, ...rest } = row;
+      return rest;
+    });
+    // Display the JSON data in the console
+    console.log(JSON.stringify(json, null, 2));
+  };
+
+  // The function for rendering a select input
+  const renderSelect = (name, value, index) => {
+    return (
+      <select
+        name={name}
+        value={value}
+        onChange={(e) => handleChange(e, index)}
+      >
+        {selectOptions[name].map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  };
+
+  // The function for rendering a text input
+  const renderText = (name, value, index) => {
+    return (
+      <input
+        type="text"
+        name={name}
+        value={value}
+        onChange={(e) => handleChange(e, index)}
+      />
+    );
+  };
+
+  // The function for rendering a checkbox input
+  const renderCheckbox = (name, value, index) => {
+    return (
+      <input
+        type="checkbox"
+        name={name}
+        checked={value}
+        onChange={(e) => handleChange(e, index)}
+      />
+    );
+  };
+
+  // The function for rendering a row of the form
+  const renderRow = (row, index) => {
+    return (
+      <Row key={index} className="border-dash-tb margin-1-t margin-1-b">
+        <Col md={1}>
+          <label>Selected</label>
+          {renderCheckbox("selected", row.selected, index)}
+        </Col>
+        <Col md={2}>
+          <label>Source</label>
+          {renderSelect("selectCondition", row.selectCondition, index)}
+        </Col>
+        <Col md={3}>
+          <label>Attribute</label>
+          {row.selectCondition === "Request"
+            ? renderSelect("requestAttribute", row.requestAttribute, index)
+            : renderSelect("groupAttribute", row.groupAttribute, index)}
+        </Col>
+        <Col md={2}>
+          <label>Operation</label>
+          {row.selectCondition === "Request"
+            ? renderSelect("reqOp", row.reqOp, index)
+            : renderSelect("grOp", row.grOp, index)}
+        </Col>
+        <Col md={3}>
+          <label>Value</label>
+          {row.selectCondition === "Request"
+            ? renderText("reqValue", row.reqValue, index)
+            : renderText("grValue", row.grValue, index)}
+        </Col>
+        <Col md={1}>
+          <Button
+            style={{ rounded: true, color: "red" }}
+            onClick={() => handleRemoveRow(index)}
+          >
+            Remove
+          </Button>
+        </Col>
+      </Row>
+    );
+  };
+
+  // The function for rendering a sub-row of the form
+  const renderSubRow = (index) => {
+    return (
+      <Row key={index} className="border-dash-tb margin-1-t margin-1-b">
+        <Col md={3}>
+          <label>Select Operation</label>
+          {renderSelect("operation", formData[index].operation, index)}
+        </Col>
+      </Row>
+    );
+  };
+
+  // The function for rendering a group of rows
+  const renderGroup = (group, index) => {
+    return (
+      <Row key={index} className="border-dash-tb margin-1-t margin-1-b">
+        <Col md={12}>
+          <label>Group {index + 1}</label>
+          {group.map((row, i) => renderRow(row, i))}
+          <Button
+            style={{ rounded: true, color: "blue" }}
+            onClick={() => handleUngroupRows(index)}
+          >
+            Ungroup
+          </Button>
+        </Col>
+      </Row>
+    );
+  };
+
+  return (
+    <div className="col-md-12">
+      <Container className="col-md-12">
+        <form onSubmit={handleSubmit}>
+          <Row className="border-dash-tb margin-1-t margin-1-b">
+            <Col md={12}>
+              <label>Add Condition</label>
+              {renderSelect("selectCondition", initialData.selectCondition, -1)}
+              <Button onClick={handleAddRow}>Add Row</Button>
+            </Col>
+          </Row>
+          {formData.map((row, index) => renderRow(row, index))}
+          {formData.length > 1 && (
+            <Row className="border-dash-tb margin-1-t margin-1-b">
+              <Col md={12}>
+                <Button onClick={handleGroupRows}>Group Selected Rows</Button>
+              </Col>
+            </Row>
+          )}
+          {groupedRows.map((group, index) => renderGroup(group, index))}
+          <Button type="submit" variant="contained" color="primary">
+            Submit
+          </Button>
+        </form>
+      </Container>
+    </div>
+  );
+};
