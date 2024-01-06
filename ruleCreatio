@@ -1,0 +1,749 @@
+import React, { useState } from "react"; 
+
+import { Container, Row, Col, Button, Form } from "react-bootstrap"; 
+
+
+
+const RuleCreation = () => { 
+
+  // Data for useState 
+
+  const selectCondition = ["select", "Request", "Group"]; 
+
+  const requestAttribute = ["select", "rqAtt1", "reqAtt2"]; 
+
+  const groupAttribute = ["select", "grpAtt1", "grpAtt2"]; 
+
+  const requestOp = ["select", "equal", "noEqual"]; 
+
+  const groupOp = ["select", "and", "or", "not"]; 
+
+  const selectOperation = ["select", "AND", "OR"]; 
+
+
+
+  // State for storing the rule conditions 
+
+  const [ruleConditions, setRuleConditions] = useState([]); 
+
+
+
+  // Handler for adding a new condition 
+
+  const handleAddCondition = () => { 
+
+    setRuleConditions([ 
+
+      ...ruleConditions, 
+
+      { 
+
+        source: "select", 
+
+        requestAttribute: "select", 
+
+        requestOp: "select", 
+
+        value: "", 
+
+        operation: "select", 
+
+      }, 
+
+    ]); 
+
+  }; 
+
+
+
+  // Handler for adding a new group of conditions 
+
+  const handleAddGroup = () => { 
+
+    setRuleConditions([ 
+
+      ...ruleConditions, 
+
+      { 
+
+        group: [ 
+
+          { 
+
+            source: "select", 
+
+            requestAttribute: "select", 
+
+            requestOp: "select", 
+
+            value: "", 
+
+            operation: "select", 
+
+          }, 
+
+        ], 
+
+        operation: "select", 
+
+      }, 
+
+    ]); 
+
+  }; 
+
+
+
+  // Handler for removing a condition 
+
+  const handleRemoveCondition = (index) => { 
+
+    const newRuleConditions = [...ruleConditions]; 
+
+    newRuleConditions.splice(index, 1); 
+
+    setRuleConditions(newRuleConditions); 
+
+  }; 
+
+
+
+  // Handler for removing a group of conditions 
+
+  const handleRemoveGroup = (index) => { 
+
+    const newRuleConditions = [...ruleConditions]; 
+
+    newRuleConditions.splice(index, 1); 
+
+    setRuleConditions(newRuleConditions); 
+
+  }; 
+
+
+
+  // Handler for adding a condition within a group 
+
+  const handleAddConditionInGroup = (groupIndex) => { 
+
+    const newRuleConditions = [...ruleConditions]; 
+
+    newRuleConditions[groupIndex].group.push({ 
+
+      source: "select", 
+
+      requestAttribute: "select", 
+
+      requestOp: "select", 
+
+      value: "", 
+
+      operation: "select", 
+
+    }); 
+
+    setRuleConditions(newRuleConditions); 
+
+  }; 
+
+
+
+  // Handler for removing a condition within a group 
+
+  const handleRemoveConditionInGroup = (groupIndex, conditionIndex) => { 
+
+    const newRuleConditions = [...ruleConditions]; 
+
+    newRuleConditions[groupIndex].group.splice(conditionIndex, 1); 
+
+    setRuleConditions(newRuleConditions); 
+
+  }; 
+
+
+
+  // Handler for changing the value of a condition 
+
+  const handleChangeCondition = (index, field, value) => { 
+
+    const newRuleConditions = [...ruleConditions]; 
+
+    newRuleConditions[index][field] = value; 
+
+    setRuleConditions(newRuleConditions); 
+
+  }; 
+
+ // Handler for changing the value of a condition within a group 
+
+  const handleChangeConditionInGroup = (groupIndex, conditionIndex, field, value) => { 
+
+    const newRuleConditions = [...ruleConditions]; 
+
+    newRuleConditions[groupIndex].group[conditionIndex][field] = value; 
+
+    setRuleConditions(newRuleConditions); 
+
+  }; 
+
+
+
+  // Handler for submitting the rule conditions 
+
+  const handleSubmit = () => { 
+
+    console.log(JSON.stringify(ruleConditions, null, 2)); 
+
+  }; 
+
+
+
+  // Helper function for rendering a condition 
+
+  const renderCondition = (condition, index) => { 
+
+    return ( 
+
+      <Row 
+
+        key={index} 
+
+        className="mb-1" 
+
+        style={{ border: "1px solid black", padding: "10px" }} 
+
+      > 
+
+        <Col md={3}> 
+
+          <Form.Label className="mr-1">Source</Form.Label> 
+
+          <Form.Control 
+
+            as="select" 
+
+            value={condition.source} 
+
+            onChange={(e) => 
+
+              handleChangeCondition(index, "source", e.target.value) 
+
+            } 
+
+          > 
+
+            {selectCondition.map((option, i) => ( 
+
+              <option key={i} value={option}> 
+
+                {option} 
+
+              </option> 
+
+            ))} 
+
+          </Form.Control> 
+
+        </Col> 
+
+        <Col md={3}> 
+
+          <Form.Label className="mr-1">Attribute</Form.Label> 
+
+          <Form.Control 
+
+            as="select" 
+
+            value={condition.requestAttribute} 
+
+            onChange={(e) => 
+
+              handleChangeCondition(index, "requestAttribute", e.target.value) 
+
+            } 
+
+          > 
+
+            {requestAttribute.map((option, i) => ( 
+
+              <option key={i} value={option}> 
+
+                {option} 
+
+              </option> 
+
+            ))} 
+
+          </Form.Control> 
+
+        </Col> 
+
+        <Col md={3}> 
+
+          <Form.Label className="mr-1">Request Op</Form.Label> 
+
+          <Form.Control 
+
+            as="select" 
+
+            value={condition.requestOp} 
+
+            onChange={(e) => 
+
+              handleChangeCondition(index, "requestOp", e.target.value) 
+
+            } 
+
+          > 
+
+            {requestOp.map((option, i) => ( 
+
+              <option key={i} value={option}> 
+
+                {option} 
+
+              </option> 
+
+            ))} 
+
+          </Form.Control> 
+
+        </Col> 
+
+        <Col md={3}> 
+
+          <Form.Label className="mr-1">Value</Form.Label> 
+
+          <Form.Control 
+
+            type="text" 
+
+            placeholder="reqValue" 
+
+            value={condition.value} 
+
+            onChange={(e) => 
+
+              handleChangeCondition(index, "value", e.target.value) 
+
+            } 
+
+          /> 
+
+        </Col> 
+
+        <Button 
+
+          variant="danger" 
+
+          className="ml-1" 
+
+          style={{ color: "red", backgroundColor: "lightgray" }} 
+
+          onClick={() => handleRemoveCondition(index)} 
+
+        > 
+
+          Remove The Row 
+
+        </Button> 
+
+      </Row> 
+
+    ); 
+
+  }; 
+
+
+
+  // Helper function for rendering a group of conditions 
+
+  const renderGroup = (group, index) => { 
+
+    return ( 
+
+      <Row 
+
+        key={index} 
+
+        className="mb-1" 
+
+        style={{ border: "1px solid black", padding: "10px" }} 
+
+      > 
+
+        <Col md={12}> 
+
+          <Form.Label className="mr-1">Add Condition</Form.Label> 
+
+          <Button 
+
+            variant="primary" 
+
+            className="ml-1" 
+
+            onClick={() => handleAddConditionInGroup(index)} 
+
+          > 
+
+            Add Condition 
+
+          </Button> 
+
+        </Col> 
+
+        {group.group.map((condition, i) => ( 
+
+          <Col md={12} key={i}> 
+
+            {renderConditionInGroup(condition, index, i)} 
+
+          </Col> 
+
+        ))} 
+
+        <Col md={12}> 
+
+          <Button 
+
+            variant="danger" 
+
+            className="ml-1" 
+
+            style={{ color: "red", backgroundColor: "lightgray" }} 
+
+            onClick={() => handleRemoveGroup(index)} 
+
+          > 
+
+            Remove Group 
+
+          </Button> 
+
+        </Col> 
+
+      </Row> 
+
+    ); 
+
+  }; 
+
+
+
+  // Helper function for rendering a condition within a group 
+
+  const renderConditionInGroup = (condition, groupIndex, conditionIndex) => { 
+
+    return ( 
+
+      <Row 
+
+        key={conditionIndex} 
+
+        className="mb-1" 
+
+        style={{ border: "1px dashed black", padding: "10px" }} 
+
+      > 
+
+        <Col md={3}> 
+
+          <Form.Label className="mr-1">Source</Form.Label> 
+
+          <Form.Control 
+
+            as="select" 
+
+            value={condition.source} 
+
+            onChange={(e) => 
+
+              handleChangeConditionInGroup( 
+
+                groupIndex, 
+
+                conditionIndex, 
+
+                "source", 
+
+                e.target.value 
+
+              ) 
+
+            } 
+
+          > 
+
+            {selectCondition.map((option, i) => ( 
+
+              <option key={i} value={option}> 
+
+                {option} 
+
+              </option> 
+
+            ))} 
+
+          </Form.Control> 
+
+        </Col> 
+
+        <Col md={3}> 
+
+          <Form.Label className="mr-1">Attribute</Form.Label> 
+
+          <Form.Control 
+
+            as="select" 
+
+            value={condition.requestAttribute} 
+
+            onChange={(e) => 
+
+              handleChangeConditionInGroup( 
+
+                groupIndex, 
+
+                conditionIndex, 
+
+                "requestAttribute", 
+
+                e.target.value 
+
+              ) 
+
+            } 
+
+          > 
+
+            {requestAttribute.map((option, i) => ( 
+
+              <option key={i} value={option}> 
+
+                {option} 
+
+              </option> 
+
+            ))} 
+
+          </Form.Control> 
+
+        </Col> 
+
+        <Col md={3}> 
+
+          <Form.Label className="mr-1">Request Op</Form.Label> 
+
+          <Form.Control 
+
+            as="select" 
+
+            value={condition.requestOp} 
+
+            onChange={(e) => 
+
+              handleChangeConditionInGroup( 
+
+                groupIndex, 
+
+                conditionIndex, 
+
+                "requestOp", 
+
+                e.target.value 
+
+              ) 
+
+            } 
+
+          > 
+
+            {requestOp.map((option, i) => ( 
+
+              <option key={i} value={option}> 
+
+                {option} 
+
+              </option> 
+
+            ))} 
+
+          </Form.Control> 
+
+        </Col> 
+
+        <Col md={3}> 
+
+          <Form.Label className="mr-1">Value</Form.Label> 
+
+          <Form.Control 
+
+            type="text" 
+
+            placeholder="reqValue" 
+
+            value={condition.value} 
+
+            onChange={(e) => 
+
+              handleChangeConditionInGroup( 
+
+                groupIndex, 
+
+                conditionIndex, 
+
+                "value", 
+
+                e.target.value 
+
+              ) 
+
+            } 
+
+          /> 
+
+        </Col> 
+
+        <Button 
+
+          variant="danger" 
+
+          className="ml-1" 
+
+          style={{ color: "red", backgroundColor: "lightgray" }} 
+
+          onClick={() => handleRemoveConditionInGroup(groupIndex, conditionIndex)} 
+
+        > 
+
+          Remove The Row 
+
+        </Button> 
+
+      </Row> 
+
+    ); 
+
+  }; 
+
+
+
+  return ( 
+
+    <Container> 
+
+      <Row className="mb-1"> 
+
+        <Col md={12}> 
+
+          <Form.Label className="mr-1">Add Condition</Form.Label> 
+
+          <Button 
+
+            variant="primary" 
+
+            className="ml-1" 
+
+            onClick={handleAddCondition} 
+
+          > 
+
+            Add Condition 
+
+          </Button> 
+
+        </Col> 
+
+      </Row> 
+
+      <Row className="mb-1"> 
+
+        <Col md={12}> 
+
+          <Form.Label className="mr-1">Add Group of Conditions</Form.Label> 
+
+          <Button variant="primary" className="ml-1" onClick={handleAddGroup}> 
+
+            Add Group 
+
+          </Button> 
+
+        </Col> 
+
+      </Row> 
+
+      {ruleConditions.map((condition, index) => ( 
+
+        <Row key={index} className="mb-1"> 
+
+          <Col md={12}> 
+
+            {condition.group ? ( 
+
+              renderGroup(condition, index) 
+
+            ) : ( 
+
+              renderCondition(condition, index) 
+
+            )} 
+
+          </Col> 
+
+          <Col md={12}> 
+
+            <Form.Label className="mr-1">Operation</Form.Label> 
+
+            <Form.Control 
+
+              as="select" 
+
+              value={condition.operation} 
+
+              onChange={
+                {/* (e) => 
+
+                handleChangeOperation(index, e.target.value)  */}
+
+              } 
+
+            > 
+
+              {selectOperation.map((option, i) => ( 
+
+                <option key={i} value={option}> 
+
+                  {option} 
+
+                </option> 
+
+              ))} 
+
+            </Form.Control> 
+
+          </Col> 
+
+        </Row> 
+
+      ))} 
+
+      <Row className="mb-1"> 
+
+        <Col md={12}> 
+
+          <Button variant="success" className="ml-1" onClick={handleSubmit}> 
+
+            Submit 
+
+          </Button> 
+
+        </Col> 
+
+      </Row> 
+
+    </Container> 
+
+  ); 
+
+}; 
+export default RuleCreation;
