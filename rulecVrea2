@@ -1,0 +1,536 @@
+import React, { useState } from "react";
+import { Container, Row, Col, Button, Form } from "react-bootstrap";
+
+// Data for use in useState
+const selectCondition = ["select", "Request", "Group"];
+const requestAttribute = ["select", "rqAtt1", "reqAtt2"];
+const groupAttribute = ["select", "grpAtt1", "grpAtt2"];
+const requestOp = ["select", "equal", "noEqual"];
+const groupOp = ["select", "and", "or", "not"];
+const selectOperation = ["select", "AND", "OR"];
+
+// Initial state for the rule creation component
+const initialState = {
+  conditions: [
+    {
+      type: "select",
+      attribute: "select",
+      op: "select",
+      value: "",
+    },
+  ],
+  groups: [],
+  operation: "select",
+};
+
+// Rule creation component
+function RuleCreation() {
+  // State for the rule creation component
+  const [state, setState] = useState(initialState);
+
+  // Handler for adding a condition
+  const handleAddCondition = (groupIndex) => {
+    // If groupIndex is undefined, add a condition to the main state
+    if (groupIndex === undefined) {
+      setState((prevState) => ({
+        ...prevState,
+        conditions: [
+          ...prevState.conditions,
+          {
+            type: "select",
+            attribute: "select",
+            op: "select",
+            value: "",
+          },
+        ],
+      }));
+    } else {
+      // Otherwise, add a condition to the specified group
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Get the group by index
+        const group = newState.groups[groupIndex];
+        // Add a condition to the group
+        group.conditions.push({
+          type: "select",
+          attribute: "select",
+          op: "select",
+          value: "",
+        });
+        // Update the state with the modified group
+        newState.groups[groupIndex] = group;
+        return newState;
+      });
+    }
+  };
+
+  // Handler for adding a group of conditions
+  const handleAddGroup = () => {
+    // Add a group to the state with an initial condition
+    setState((prevState) => ({
+      ...prevState,
+      groups: [
+        ...prevState.groups,
+        {
+          conditions: [
+            {
+              type: "select",
+              attribute: "select",
+              op: "select",
+              value: "",
+            },
+          ],
+          operation: "select",
+        },
+      ],
+    }));
+  };
+
+  // Handler for removing a condition
+  const handleRemoveCondition = (conditionIndex, groupIndex) => {
+    // If groupIndex is undefined, remove a condition from the main state
+    if (groupIndex === undefined) {
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Remove the condition by index
+        newState.conditions.splice(conditionIndex, 1);
+        return newState;
+      });
+    } else {
+      // Otherwise, remove a condition from the specified group
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Get the group by index
+        const group = newState.groups[groupIndex];
+        // Remove the condition by index
+        group.conditions.splice(conditionIndex, 1);
+        // Update the state with the modified group
+        newState.groups[groupIndex] = group;
+        return newState;
+      });
+    }
+  };
+
+  // Handler for removing a group of conditions
+  const handleRemoveGroup = (groupIndex) => {
+    // Remove a group from the state by index
+    setState((prevState) => {
+      // Copy the previous state
+      const newState = { ...prevState };
+      // Remove the group by index
+      newState.groups.splice(groupIndex, 1);
+      return newState;
+    });
+  };
+
+  // Handler for changing the type of a condition
+  const handleTypeChange = (event, conditionIndex, groupIndex) => {
+    // Get the selected value
+    const value = event.target.value;
+    // If groupIndex is undefined, change the type of a condition in the main state
+    if (groupIndex === undefined) {
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Get the condition by index
+        const condition = newState.conditions[conditionIndex];
+        // Change the type of the condition
+        condition.type = value;
+        // Reset the attribute, op and value of the condition
+        condition.attribute = "select";
+        condition.op = "select";
+        condition.value = "";
+        // Update the state with the modified condition
+        newState.conditions[conditionIndex] = condition;
+        return newState;
+      });
+    } else {
+      // Otherwise, change the type of a condition in the specified group
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Get the group by index
+        const group = newState.groups[groupIndex];
+        // Get the condition by index
+        const condition = group.conditions[conditionIndex];
+        // Change the type of the condition
+        condition.type = value;
+        // Reset the attribute, op and value of the condition
+        condition.attribute = "select";
+        condition.op = "select";
+        condition.value = "";
+        // Update the group with the modified condition
+        group.conditions[conditionIndex] = condition;
+        // Update the state with the modified group
+        newState.groups[groupIndex] = group;
+        return newState;
+      });
+    }
+  };
+
+  // Handler for changing the attribute of a condition
+  const handleAttributeChange = (event, conditionIndex, groupIndex) => {
+    // Get the selected value
+    const value = event.target.value;
+    // If groupIndex is undefined, change the attribute of a condition in the main state
+    if (groupIndex === undefined) {
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Get the condition by index
+        const condition = newState.conditions[conditionIndex];
+        // Change the attribute of the condition
+        condition.attribute = value;
+        // Update the state with the modified condition
+        newState.conditions[conditionIndex] = condition;
+        return newState;
+      });
+    } else {
+      // Otherwise, change the attribute of a condition in the specified group
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Get the group by index
+        const group = newState.groups[groupIndex];
+        // Get the condition by index
+        const condition = group.conditions[conditionIndex];
+        // Change the attribute of the condition
+        condition.attribute = value;
+        // Update the group with the modified condition
+        group.conditions[conditionIndex] = condition;
+        // Update the state with the modified group
+        newState.groups[groupIndex] = group;
+        return newState;
+      });
+    }
+  };
+
+  // Handler for changing the operation of a condition
+  const handleOpChange = (event, conditionIndex, groupIndex) => {
+    // Get the selected value
+    const value = event.target.value;
+    // If groupIndex is undefined, change the operation of a condition in the main state
+    if (groupIndex === undefined) {
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Get the condition by index
+        const condition = newState.conditions[conditionIndex];
+        // Change the operation of the condition
+        condition.op = value;
+        // Update the state with the modified condition
+        newState.conditions[conditionIndex] = condition;
+        return newState;
+      });
+    } else {
+      // Otherwise, change the operation of a condition in the specified group
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Get the group by index
+        const group = newState.groups[groupIndex];
+        // Get the condition by index
+        const condition = group.conditions[conditionIndex];
+        // Change the operation of the condition
+        condition.op = value;
+        // Update the group with the modified condition
+        group.conditions[conditionIndex] = condition;
+        // Update the state with the modified group
+        newState.groups[groupIndex] = group;
+        return newState;
+      });
+    }
+  };
+
+  // Handler for changing the value of a condition
+  const handleValueChange = (event, conditionIndex, groupIndex) => {
+    // Get the input value
+    const value = event.target.value;
+    // If groupIndex is undefined, change the value of a condition in the main state
+    if (groupIndex === undefined) {
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Get the condition by index
+        const condition = newState.conditions[conditionIndex];
+        // Change the value of the condition
+        condition.value = value;
+        // Update the state with the modified condition
+        newState.conditions[conditionIndex] = condition;
+        return newState;
+      });
+    } else {
+      // Otherwise, change the value of a condition in the specified group
+      setState((prevState) => {
+        // Copy the previous state
+        const newState = { ...prevState };
+        // Get the group by index
+        const group = newState.groups[groupIndex];
+        // Get the condition by index
+        const condition = group.conditions[conditionIndex];
+        // Change the value of the condition
+        condition.value = value;
+//shiv brake
+          // Handler for changing the operation of a group
+  const handleGroupOpChange = (event, groupIndex) => {
+    // Get the selected value
+    const value = event.target.value;
+    // Change the operation of the group in the state
+    setState((prevState) => {
+      // Copy the previous state
+      const newState = { ...prevState };
+      // Get the group by index
+      const group = newState.groups[groupIndex];
+      // Change the operation of the group
+      group.operation = value;
+      // Update the state with the modified group
+      newState.groups[groupIndex] = group;
+      return newState;
+    });
+  };
+
+  // Handler for submitting the rule creation
+  const handleSubmit = (event) => {
+    // Prevent the default form submission
+    event.preventDefault();
+    // Map all the row's data in the below sequence
+    const allData = state.conditions
+      .map((condition) => condition.type + ":" + condition.attribute + condition.op + condition.value)
+      .join(state.operation)
+      .concat(
+        state.groups
+          .map(
+            (group) =>
+              group.conditions
+                .map((condition) => condition.type + ":" + condition.attribute + condition.op + condition.value)
+                .join(group.operation)
+          )
+          .join(state.operation)
+      );
+    // Set the allData state
+    setAllData(allData);
+    // Log the allData state in JSON format
+    console.log(JSON.stringify(allData));
+  };
+
+  // Render the rule creation component
+  return (
+    <Container fluid className="p-3">
+      <h1 className="text-center">Rule Creation Component</h1>
+      <Form onSubmit={handleSubmit}>
+        <Row className="mb-3">
+          <Col md={6}>
+            <Form.Label>Add Condition</Form.Label>
+            <Button variant="primary" onClick={() => handleAddCondition()}>
+              Add Condition
+            </Button>
+          </Col>
+          <Col md={6}>
+            <Form.Label>Add Group of Conditions</Form.Label>
+            <Button variant="info" onClick={handleAddGroup}>
+              Add Group
+            </Button>
+          </Col>
+        </Row>
+        {state.conditions.map((condition, conditionIndex) => (
+          <Row key={conditionIndex} className="mb-3 border">
+            <Col md={3}>
+              <Form.Label>Source</Form.Label>
+              <Form.Select
+                value={condition.type}
+                onChange={(event) => handleTypeChange(event, conditionIndex)}
+              >
+                {selectCondition.map((option, index) => (
+                  <option key={index} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </Form.Select>
+            </Col>
+            {condition.type === "Request" && (
+              <Col md={3}>
+                <Form.Label>Attribute</Form.Label>
+                <Form.Select
+                  value={condition.attribute}
+                  onChange={(event) => handleAttributeChange(event, conditionIndex)}
+                >
+                  {requestAttribute.map((option, index) => (
+                    <option key={index} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Col>
+            )}
+            {condition.type === "Group" && (
+              <Col md={3}>
+                <Form.Label>Attribute</Form.Label>
+                <Form.Select
+                  value={condition.attribute}
+                  onChange={(event) => handleAttributeChange(event, conditionIndex)}
+                >
+                  {groupAttribute.map((option, index) => (
+                    <option key={index} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Col>
+            )}
+            {condition.type !== "select" && (
+              <>
+                <Col md={3}>
+                  <Form.Label>Operation</Form.Label>
+                  <Form.Select
+                    value={condition.op}
+                    onChange={(event) => handleOpChange(event, conditionIndex)}
+                  >
+                    {condition.type === "Request"
+                      ? requestOp.map((option, index) => (
+                          <option key={index} value={option}>
+                            {option}
+                          </option>
+                        ))
+                      : groupOp.map((option, index) => (
+                          <option key={index} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                  </Form.Select>
+                </Col>
+                <Col md={3}>
+                  <Form.Label>Value</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter value"
+                    value={condition.value}
+                    onChange={(event) => handleValueChange(event, conditionIndex)}
+                  />
+                </Col>
+              </>
+            )}
+            <Col md={3}>
+              <Button variant="danger" onClick={() => handleRemoveCondition(conditionIndex)}>
+                Remove Condition
+              </Button>
+            </Col>
+          </Row>
+        ))}
+        {state.groups.map((group, groupIndex) => (
+          <Row key={groupIndex} className="mb-3 border">
+            <Col md={12}>
+              <Form.Label>Select Operation</Form.Label>
+              <Form.Select
+                value={group.operation}
+                onChange={(event) => handleGroupOpChange(event, groupIndex)}
+              >
+                {selectOperation.map((option, index) => (
+                  <option key={index} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </Form.Select>
+            </Col>
+            {group.conditions.map((condition, conditionIndex) => (
+              <Col key={conditionIndex} md={12}>
+                <Row className="mb-3 border">
+                  <Col md={3}>
+                    <Form.Label>Source</Form.Label>
+                    <Form.Select
+                      value={condition.type}
+                      onChange={(event) => handleTypeChange(event, conditionIndex, groupIndex)}
+                    >
+                      {selectCondition.map((option, index) => (
+                        <option key={index} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Col>
+                  {condition.type === "Request" && (
+                    <Col md={3}>
+                      <Form.Label>Attribute</Form.Label>
+                      <Form.Select
+                        value={condition.attribute}
+                        onChange={(event) => handleAttributeChange(event, conditionIndex, groupIndex)}
+                      >
+                        {requestAttribute.map((option, index) => (
+                          <option key={index} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Col>
+                  )}
+                  {condition.type === "Group" && (
+                    <Col md={3}>
+                      <Form.Label>Attribute</Form.Label>
+                      <Form.Select
+                        value={condition.attribute}
+                        onChange={(event) => handleAttributeChange(event, conditionIndex, groupIndex)}
+                      >
+                        {groupAttribute.map((option, index) => (
+                          <option key={index} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Col>
+                  )}
+                  {condition.type !== "select" && (
+                    <>
+                      <Col md={3}>
+                        <Form.Label>Operation</Form.Label>
+                        <Form.Select
+                          value={condition.op}
+                          onChange={(event) => handleOpChange(event, conditionIndex, groupIndex)}
+                        >
+                          {condition.type === "Request"
+                            ? requestOp.map((option, index) => (
+                                <option key={index} value={option}>
+                                  {option}
+                                </option>
+                              ))
+                            : groupOp.map((option, index) => (
+                                <option key={index} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                        </Form.Select>
+                      </Col>
+                      <Col md={3}>
+                        <Form.Label>Value</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Enter value"
+                          value={condition.value}
+                          onChange={(event) => handleValueChange(event, conditionIndex, groupIndex)}
+                        />
+                      </Col>
+                    </>
+                  )}
+                  <Col md={3}>
+                    <Button variant="danger" onClick={() => handleRemoveCondition(conditionIndex, groupIndex)}>
+                      Remove Condition
+                    </Button>
+                  </Col>
+                </Row>
+              </Col>
+            ))}
+            <Col md={12}>
+              <Button variant="warning" onClick={() => handleRemoveGroup(groupIndex)}>
+                Remove Group
+              </Button>
+            </Col>
+          </Row>
+        ))}
+        <Button variant="success" type="submit">
+          Submit
+        </Button>
+      </Form>
+    </Container>
+  );
+}
