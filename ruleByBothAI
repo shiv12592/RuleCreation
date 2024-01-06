@@ -1,0 +1,377 @@
+import React, { useState } from "react";
+import { Container, Row, Col, Button, Form } from "react-bootstrap";
+
+// data for useState
+const selectCondition = ["select", "Request", "Group"];
+const requestAttribute = ["select", "rqAtt1", "reqAtt2"];
+const groupAttribute = ["select", "grpAtt1", "grpAtt2"];
+const requestOp = ["select", "equal", "noEqual"];
+const groupOp = ["select", "and", "or", "not"];
+const selectOperation = ["select", "AND", "OR"];
+
+// a custom component for rendering a condition row
+const ConditionRow = ({ condition, index, removeCondition }) => {
+  return (
+    <Row className="mb-1 border">
+      <Col md={3}>
+        <Form.Label className="mx-1">Source</Form.Label>
+        <Form.Control
+          as="select"
+          value={condition.selectCondition}
+          onChange={(e) =>
+            setCondition((prev) => ({
+              ...prev,
+              selectCondition: e.target.value,
+            }))
+          }
+        >
+          {selectCondition.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Form.Control>
+      </Col>
+      {condition.selectCondition === "Request" && (
+        <>
+          <Col md={3}>
+            <Form.Label className="mx-1">Attribute</Form.Label>
+            <Form.Control
+              as="select"
+              value={condition.requestAttribute}
+              onChange={(e) =>
+                setCondition((prev) => ({
+                  ...prev,
+                  requestAttribute: e.target.value,
+                }))
+              }
+            >
+              {requestAttribute.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </Form.Control>
+          </Col>
+          <Col md={3}>
+            <Form.Label className="mx-1">Request Op</Form.Label>
+            <Form.Control
+              as="select"
+              value={condition.requestOp}
+              onChange={(e) =>
+                setCondition((prev) => ({
+                  ...prev,
+                  requestOp: e.target.value,
+                }))
+              }
+            >
+              {requestOp.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </Form.Control>
+          </Col>
+          <Col md={3}>
+            <Form.Label className="mx-1">Value</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="reqValue"
+              value={condition.requestValue}
+              onChange={(e) =>
+                setCondition((prev) => ({
+                  ...prev,
+                  requestValue: e.target.value,
+                }))
+              }
+            />
+          </Col>
+        </>
+      )}
+      {condition.selectCondition === "Group" && (
+        <>
+          <Col md={3}>
+            <Form.Label className="mx-1">Attribute</Form.Label>
+            <Form.Control
+              as="select"
+              value={condition.groupAttribute}
+              onChange={(e) =>
+                setCondition((prev) => ({
+                  ...prev,
+                  groupAttribute: e.target.value,
+                }))
+              }
+            >
+              {groupAttribute.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </Form.Control>
+          </Col>
+          <Col md={3}>
+            <Form.Label className="mx-1">Group Op</Form.Label>
+            <Form.Control
+              as="select"
+              value={condition.groupOp}
+              onChange={(e) =>
+                setCondition((prev) => ({
+                  ...prev,
+                  groupOp: e.target.value,
+                }))
+              }
+            >
+              {groupOp.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </Form.Control>
+          </Col>
+          <Col md={3}>
+            <Form.Label className="mx-1">Value</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="grpValue"
+              value={condition.groupValue}
+              onChange={(e) =>
+                setCondition((prev) => ({
+                  ...prev,
+                  groupValue: e.target.value,
+                }))
+              }
+            />
+          </Col>
+        </>
+      )}
+      <Col md={3}>
+        <Button
+          variant="danger"
+          className="my-1"
+          onClick={() => removeCondition(index)}
+        >
+          Remove The Row
+        </Button>
+      </Col>
+    </Row>
+  );
+};
+
+// a custom component for rendering a group of conditions
+const ConditionGroup = ({ group, index, removeGroup, addCondition }) => {
+  return (
+    <Row className="mb-1 border">
+      <Col md={12}>
+        <Button
+          variant="primary"
+          className="my-1"
+          onClick={() => addCondition(index)}
+        >
+          Add Condition
+        </Button>
+        <Button
+          variant="danger"
+          className="my-1 mx-1"
+          onClick={() => removeGroup(index)}
+        >
+          Remove Group
+        </Button>
+      </Col>
+      {group.conditions.map((condition, i) => (
+        <ConditionRow
+          key={i}
+          condition={condition}
+          index={i}
+          removeCondition={(j) => removeCondition(index, j)}
+        />
+      ))}
+      {group.conditions.length > 1 && (
+        <Col md={12}>
+          <Form.Label className="mx-1">Select Operation</Form.Label>
+          <Form.Control
+            as="select"
+            value={group.selectOperation}
+            onChange={(e) =>
+              setGroup((prev) => ({
+                ...prev,
+                selectOperation: e.target.value,
+              }))
+            }
+          >
+            {selectOperation.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </Form.Control>
+        </Col>
+      )}
+    </Row>
+  );
+};
+
+const MyComponent = () => {
+  // state for the rule creation component
+  const [conditions, setConditions] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [allData, setAllData] = useState(null);
+
+  // helper functions to add or remove conditions or groups
+  const addCondition = (groupIndex = null) => {
+    if (groupIndex === null) {
+      // add a condition to the main level
+      setConditions((prev) => [
+        ...prev,
+        {
+          selectCondition: "select",
+          requestAttribute: "select",
+          requestOp: "select",
+          requestValue: "",
+          groupAttribute: "select",
+          groupOp: "select",
+          groupValue: "",
+        },
+      ]);
+    } else {
+      // add a condition to a group
+      setGroups((prev) =>
+        prev.map((group, i) =>
+          i === groupIndex
+            ? {
+                ...group,
+                conditions: [
+                  ...group.conditions,
+                  {
+                    selectCondition: "select",
+                    requestAttribute: "select",
+                    requestOp: "select",
+                    requestValue: "",
+                    groupAttribute: "select",
+                    groupOp: "select",
+                    groupValue: "",
+                  },
+                ],
+              }
+            : group
+        )
+      );
+    }
+  };
+
+  const removeCondition = (conditionIndex, groupIndex = null) => {
+    if (groupIndex === null) {
+      // remove a condition from the main level
+      setConditions((prev) =>
+        prev.filter((condition, i) => i !== conditionIndex)
+      );
+    } else {
+      // remove a condition from a group
+      setGroups((prev) =>
+        prev.map((group, i) =>
+          i === groupIndex
+            ? {
+                ...group,
+                conditions: group.conditions.filter(
+                  (condition, j) => j !== conditionIndex
+                ),
+              }
+            : group
+        )
+      );
+    }
+  };
+
+  const addGroup = () => {
+    // add a group of conditions
+    setGroups((prev) => [
+      ...prev,
+      {
+        conditions: [],
+        selectOperation: "select",
+      },
+    ]);
+  };
+
+  const removeGroup = (groupIndex) => {
+    // remove a group of conditions
+    setGroups((prev) => prev.filter((group, i) => i !== groupIndex));
+  };
+
+  // function to handle the submit button
+  const handleSubmit = () => {
+    // map all the row's data in the below sequence
+    const allData = conditions
+      .map((condition) => condition.selectCondition + ":Row" + condition.index)
+      .concat(
+        groups.map(
+          (group) =>
+            group.selectOperation +
+            ":Row" +
+            group.index +
+            "+" +
+            group.conditions
+              .map((condition) => condition.selectCondition + ":Row" + condition.index)
+              .join("+")
+        )
+      )
+      .join("+");
+    // set the allData state and log it in JSON format
+    setAllData(allData);
+    console.log(JSON.stringify(allData));
+  };
+
+  // return the JSX for the ruleCreation component
+  return (
+    <div className="col-md-12">
+      <Container className="col-md-12 border">
+        <Row className="mb-1">
+          <Col md={6}>
+            <Form.Label>Add Condition</Form.Label>
+            <Button variant="primary" onClick={() =>
+                  addCondition(null)
+                }>
+              Add Condition
+            </Button>
+          </Col>
+          <Col md={6}>
+            <Form.Label>Add Group of Condition</Form.Label>
+            <Button
+              variant="info"
+              onClick={addGroup}>
+              Add Group
+            </Button>
+          </Col>
+        </Row>
+
+        {conditions.map((condition, index) => (
+          <ConditionRow
+            key={index}
+            condition={condition}
+            index={index}
+            removeCondition={(i) => removeCondition(i)}
+          />
+        ))}
+
+        {groups.map((group, index) => (
+          <ConditionGroup
+            key={index}
+            group={group}
+            index={index}
+            removeGroup={(i) => removeGroup(i)}
+            addCondition={(i) => addCondition(i)}
+          />
+        ))}
+
+        <Row className="mb-1">
+          <Col md={12}>
+            <Button variant="success" onClick={handleSubmit}>
+              Submit
+            </Button>
+          </Col>
+        </Row>
+      </Container>
+    </div>
+  );
+};
+
+export default MyComponent;
