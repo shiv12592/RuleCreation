@@ -30,6 +30,14 @@ const MyComponent = () => {
     setAllData((prevData) => {
       const newData = [...prevData];
       newData[index][field] = value;
+
+      // If changing selectCondition, reset the subsequent fields
+      if (field === 'selectCondition') {
+        newData[index].requestAttribute = 'select';
+        newData[index].requestOp = 'default';
+        newData[index].requestValue = '';
+      }
+
       return newData;
     });
   };
@@ -56,6 +64,85 @@ const MyComponent = () => {
       newData[groupIndex].conditions.splice(conditionIndex, 1);
       return newData;
     });
+  };
+
+  const renderColumnValues = (condition, index, conditionIndex) => {
+    switch (condition.selectCondition) {
+      case 'Request':
+        return (
+          <>
+            <Col md={3}><label>Attribute</label></Col>
+            <Col md={3}>
+              <select
+                value={condition.requestAttribute}
+                onChange={(e) => handleConditionChange('requestAttribute', e.target.value, index)}
+              >
+                <option value="select">Select</option>
+                <option value="rqAtt1">rqAtt1</option>
+                <option value="reqAtt2">reqAtt2</option>
+              </select>
+            </Col>
+            <Col md={3}><label>Request Op</label></Col>
+            <Col md={3}>
+              <select
+                value={condition.requestOp}
+                onChange={(e) => handleConditionChange('requestOp', e.target.value, index)}
+              >
+                <option value="default">Select</option>
+                <option value="equal">Equal</option>
+                <option value="noEqual">Not Equal</option>
+              </select>
+            </Col>
+            <Col md={3}><label>Value</label></Col>
+            <Col md={3}>
+              <input
+                type="text"
+                value={condition.requestValue}
+                onChange={(e) => handleConditionChange('requestValue', e.target.value, index)}
+                placeholder="Req Value"
+              />
+            </Col>
+          </>
+        );
+      case 'group':
+        return (
+          <>
+            <Col md={3}><label>Attribute</label></Col>
+            <Col md={3}>
+              <select
+                value={condition.requestAttribute}
+                onChange={(e) => handleConditionChange('requestAttribute', e.target.value, index)}
+              >
+                <option value="select">Select</option>
+                <option value="grpAtt1">grpAtt1</option>
+                <option value="grpAtt2">grpAtt2</option>
+              </select>
+            </Col>
+            <Col md={3}><label>Request Op</label></Col>
+            <Col md={3}>
+              <select
+                value={condition.requestOp}
+                onChange={(e) => handleConditionChange('requestOp', e.target.value, index)}
+              >
+                <option value="default">Select</option>
+                <option value="equal">Equal</option>
+                <option value="noEqual">Not Equal</option>
+              </select>
+            </Col>
+            <Col md={3}><label>Value</label></Col>
+            <Col md={3}>
+              <input
+                type="text"
+                value={condition.requestValue}
+                onChange={(e) => handleConditionChange('requestValue', e.target.value, index)}
+                placeholder="Req Value"
+              />
+            </Col>
+          </>
+        );
+      default:
+        return null;
+    }
   };
 
   const handleSubmit = () => {
@@ -113,39 +200,7 @@ const MyComponent = () => {
                       <option value="group">Group</option>
                     </select>
                   </Col>
-                  <Col md={3}><label>Attribute</label></Col>
-                  <Col md={3}>
-                    <select
-                      value={rowData.requestAttribute}
-                      onChange={(e) => handleConditionChange('requestAttribute', e.target.value, index)}
-                    >
-                      <option value="select">Select</option>
-                      <option value="rqAtt1">rqAtt1</option>
-                      <option value="reqAtt2">reqAtt2</option>
-                    </select>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md={3}><label>Request Op</label></Col>
-                  <Col md={3}>
-                    <select
-                      value={rowData.requestOp}
-                      onChange={(e) => handleConditionChange('requestOp', e.target.value, index)}
-                    >
-                      <option value="default">Select</option>
-                      <option value="equal">Equal</option>
-                      <option value="noEqual">Not Equal</option>
-                    </select>
-                  </Col>
-                  <Col md={3}><label>Value</label></Col>
-                  <Col md={3}>
-                    <input
-                      type="text"
-                      value={rowData.requestValue}
-                      onChange={(e) => handleConditionChange('requestValue', e.target.value, index)}
-                      placeholder="Req Value"
-                    />
-                  </Col>
+                  {renderColumnValues(rowData, index)}
                   <Col md={3}>
                     <Button
                       size="sm"
@@ -198,37 +253,7 @@ const MyComponent = () => {
                           <option value="group">Group</option>
                         </select>
                       </Col>
-                      <Col md={3}><label>Attribute</label></Col>
-                      <Col md={3}>
-                        <select
-                          value={condition.requestAttribute}
-                          onChange={(e) => handleConditionChange('requestAttribute', e.target.value, index)}
-                        >
-                          <option value="select">Select</option>
-                          <option value="rqAtt1">rqAtt1</option>
-                          <option value="reqAtt2">reqAtt2</option>
-                        </select>
-                      </Col>
-                      <Col md={3}><label>Request Op</label></Col>
-                      <Col md={3}>
-                        <select
-                          value={condition.requestOp}
-                          onChange={(e) => handleConditionChange('requestOp', e.target.value, index)}
-                        >
-                          <option value="default">Select</option>
-                          <option value="equal">Equal</option>
-                          <option value="noEqual">Not Equal</option>
-                        </select>
-                      </Col>
-                      <Col md={3}><label>Value</label></Col>
-                      <Col md={3}>
-                        <input
-                          type="text"
-                          value={condition.requestValue}
-                          onChange={(e) => handleConditionChange('requestValue', e.target.value, index)}
-                          placeholder="Req Value"
-                        />
-                      </Col>
+                      {renderColumnValues(condition, index, conditionIndex)}
                       <Col md={3}>
                         <Button
                           size="sm"
