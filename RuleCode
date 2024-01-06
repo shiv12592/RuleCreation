@@ -1,0 +1,262 @@
+import React, { useState } from 'react';
+import { Container, Row, Col, Button, Form } from 'react-bootstrap';
+
+const MyComponent = () => {
+  const [allData, setAllData] = useState([]);
+  const [conditionData, setConditionData] = useState({
+    selectCondition: 'default',
+    requestAttribute: 'select',
+    requestOp: 'default',
+    requestValue: '',
+  });
+
+  const handleAddCondition = () => {
+    setAllData((prevData) => [
+      ...prevData,
+      { ...conditionData, selectOperation: 'default' },
+    ]);
+  };
+
+  const handleAddGroupCondition = () => {
+    setAllData((prevData) => [
+      ...prevData,
+      { addGroupCondition: true, conditions: [] },
+    ]);
+  };
+
+  const handleRemoveRow = (index) => {
+    setAllData((prevData) => {
+      const newData = [...prevData];
+      newData.splice(index, 1);
+      return newData;
+    });
+  };
+
+  const handleConditionChange = (field, value, index) => {
+    setAllData((prevData) => {
+      const newData = [...prevData];
+      newData[index][field] = value;
+      return newData;
+    });
+  };
+
+  const handleSelectOperationChange = (index, value) => {
+    setAllData((prevData) => {
+      const newData = [...prevData];
+      newData[index].selectOperation = value;
+      return newData;
+    });
+  };
+
+  const handleAddConditionWithinGroup = (groupIndex) => {
+    setAllData((prevData) => {
+      const newData = [...prevData];
+      newData[groupIndex].conditions.push({ ...conditionData });
+      return newData;
+    });
+  };
+
+  const handleRemoveConditionWithinGroup = (groupIndex, conditionIndex) => {
+    setAllData((prevData) => {
+      const newData = [...prevData];
+      newData[groupIndex].conditions.splice(conditionIndex, 1);
+      return newData;
+    });
+  };
+
+  const handleSubmit = () => {
+    console.log('All Data:', allData);
+  };
+
+  return (
+    <div className="col-md-12">
+      <Container className="col-md-12" style={{ border: '1px solid #000', padding: '10px' }}>
+        {/* Step 1 */}
+        <Row>
+          <Col md={3}><label>Add Condition</label></Col>
+          <Col md={3}>
+            <Button onClick={handleAddCondition}>Add Condition</Button>
+          </Col>
+          <Col md={3}><label>Add Group of Condition</label></Col>
+          <Col md={3}>
+            <Button style={{ background: 'lightblue' }} onClick={handleAddGroupCondition}>
+              Add Group
+            </Button>
+          </Col>
+        </Row>
+
+        {/* Step 2 */}
+        {allData.map((rowData, index) => (
+          <div key={index} style={{ border: '1px dashed #000', padding: '10px', margin: '10px 0' }}>
+            {/* Condition Row */}
+            {rowData.addGroupCondition ? (
+              // Step 2.2
+              <Row>
+                <Col md={3}><label>Add Condition</label></Col>
+                <Col md={3}>
+                  <Button onClick={() => handleAddConditionWithinGroup(index)}>
+                    Add Condition
+                  </Button>
+                </Col>
+                <Col md={3}><label>Remove Group</label></Col>
+                <Col md={3}>
+                  <Button onClick={() => handleRemoveRow(index)}>Remove Group</Button>
+                </Col>
+              </Row>
+            ) : (
+              // Step 2.1
+              <Row>
+                <Col md={3}><label>Source</label></Col>
+                <Col md={3}>
+                  <select
+                    value={rowData.selectCondition}
+                    onChange={(e) => handleConditionChange('selectCondition', e.target.value, index)}
+                  >
+                    <option value="default">Select</option>
+                    <option value="Request">Request</option>
+                    <option value="group">Group</option>
+                  </select>
+                </Col>
+                <Col md={3}><label>Attribute</label></Col>
+                <Col md={3}>
+                  <select
+                    value={rowData.requestAttribute}
+                    onChange={(e) => handleConditionChange('requestAttribute', e.target.value, index)}
+                  >
+                    <option value="select">Select</option>
+                    <option value="rqAtt1">rqAtt1</option>
+                    <option value="reqAtt2">reqAtt2</option>
+                  </select>
+                </Col>
+                <Col md={3}><label>Request Op</label></Col>
+                <Col md={3}>
+                  <select
+                    value={rowData.requestOp}
+                    onChange={(e) => handleConditionChange('requestOp', e.target.value, index)}
+                  >
+                    <option value="default">Select</option>
+                    <option value="equal">Equal</option>
+                    <option value="noEqual">Not Equal</option>
+                  </select>
+                </Col>
+                <Col md={3}><label>Value</label></Col>
+                <Col md={3}>
+                  <input
+                    type="text"
+                    value={rowData.requestValue}
+                    onChange={(e) => handleConditionChange('requestValue', e.target.value, index)}
+                    placeholder="Req Value"
+                  />
+                </Col>
+                <Col md={3}>
+                  <Button
+                    style={{
+                      background: 'light-gray',
+                      color: 'red',
+                      margin: '0 0 0 10px',
+                    }}
+                    onClick={() => handleRemoveRow(index)}
+                  >
+                    Remove Row
+                  </Button>
+                </Col>
+              </Row>
+            )}
+
+            {/* Select Operation */}
+            {index < allData.length - 1 && (
+              <Row>
+                <Col md={3}><label>Select Operation</label></Col>
+                <Col md={3}>
+                  <select
+                    value={rowData.selectOperation}
+                    onChange={(e) => handleSelectOperationChange(index, e.target.value)}
+                  >
+                    <option value="default">Select</option>
+                    <option value="AND">AND</option>
+                    <option value="OR">OR</option>
+                  </select>
+                </Col>
+              </Row>
+            )}
+
+            {/* Sub-step 2.1.2 */}
+            {rowData.conditions && rowData.conditions.length > 0 && (
+              <Row>
+                {rowData.conditions.map((condition, conditionIndex) => (
+                  <div key={conditionIndex} style={{ border: '1px dashed #000', padding: '10px', margin: '10px 0' }}>
+                    <Row>
+                      <Col md={3}><label>Source</label></Col>
+                      <Col md={3}>
+                        <select
+                          value={condition.selectCondition}
+                          onChange={(e) => handleConditionChange('selectCondition', e.target.value, index)}
+                        >
+                          <option value="default">Select</option>
+                          <option value="Request">Request</option>
+                          <option value="group">Group</option>
+                        </select>
+                      </Col
+                      <Col md={3}><label>Attribute</label></Col>
+                      <Col md={3}>
+                        <select
+                          value={condition.requestAttribute}
+                          onChange={(e) => handleConditionChange('requestAttribute', e.target.value, index)}
+                        >
+                          <option value="select">Select</option>
+                          <option value="rqAtt1">rqAtt1</option>
+                          <option value="reqAtt2">reqAtt2</option>
+                        </select>
+                      </Col>
+                      <Col md={3}><label>Request Op</label></Col>
+                      <Col md={3}>
+                        <select
+                          value={condition.requestOp}
+                          onChange={(e) => handleConditionChange('requestOp', e.target.value, index)}
+                        >
+                          <option value="default">Select</option>
+                          <option value="equal">Equal</option>
+                          <option value="noEqual">Not Equal</option>
+                        </select>
+                      </Col>
+                      <Col md={3}><label>Value</label></Col>
+                      <Col md={3}>
+                        <input
+                          type="text"
+                          value={condition.requestValue}
+                          onChange={(e) => handleConditionChange('requestValue', e.target.value, index)}
+                          placeholder="Req Value"
+                        />
+                      </Col>
+                      <Col md={3}>
+                        <Button
+                          style={{
+                            background: 'light-gray',
+                            color: 'red',
+                            margin: '0 0 0 10px',
+                          }}
+                          onClick={() => handleRemoveConditionWithinGroup(index, conditionIndex)}
+                        >
+                          Remove Row
+                        </Button>
+                      </Col>
+                    </Row>
+                  </div>
+                ))}
+              </Row>
+            )}
+          </div>
+        ))}
+
+        {/* Step 4 */}
+        <Row>
+          <Col md={12}>
+            <Button onClick={handleSubmit}>Submit</Button>
+          </Col>
+        </Row>
+      </Container>
+    </div>
+  );
+};
+
+export default MyComponent;
