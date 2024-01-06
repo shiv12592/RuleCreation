@@ -123,88 +123,21 @@ const MyComponent = () => {
 
         {/* AddConditionRow */}
         {allData.map((rowData, index) => {
-          if (rowData.selectCondition === 'default' || rowData.selectCondition === 'Request') {
+       if (rowData.selectOperation) {
             return (
-              <Row key={index} className="border-bottom mt-1 mb-1">
-                <Col md={3}>
-                  <Label margin-1-lr>Source</Label>
+              <Row key={`op-${index}`} className="border-bottom mt-1 mb-1 border-dashed">
+                <Col md={12}>
+                  <Label>Select Operation</Label>
                   <Select
-                    value={rowData.selectCondition}
-                    onChange={(e) => handleSelectConditionChange(e.target.value, index)}
+                    value={rowData.selectOperation}
+                    onChange={(e) => handleSelectOperationChange(e.target.value, index)}
                   >
-                    {selectConditionOptions.map((option) => (
+                    {selectOperationOptions.map((option) => (
                       <option key={option} value={option}>
                         {option}
                       </option>
                     ))}
                   </Select>
-                </Col>
-                <Col md={3}>
-                  <Label margin-1-lr>Attribute</Label>
-                  <Select
-                    value={rowData.requestAttribute}
-                    onChange={(e) => handleRequestAttributeChange(e.target.value, index)}
-                  >
-                    {requestAttributeOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </Select>
-                </Col>
-                <Col md={3}>
-                  <Label>Request Op</Label>
-                  <Select value={rowData.requestOp} onChange={(e) => handleRequestOpChange(e.target.value, index)}>
-                    {requestOpOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </Select>
-                </Col>
-                <Col md={3}>
-                  <Label>Value</Label>
-                  <input
-                    type="text"
-                    placeholder="reqValue"
-                    value={rowData.requestValue}
-                    onChange={(e) => handleRequestValueChange(e, index)}
-                  />
-                  <Button
-                    variant="danger"
-                    style={{ color: 'red', backgroundColor: 'light-gray', margin: '1px' }}
-                    onClick={() => handleRemoveRow(index)}
-                  >
-                    Remove The Row
-                  </Button>
-                </Col>
-              </Row>
-            );
-          } else if (rowData.selectCondition === 'group') {
-            return (
-              <Row key={index} className="border-bottom mt-1 mb-1">
-                <Col md={3}>
-                  <Label margin-1-lr>Source</Label>
-                  <Select
-                    value={rowData.selectCondition}
-                    onChange={(e) => handleSelectConditionChange(e.target.value, index)}
-                  >
-                    {selectConditionOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </Select>
-                </Col>
-                <Col md={9}>
-                  {/* AddGroupConditionRow */}
-                  <Label>Add Condition</Label>
-                  <Button
-                    variant="primary"
-                    onClick={() => handleAddConditionOperationWithinGroupCondition(index)}
-                  >
-                    Add Condition
-                  </Button>
                 </Col>
               </Row>
             );
@@ -212,12 +145,11 @@ const MyComponent = () => {
           return null;
         })}
 
-        {/* AddConditionOperationRow */}
+        {/* AddgroupConditionOperationRow */}
         {allData.map((rowData, index) => {
-    
-          if (rowData.selectOperation) {
+          if (rowData.selectOperation === 'default' && rowData.selectCondition === 'group') {
             return (
-              <Row key={`op-${index}`} className="border-bottom mt-1 mb-1 border-dashed">
+              <Row key={`group-op-${index}`} className="border-bottom mt-1 mb-1">
                 <Col md={12}>
                   <Label>Select Operation</Label>
                   <Select
