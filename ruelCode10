@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { Container, Row, Col, Button } from "react-bootstrap";
 
-// Define the data for useState
+// The data for use in useState
 const selectCondition = ["select", "Request", "Group"];
 const requestAttribute = ["select", "rqAtt1", "reqAtt2"];
 const groupAttribute = ["select", "grpAtt1", "grpAtt2"];
@@ -8,29 +9,84 @@ const requestOp = ["select", "equal", "noEqual"];
 const groupOp = ["select", "and", "or", "not"];
 const selectOperation = ["select", "AND", "OR"];
 
-// Define a custom component for a single row of condition fields
-const ConditionRow = ({ source, attribute, op, value, onRemove }) => {
+// A custom component for a single row of condition fields
+const ConditionRow = ({
+  condition,
+  index,
+  handleSelectChange,
+  handleInputChange,
+  handleRemoveRow,
+}) => {
   return (
     <Row className="margin-1-tb line-border">
       <Col md={3}>
         <label className="margin-1-lr">Source</label>
-        <text>{source}</text>
+        <select
+          value={condition.source}
+          onChange={(e) => handleSelectChange(e, index, "source")}
+        >
+          {selectCondition.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
       </Col>
       <Col md={3}>
         <label className="margin-1-lr">Attribute</label>
-        <select className="margin-lr">{attribute}</select>
+        <select
+          value={condition.attribute}
+          onChange={(e) => handleSelectChange(e, index, "attribute")}
+        >
+          {condition.source === "Request"
+            ? requestAttribute.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))
+            : condition.source === "Group"
+            ? groupAttribute.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))
+            : null}
+        </select>
       </Col>
       <Col md={3}>
-        <label>Op</label>
-        <select>{op}</select>
+        <label className="margin-1-lr">Operation</label>
+        <select
+          value={condition.operation}
+          onChange={(e) => handleSelectChange(e, index, "operation")}
+        >
+          {condition.source === "Request"
+            ? requestOp.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))
+            : condition.source === "Group"
+            ? groupOp.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))
+            : null}
+        </select>
       </Col>
       <Col md={3}>
-        <label>Value</label>
-        <input type="text" placeholder={value} />
+        <label className="margin-1-lr">Value</label>
+        <input
+          type="text"
+          placeholder="requestValue"
+          value={condition.value}
+          onChange={(e) => handleInputChange(e, index)}
+        />
       </Col>
       <Button
-        style={{ color: "red", backgroundColor: "light-gray", margin: "1-tb" }}
-        onClick={onRemove}
+        variant="danger"
+        className="font-color-red background-light-gray margin-1-tb"
+        onClick={() => handleRemoveRow(index)}
       >
         Remove The Row
       </Button>
@@ -38,155 +94,204 @@ const ConditionRow = ({ source, attribute, op, value, onRemove }) => {
   );
 };
 
-// Define a custom component for a group of condition fields
-const ConditionGroup = ({ onAdd, onRemove }) => {
-  // Use useState to store the condition rows in the group
-  const [rows, setRows] = useState([]);
-
-  // Define a function to add a new row to the group
-  const addRow = () => {
-    // Get the values from the selectCondition array
-    const source = selectCondition[0];
-    const attribute =
-      source === "Request" ? requestAttribute : groupAttribute;
-    const op = source === "Request" ? requestOp : groupOp;
-    const value = source === "Request" ? "requestValue" : "groupValue";
-
-    // Create a new row object with a unique id
-    const newRow = {
-      id: Math.random().toString(36).substr(2, 9),
-      source,
-      attribute,
-      op,
-      value,
-    };
-
-    // Update the state with the new row
-    setRows((prevRows) => [...prevRows, newRow]);
-  };
-
-  // Define a function to remove a row from the group by id
-  const removeRow = (id) => {
-    // Filter out the row with the given id
-    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-  };
-
+// A custom component for a group of condition rows
+const ConditionGroup = ({
+  group,
+  index,
+  handleSelectChange,
+  handleInputChange,
+  handleAddRow,
+  handleRemoveRow,
+  handleRemoveGroup,
+}) => {
   return (
     <Row className="line-border">
-      <label>Add Condition</label>
+      <label className="margin-1-lr">Add Condition</label>
       <Button
-        style={{ backgroundColor: "light-blue" }}
-        value="addCondition"
-        onClick={addRow}
+        variant="primary"
+        className="background-light-blue"
+        onClick={() => handleAddRow(index)}
       >
         Add Condition
       </Button>
-      {rows.map((row) => (
+      {group.conditions.map((condition, i) => (
         <ConditionRow
-          key={row.id}
-          source={row.source}
-          attribute={row.attribute}
-          op={row.op}
-          value={row.value}
-          onRemove={() => removeRow(row.id)}
+          key={i}
+          condition={condition}
+          index={i}
+          handleSelectChange={handleSelectChange}
+          handleInputChange={handleInputChange}
+          handleRemoveRow={handleRemoveRow}
         />
       ))}
-      <Button onClick={onRemove}>Remove Group</Button>
+      <Button
+        variant="danger"
+        className="font-color-red background-light-gray margin-1-tb"
+        onClick={() => handleRemoveGroup(index)}
+      >
+        Remove Group
+      </Button>
     </Row>
   );
 };
 
-// Define the main component for the rule creation
+// The main component for the rule creation
 const RuleCreation = () => {
-  // Use useState to store the condition groups
+  // The state for the conditions and groups
+  const [conditions, setConditions] = useState([
+    {
+      source: "select",
+      attribute: "select",
+      operation: "select",
+      value: "",
+    },
+  ]);
   const [groups, setGroups] = useState([]);
 
-  // Use useState to store the select operations
-  const [operations, setOperations] = useState([]);
+  // The state for the select operation
+  const [selectOp, setSelectOp] = useState("select");
 
-  // Define a function to add a new group
-  const addGroup = () => {
-    // Create a new group object with a unique id
-    const newGroup = {
-      id: Math.random().toString(36).substr(2, 9),
-    };
+  // The state for the all data
+  const [allData, setAllData] = useState([]);
 
-    // Update the state with the new group
-    setGroups((prevGroups) => [...prevGroups, newGroup]);
+  // The handler functions for the condition rows
+  const handleSelectChange = (e, index, field) => {
+    const newConditions = [...conditions];
+    newConditions[index][field] = e.target.value;
+    setConditions(newConditions);
   };
 
-  // Define a function to remove a group by id
-  const removeGroup = (id) => {
-    // Filter out the group with the given id
-    setGroups((prevGroups) => prevGroups.filter((group) => group.id !== id));
+  const handleInputChange = (e, index) => {
+    const newConditions = [...conditions];
+    newConditions[index].value = e.target.value;
+    setConditions(newConditions);
   };
 
-  // Define a function to handle the change of select operation
-  const handleOperationChange = (index, value) => {
-    // Update the state with the new value at the given index
-    setOperations((prevOperations) => {
-      const newOperations = [...prevOperations];
-      newOperations[index] = value;
-      return newOperations;
-    });
+  const handleAddCondition = () => {
+    setConditions([
+      ...conditions,
+      {
+        source: "select",
+        attribute: "select",
+        operation: "select",
+        value: "",
+      },
+    ]);
   };
 
-  // Define a function to handle the submit of the rule creation
+  const handleRemoveRow = (index) => {
+    const newConditions = [...conditions];
+    newConditions.splice(index, 1);
+    setConditions(newConditions);
+  };
+
+  // The handler functions for the condition groups
+  const handleAddGroup = () => {
+    setGroups([
+      ...groups,
+      {
+        conditions: [
+          {
+            source: "select",
+            attribute: "select",
+            operation: "select",
+            value: "",
+          },
+        ],
+      },
+    ]);
+  };
+
+  const handleRemoveGroup = (index) => {
+    const newGroups = [...groups];
+    newGroups.splice(index, 1);
+    setGroups(newGroups);
+  };
+
+  // The handler function for the select operation
+  const handleSelectOpChange = (e) => {
+    setSelectOp(e.target.value);
+  };
+
+  // The handler function for the submit button
   const handleSubmit = () => {
     // Map all the rows data in the below sequence
-    let allData = "";
+    // AllData = selectCondition1:Row1 + selectOperation:Row2 + addGroupCondition1:Row3 + selectOperation :Row4+ ...
+    let data = [];
+    data.push(conditions[0]);
+    for (let i = 1; i < conditions.length; i++) {
+      data.push(selectOp);
+      data.push(conditions[i]);
+    }
     for (let i = 0; i < groups.length; i++) {
-      allData += `selectCondition${i + 1}:Row${i + 1}`;
-      if (i < groups.length - 1) {
-        allData += ` + selectOperation:Row${i + 2}`;
+      data.push(selectOp);
+      data.push(groups[i].conditions[0]);
+      for (let j = 1; j < groups[i].conditions.length; j++) {
+        data.push(selectOp);
+        data.push(groups[i].conditions[j]);
       }
     }
-    // Do something with the allData
-    console.log(allData);
+    // Set the all data state and show log in json format
+    setAllData(data);
+    console.log(JSON.stringify(data, null, 2));
   };
 
   return (
-    <Container className="line-border">
-      <label>Add Condition</label>
-      <Button
-        style={{ backgroundColor: "light-blue" }}
-        value="addCondition"
-        onClick={addGroup}
-      >
-        Add Condition
-      </Button>
-      <label>Add Group of Condition</label>
-      <Button
-        style={{ backgroundColor: "light-blue" }}
-        value="addGroupCondition"
-        onClick={addGroup}
-      >
-        Add Group of Condition
-      </Button>
-      {groups.map((group, index) => (
-        <div key={group.id}>
-          {index > 0 && (
-            <Row className="dash-border">
-              <label>Select Operation</label>
-              <select
-                value={operations[index - 1]}
-                onChange={(e) =>
-                  handleOperationChange(index - 1, e.target.value)
-                }
-              >
-                {selectOperation.map((op) => (
-                  <option key={op} value={op}>
-                    {op}
-                  </option>
-                ))}
-              </select>
-            </Row>
-          )}
-          <ConditionGroup onRemove={() => removeGroup(group.id)} />
-        </div>
-      ))}
-      <Button onClick={handleSubmit}>Submit</Button>
-    </Container>
+    <div className="col-md-12">
+      <Container className="col-md-12">
+        <label className="margin-1-lr">Add Condition</label>
+        <Button
+          variant="primary"
+          className="background-light-blue"
+          onClick={handleAddCondition}
+        >
+          Add Condition
+        </Button>
+        <label className="margin-1-lr">Add Group of Condition</label>
+        <Button
+          variant="primary"
+          className="background-light-blue"
+          onClick={handleAddGroup}
+        >
+          Add Group Condition
+        </Button>
+        {conditions.map((condition, index) => (
+          <ConditionRow
+            key={index}
+            condition={condition}
+            index={index}
+            handleSelectChange={handleSelectChange}
+            handleInputChange={handleInputChange}
+            handleRemoveRow={handleRemoveRow}
+          />
+        ))}
+        {groups.map((group, index) => (
+          <ConditionGroup
+            key={index}
+            group={group}
+            index={index}
+            handleSelectChange={handleSelectChange}
+            handleInputChange={handleInputChange}
+            handleAddRow={handleAddCondition}
+            handleRemoveRow={handleRemoveRow}
+            handleRemoveGroup={handleRemoveGroup}
+          />
+        ))}
+        <Row className="dash-border">
+          <label className="margin-1-lr">Select Operation</label>
+          <select value={selectOp} onChange={handleSelectOpChange}>
+            {selectOperation.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </Row>
+        <Button variant="primary" onClick={handleSubmit}>
+          Submit
+        </Button>
+      </Container>
+    </div>
   );
 };
 
