@@ -1,13 +1,27 @@
-  const handleAddConditionWithinGroup = (groupIndex) => {
+import React, { useState } from 'react';
+import { Container, Row, Col, Button } from 'react-bootstrap';
+
+const MyComponent = () => {
+  const [allData, setAllData] = useState([]);
+  const [conditionData, setConditionData] = useState({
+    selectCondition: 'default',
+    requestAttribute: 'select',
+    requestOp: 'default',
+    requestValue: '',
+  });
+
+  const handleAddCondition = () => {
+    setAllData((prevData) => [...prevData, { ...conditionData }]);
+  };
+
+  const handleAddGroupCondition = () => {
+    setAllData((prevData) => [...prevData, { addGroupCondition: true, conditions: [] }]);
+  };
+
+  const handleRemoveRow = (index) => {
     setAllData((prevData) => {
       const newData = [...prevData];
-      const newCondition = { ...conditionData, selectCondition: 'default' };
-      
-      // Enable the selectCondition dropdown for the newly added condition within the group
-      newCondition.selectConditionDisabled = false;
-
-      newData[groupIndex].conditions.push(newCondition);
-
+      newData.splice(index, 1);
       return newData;
     });
   };
@@ -17,23 +31,272 @@
       const newData = [...prevData];
       newData[index][field] = value;
 
-      if (field === 'selectCondition' && conditionIndex !== undefined) {
-        // Enable the selectCondition dropdown for the condition within the group
-        newData[index].conditions[conditionIndex].selectConditionDisabled = false;
-      }
-
-      if (field === 'selectCondition' && conditionIndex === undefined) {
-        // Enable the selectCondition dropdown for the top-level condition
-        newData[index].selectConditionDisabled = false;
-      }
-
       // If changing selectCondition, reset the subsequent fields
-      if (field === 'selectCondition') {
+      if (field === 'selectCondition' && value === 'default') {
         newData[index].requestAttribute = 'select';
         newData[index].requestOp = 'default';
         newData[index].requestValue = '';
       }
 
+      if (conditionIndex !== undefined) {
+        // If it's a condition within a group, update selectConditionDisabled for that condition
+        newData[index].conditions[conditionIndex].selectConditionDisabled = value !== 'default';
+      } else {
+        // If it's a top-level condition, update selectConditionDisabled for that condition
+        newData[index].selectConditionDisabled = value !== 'default';
+      }
+
       return newData;
     });
   };
+
+  const handleSelectOperationChange = (index, value) => {
+    setAllData((prevData) => {
+      const newData = [...prevData];
+      newData[index].selectOperation = value;
+      return newData;
+    });
+  };
+
+  const handleAddConditionWithinGroup = (groupIndex) => {
+    setAllData((prevData) => {
+      const newData = [...prevData];
+      const newCondition = { ...conditionData, selectCondition: 'default' };
+
+      // Enable the selectCondition dropdown for the newly added condition within the group
+      newCondition.selectConditionDisabled = false;
+
+      newData[groupIndex].conditions.push(newCondition);
+      return newData;
+    });
+  };
+
+  const handleRemoveConditionWithinGroup = (groupIndex, conditionIndex) => {
+    setAllData((prevData) => {
+      const newData = [...prevData];
+      newData[groupIndex].conditions.splice(conditionIndex, 1);
+      return newData;
+    });
+  };
+
+  const renderColumnValues = (condition, index, conditionIndex) => {
+    switch (condition.selectCondition) {
+      case 'Request':
+        return (
+          <>
+            <Col md={3}><label>Attribute</label></Col>
+            <Col md={3}>
+              <select
+                value={condition.requestAttribute}
+                onChange={(e) => handleConditionChange('requestAttribute', e.target.value, index)}
+              >
+                <option value="select">Select</option>
+                <option value="rqAtt1">rqAtt1</option>
+                <option value="reqAtt2">reqAtt2</option>
+              </select>
+            </Col>
+            <Col md={3}><label>Request Op</label></Col>
+            <Col md={3}>
+              <select
+                value={condition.requestOp}
+                onChange={(e) => handleConditionChange('requestOp', e.target.value, index)}
+              >
+                <option value="default">Select</option>
+                <option value="equal">Equal</option>
+                <option value="noEqual">Not Equal</option>
+              </select>
+            </Col>
+            <Col md={3}><label>Value</label></Col>
+            <Col md={3}>
+              <input
+                type="text"
+                value={condition.requestValue}
+                onChange={(e) => handleConditionChange('requestValue', e.target.value, index)}
+                placeholder="Req Value"
+              />
+            </Col>
+          </>
+        );
+      case 'group':
+        return (
+          <>
+            <Col md={3}><label>Attribute</label></Col>
+            <Col md={3}>
+              <select
+                value={condition.requestAttribute}
+                onChange={(e) => handleConditionChange('requestAttribute', e.target.value, index)}
+              >
+                <option value="select">Select</option>
+                <option value="grpAtt1">grpAtt1</option>
+                <option value="grpAtt2">grpAtt2</option>
+              </select>
+            </Col>
+            <Col md={3}><label>Request Op</label></Col>
+            <Col md={3}>
+              <select
+                value={condition.requestOp}
+                onChange={(e) => handleConditionChange('requestOp', e.target.value, index)}
+              >
+                <option value="default">Select</option>
+                <option value="equal">Equal</option>
+                <option value="noEqual">Not Equal</option>
+              </select>
+            </Col>
+            <Col md={3}><label>Value</label></Col>
+            <Col md={3}>
+              <input
+                type="text"
+                value={condition.requestValue}
+                onChange={(e) => handleConditionChange('requestValue', e.target.value, index)}
+                placeholder="Req Value"
+              />
+            </Col>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const handleSubmit = () => {
+    console.log('All Data:', allData);
+  };
+
+  return (
+    <div className="col-md-12">
+      <Container className="col-md-12" style={{ border: '1px solid #000', padding: '10px' }}>
+        {/* Step 1 */}
+        <Row>
+          <Col md={3}><label>Add Condition</label></Col>
+          <Col md={3}>
+            <Button size="sm" onClick={handleAddCondition}>Add Condition</Button>
+          </Col>
+          <Col md={3}><label>Add Group of Condition</label></Col>
+          <Col md={3}>
+            <Button size="sm" style={{ background: 'lightblue' }} onClick={handleAddGroupCondition}>
+              Add Group
+            </Button>
+          </Col>
+        </Row>
+
+        {/* Step 2 */}
+        {allData.map((rowData, index) => (
+          <div key={index} style={{ border: '1px dashed #000', padding: '10px', margin: '10px 0' }}>
+            {/* Condition Row */}
+            {rowData.addGroupCondition ? (
+              // Step 2.2
+              <Row>
+                <Col md={3}><label>Add Condition</label></Col>
+                <Col md={3}>
+                  <Button size="sm" onClick={() => handleAddConditionWithinGroup(index)}>
+                    Add Condition
+                  </Button>
+                </Col>
+                <Col md={3}><label>Remove Group</label></Col>
+                <Col md={3}>
+                  <Button size="sm" onClick={() => handleRemoveRow(index)}>Remove Group</Button>
+                </Col>
+              </Row>
+            ) : (
+              // Step 2.1
+              <>
+                <Row>
+                  <Col md={3}><label>Source</label></Col>
+                  <Col md={3}>
+                    <select
+                      value={rowData.selectCondition}
+                      onChange={(e) => handleConditionChange('selectCondition', e.target.value, index)}
+                      disabled={rowData.conditions && rowData.conditions.length > 0}
+                    >
+                      <option value="default">Select</option>
+                      <option value="Request">Request</option>
+                      <option value="group">Group</option>
+                    </select>
+                  </Col>
+                  {renderColumnValues(rowData, index)}
+                  <Col md={3}>
+                    <Button
+                      size="sm"
+                      style={{
+                        background: 'light-gray',
+                        color: 'red',
+                        margin: '0 0 0 10px',
+                      }}
+                      onClick={() => handleRemoveRow(index)}
+                    >
+                      Remove Row
+                    </Button>
+                  </Col>
+                </Row>
+              </>
+            )}
+
+            {/* Select Operation */}
+            {index < allData.length - 1 && !rowData.addGroupCondition && (
+              <Row>
+                <Col md={3}><label>Select Operation</label></Col>
+                <Col md={3}>
+                  <select
+                    value={rowData.selectOperation}
+                    onChange={(e) => handleSelectOperationChange(index, e.target.value)}
+                  >
+                    <option value="default">Select</option>
+                    <option value="AND">AND</option>
+                    <option value="OR">OR</option>
+                  </select>
+                </Col>
+              </Row>
+            )}
+
+            {/* Sub-step 2.1.2 */}
+            {rowData.conditions && rowData.conditions.length > 0 && (
+              <div>
+                {rowData.conditions.map((condition, conditionIndex) => (
+                  <div key={conditionIndex} style={{ border: '1px dashed #000', padding: '10px', margin: '10px 0' }}>
+                    <Row>
+                      <Col md={3}><label>Source</label></Col>
+                      <Col md={3}>
+                        <select
+                          value={condition.selectCondition}
+                          onChange={(e) => handleConditionChange('selectCondition', e.target.value, index, conditionIndex)}
+                          disabled={condition.selectConditionDisabled}
+                        >
+                          <option value="default">Select</option>
+                          <option value="Request">Request</option>
+                          <option value="group">Group</option>
+                        </select>
+                      </Col>
+                      {renderColumnValues(condition, index, conditionIndex)}
+                      <Col md={3}>
+                        <Button
+                          size="sm"
+                          style={{
+                            background: 'light-gray',
+                            color: 'red',
+                            margin: '0 0 0 10px',
+                          }}
+                          onClick={() => handleRemoveConditionWithinGroup(index, conditionIndex)}
+                        >
+                          Remove Row
+                        </Button>
+                      </Col>
+                    </Row>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* Step 4 */}
+        <Row>
+          <Col md={12}>
+            <Button size="sm" onClick={handleSubmit}>Submit</Button>
+          </Col>
+        </Row>
+      </Container>
+    </div>
+  );
+};
+
+export default MyComponent;
