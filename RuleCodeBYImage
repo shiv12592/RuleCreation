@@ -19,7 +19,7 @@ const MyComponent = () => {
         setConditions([...conditions, { type: 'group', data: {}, conditions: [] }]);
     };
 
-    const handleChange = (e, index, field, type) => {
+    const handleChange = (e, index, field, type, i) => {
         // Update the state with the input value
         const newConditions = [...conditions];
         if (type === 'condition') {
@@ -27,7 +27,7 @@ const MyComponent = () => {
         } else if (type === 'group') {
             newConditions[index].data[field] = e.target.value;
         } else if (type === 'nested') {
-            newConditions[index].conditions[field].data = e.target.value;
+            newConditions[index].conditions[i].data[field] = e.target.value;
         }
         setConditions(newConditions);
     };
@@ -186,7 +186,7 @@ const GroupConditionRow = ({ index, groupCondition, selectCondition, groupAttrib
                     requestAttribute={requestAttribute}
                     requestOp={requestOp}
                     selectOperation={selectOperation}
-                    handleChange={(e, index, field) => handleChange(e, index, field, 'nested')}
+                    handleChange={(e, index, field) => handleChange(e, index, field, 'nested', i)}
                     handleRemoveRow={() => handleRemoveRow(index, 'nested')}
                 />
             ))}
