@@ -1,276 +1,275 @@
-I'll try to write the React.js code for the rule creation component based on the image and the prompt. Here is the code:
-
-```jsx
 import React, { useState } from 'react';
-import { Container, Row, Col, Button, Select } from 'reactstrap'; // Assuming you are using reactstrap
+import { Container, Row, Col, Button, Select } from 'react-bootstrap';
 
 const MyComponent = () => {
   const [allData, setAllData] = useState([]);
 
-  // Define other state variables and handlers as per your requirements
-  const [selectCondition, setSelectCondition] = useState('select');
-  const [requestAttribute, setRequestAttribute] = useState('select');
-  const [groupAttribute, setGroupAttribute] = useState('select');
-  const [requestOp, setRequestOp] = useState('select');
-  const [groupOp, setGroupOp] = useState('select');
-  const [requestValue, setRequestValue] = useState('');
-  const [groupValue, setGroupValue] = useState('');
-  const [selectOperation, setSelectOperation] = useState('select');
-
-  const handleSelectConditionChange = (e) => {
-    setSelectCondition(e.target.value);
+  // Define data
+  const conditionData = {
+    selectCondition: ['select', 'Request', 'Group'],
+    requestAttribute: ['select', 'rqAtt1', 'reqAtt2'],
+    groupAttribute: ['select', 'grpAtt1', 'grpAtt2'],
+    requestOp: ['select', 'equal', 'noEqual'],
+    groupOp: ['select', 'and', 'or', not],
+    selectOperation : ['select','AND','OR']
   };
 
-  const handleRequestAttributeChange = (e) => {
-    setRequestAttribute(e.target.value);
+  // Map all data and render rows
+  const renderRows = () => {
+    // Initialize an empty array to store the rows
+    let rows = [];
+
+    // Loop through the allData state and create a row for each condition or group
+    for (let i = 0; i < allData.length; i++) {
+      let data = allData[i];
+
+      // Check if the data is a condition or a group
+      if (data.type === 'condition') {
+        // Create a row with four fields for source, attribute, operation, and value
+        let row = (
+          <Row key={i} className="margin-1-tb line-border">
+            <Col md={3}>
+              <label className="margin-1-lr">Source</label>
+              <Select
+                value={data.selectCondition}
+                onChange={(e) => handleSelectConditionChange(e, i)}
+                options={conditionData.selectCondition}
+              />
+            </Col>
+            <Col md={3}>
+              <label className="margin-1-lr">Attribute</label>
+              <Select
+                value={data.attribute}
+                onChange={(e) => handleAttributeChange(e, i)}
+                options={
+                  data.selectCondition === 'Request'
+                    ? conditionData.requestAttribute
+                    : conditionData.groupAttribute
+                }
+              />
+            </Col>
+            <Col md={3}>
+              <label className="margin-1-lr">Operation</label>
+              <Select
+                value={data.operation}
+                onChange={(e) => handleOperationChange(e, i)}
+                options={
+                  data.selectCondition === 'Request'
+                    ? conditionData.requestOp
+                    : conditionData.groupOp
+                }
+              />
+            </Col>
+            <Col md={3}>
+              <label className="margin-1-lr">Value</label>
+              <input
+                type="text"
+                value={data.value}
+                onChange={(e) => handleValueChange(e, i)}
+                placeholder={
+                  data.selectCondition === 'Request'
+                    ? 'req value'
+                    : 'group value'
+                }
+              />
+            </Col>
+            <Button
+              className="style danger, font-color-red, background - light-gray, margin 1 -tb"
+              onClick={() => handleRemoveRow(i)}
+            >
+              Remove Row
+            </Button>
+          </Row>
+        );
+
+        // Push the row to the rows array
+        rows.push(row);
+      } else if (data.type === 'group') {
+        // Create a row with two buttons for adding condition or group
+        let row = (
+          <Row key={i} className="margin-1-tb line-border">
+            <label>Add Condition</label>
+            <Button onClick={() => handleAddCondition(i)}>Add Condition</Button>
+            <label>Add Group of Condition</label>
+            <Button
+              className="background - light-gray"
+              onClick={() => handleAddGroup(i)}
+            >
+              Add Group Condition
+            </Button>
+            <Button onClick={() => handleRemoveGroup(i)}>Remove Group</Button>
+          </Row>
+        );
+
+        // Push the row to the rows array
+        rows.push(row);
+
+        // Recursively render the nested rows for the group
+        let nestedRows = renderRows(data.rows);
+
+        // Push the nested rows to the rows array
+        rows.push(...nestedRows);
+      }
+
+      // Check if there is a next row and add a select operation row
+      if (i < allData.length - 1) {
+        let row = (
+          <Row key={`${i}-op`} className="dash-border">
+            <label>Select Operation</label>
+            <Select
+              value={data.selectOperation}
+              onChange={(e) => handleSelectOperationChange(e, i)}
+              options={conditionData.selectOperation}
+            />
+          </Row>
+        );
+
+        // Push the row to the rows array
+        rows.push(row);
+      }
+    }
+
+    // Return the rows array
+    return rows;
   };
 
-  const handleGroupAttributeChange = (e) => {
-    setGroupAttribute(e.target.value);
+  // Handle the change of selectCondition field
+  const handleSelectConditionChange = (e, i) => {
+    // Get the new value
+    let value = e.target.value;
+
+    // Update the allData state by copying the previous state and modifying the selectCondition field of the i-th element
+    setAllData((prev) =>
+      prev.map((data, index) =>
+        index === i ? { ...data, selectCondition: value } : data
+      )
+    );
   };
 
-  const handleRequestOpChange = (e) => {
-    setRequestOp(e.target.value);
+  // Handle the change of attribute field
+  const handleAttributeChange = (e, i) => {
+    // Get the new value
+    let value = e.target.value;
+
+    // Update the allData state by copying the previous state and modifying the attribute field of the i-th element
+    setAllData((prev) =>
+      prev.map((data, index) => (index === i ? { ...data, attribute: value } : data))
+    );
   };
 
-  const handleGroupOpChange = (e) => {
-    setGroupOp(e.target.value);
+  // Handle the change of operation field
+  const handleOperationChange = (e, i) => {
+    // Get the new value
+    let value = e.target.value;
+
+    // Update the allData state by copying the previous state and modifying the operation field of the i-th element
+    setAllData((prev) =>
+      prev.map((data, index) => (index === i ? { ...data, operation: value } : data))
+    );
   };
 
-  const handleRequestValueChange = (e) => {
-    setRequestValue(e.target.value);
+  // Handle the change of value field
+  const handleValueChange = (e, i) => {
+    // Get the new value
+    let value = e.target.value;
+
+    // Update the allData state by copying the previous state and modifying the value field of the i-th element
+    setAllData((prev) =>
+      prev.map((data, index) => (index === i ? { ...data, value: value } : data))
+    );
   };
 
-  const handleGroupValueChange = (e) => {
-    setGroupValue(e.target.value);
+  // Handle the change of selectOperation field
+  const handleSelectOperationChange = (e, i) => {
+    // Get the new value
+    let value = e.target.value;
+
+    // Update the allData state by copying the previous state and modifying the selectOperation field of the i-th element
+    setAllData((prev) =>
+      prev.map((data, index) =>
+        index === i ? { ...data, selectOperation: value } : data
+      )
+    );
   };
 
-  const handleSelectOperationChange = (e) => {
-    setSelectOperation(e.target.value);
-  };
-
-  const handleAddCondition = () => {
-    // Add a new condition row to the data
-    const newCondition = {
-      selectCondition,
-      requestAttribute,
-      groupAttribute,
-      requestOp,
-      groupOp,
-      requestValue,
-      groupValue,
+  // Handle the click of add condition button
+  const handleAddCondition = (i) => {
+    // Create a new condition object with default values
+    let newCondition = {
+      type: 'condition',
+      selectCondition: 'select',
+      attribute: 'select',
+      operation: 'select',
+      value: '',
+      selectOperation: 'select'
     };
-    setAllData([...allData, newCondition]);
+
+    // Update the allData state by copying the previous state and inserting the new condition object after the i-th element
+    setAllData((prev) => [
+      ...prev.slice(0, i + 1),
+      newCondition,
+      ...prev.slice(i + 1)
+    ]);
   };
 
-  const handleAddGroupCondition = () => {
-    // Add a new group of condition row to the data
-    const newGroupCondition = {
-      selectOperation,
-      conditions: [],
+  // Handle the click of add group button
+  const handleAddGroup = (i) => {
+    // Create a new group object with an empty rows array
+    let newGroup = {
+      type: 'group',
+      rows: []
     };
-    setAllData([...allData, newGroupCondition]);
+
+    // Update the allData state by copying the previous state and inserting the new group object after the i-th element
+    setAllData((prev) => [...prev.slice(0, i + 1), newGroup, ...prev.slice(i + 1)]);
   };
 
-  const handleRemoveRow = (index) => {
-    // Remove a row from the data by index
-    const newData = [...allData];
-    newData.splice(index, 1);
-    setAllData(newData);
+  // Handle the click of remove row button
+  const handleRemoveRow = (i) => {
+    // Update the allData state by copying the previous state and removing the i-th element
+    setAllData((prev) => prev.filter((data, index) => index !== i));
   };
 
-  const handleRemoveGroup = (index) => {
-    // Remove a group of condition row from the data by index
-    const newData = [...allData];
-    newData.splice(index, 1);
-    setAllData(newData);
-  };
+  // Handle the click of remove group button
+  const handleRemoveGroup = (i) => {
+    // Update the allData state by copying the previous state and removing the i-th element and its nested rows
+    setAllData((prev) => {
+      // Find the next group or the end of the array
+      let nextGroupIndex = prev.findIndex(
+        (data, index) => index > i && data.type === 'group'
+      );
+      if (nextGroupIndex === -1) {
+        nextGroupIndex = prev.length;
+      }
 
-  const handleSubmit = () => {
-    console.log(JSON.stringify(allData));
+      // Return the filtered array
+      return [
+        ...prev.slice(0, i),
+        ...prev.slice(nextGroupIndex)
+      ];
+    });
   };
 
   return (
     <div className="col-md-12">
       <Container className="col-md-12">
-        {/* Render the buttons for adding condition and group of condition */}
-        <Row style={{ border: 'solid' }}>
+        <Row className="line-border">
           <label>Add Condition</label>
-          <Button onClick={handleAddCondition}>Add Condition</Button>
-          <label>Add Group Condition</label>
+          <Button onClick={() => handleAddCondition(-1)}>Add Condition</Button>
+          <label>Add Group of Condition</label>
           <Button
-            onClick={handleAddGroupCondition}
-            style={{ backgroundColor: 'lightgray' }}
+            className="background - light-gray"
+            onClick={() => handleAddGroup(-1)}
           >
-            Add Group Condition
-          </Button>
-        </Row>
-
-        {/* Map through your data and render rows accordingly */}
-        {allData.map((row, index) => {
-          if (row.selectCondition) {
-            // Render a condition row
-            return (
-              <Row
-                key={index}
-                style={{ margin: '1rem', border: 'solid' }}
-              >
-                <Col md={3}>
-                  <label style={{ margin: '1rem' }}>Source</label>
-                  <Select
-                    value={row.selectCondition}
-                    onChange={handleSelectConditionChange}
-                  >
-                    <option value="select">Select</option>
-                    <option value="request">Request</option>
-                    <option value="group">Group</option>
-                  </Select>
-                </Col>
-                <Col md={3}>
-                  <label style={{ margin: '1rem' }}>Attribute</label>
-                  <Select
-                    value={row.requestAttribute}
-                    onChange={handleRequestAttributeChange}
-                  >
-                    <option value="select">Select</option>
-                    <option value="rqAtt1">rqAtt1</option>
-                    <option value="rqAtt2">rqAtt2</option>
-                  </Select>
-                </Col>
-                <Col md={3}>
-                  <label style={{ margin: '1rem' }}>Request Op</label>
-                  <Select
-                    value={row.requestOp}
-                    onChange={handleRequestOpChange}
-                  >
-                    <option value="select">Select</option>
-                    <option value="equal">Equal</option>
-                    <option value="noEqual">No Equal</option>
-                  </Select>
-                </Col>
-                <Col md={3}>
-                  <label style={{ margin: '1rem' }}>Request Value</label>
-                  <input
-                    type="text"
-                    value={row.requestValue}
-                    onChange={handleRequestValueChange}
-                    placeholder="req Value"
-                  />
-                </Col>
-                <Button
-                  onClick={() => handleRemoveRow(index)}
-                  style={{
-                    color: 'red',
-                    backgroundColor: 'lightgray',
-                    margin: '1rem',
-                  }}
-                >
-                  Remove Row
-                </Button>
-              </Row>
-            );
-          } else if (row.selectOperation) {
-            // Render a group of condition row
-            return (
-              <Row
-                key={index}
-                style={{ margin: '1rem', border: 'dashed' }}
-              >
-                <label>Select Operation</label>
-                <Select
-                  value={row.selectOperation}
-                  onChange={handleSelectOperationChange}
-                >
-                  <option value="select">Select</option>
-                  <option value="and">AND</option>
-                  <option value="or">OR</option>
-                </Select>
-                {/* Render the nested conditions within the group */}
-                {row.conditions.map((condition, i) => {
-                  // Render a condition row
-                  return (
-                    <Row
-                      key={i}
-                      style={{ margin: '1rem', border: 'solid' }}
-                    >
-                      <Col md={3}>
-                        <label style={{ margin: '1rem' }}>Source</label>
-                        <Select
-                          value={condition.selectCondition}
-                          onChange={handleSelectConditionChange}
-                        >
-                          <option value="select">Select</option>
-                          <option value="request">Request</option>
-                          <option value="group">Group</option>
-                        </Select>
-                      </Col>
-                      <Col md={3}>
-                        <label style={{ margin: '1rem' }}>Attribute</label>
-                        <Select
-                          value={condition.requestAttribute}
-                          onChange={handleRequestAttributeChange}
-                        >
-                          <option value="select">Select</option>
-                          <option value="rqAtt1">rqAtt1</option>
-                          <option value="rqAtt2">rqAtt2</option>
-                        </Select>
-                      </Col>
-                      <Col md={3}>
-                        <label style={{ margin: '1rem' }}>
-                          Request Op
-                        </label>
-                        <Select
-                          value={condition.requestOp}
-                          onChange={handleRequestOpChange}
-                        >
-                          <option value="select">Select</option>
-                          <option value="equal">Equal</option>
-                          <option value="noEqual">No Equal</option>
-                        </Select>
-                      </Col>
-                      <Col md={3}>
-                        <label style={{ margin: '1rem' }}>
-                          Request Value
-                        </label>
-                        <input
-                          type="text"
-                          value={condition.requestValue}
-                          onChange={handleRequestValueChange}
-                          placeholder="req Value"
-                        />
-                      </Col>
-                      <Button
-                        onClick={() => handleRemoveRow(i)}
-                        style={{
-                          color: 'red',
-                          backgroundColor: 'lightgray',
-                          margin: '1rem',
-                        }}
-                      >
-                        Remove Row
-                      </Button>
-                    </Row>
-                  );
-                })}
-                <Button
-                  onClick={() => handleRemoveGroup(index)}
-                  style={{
-                    color: 'red',
-                    backgroundColor: 'lightgray',
-                    margin: '1rem',
-                  }}
-                >
-                  Remove Group
-                </Button>
-              </Row>
-            );
-          }
-        })}
-
-        <Button onClick={handleSubmit}>Submit</Button>
-      </Container>
-    </div>
-  );
+            Add 
+Group Condition
+</Button>
+</Row>
+{renderRows()}
+<Button onClick={() => console.log(JSON.stringify(allData))}>Submit</Button>
+</Container>
+</div>
+);
 };
 
 export default MyComponent;
