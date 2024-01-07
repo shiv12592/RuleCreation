@@ -1,0 +1,255 @@
+import React, { useState } from 'react';
+import { Container, Row, Col, Button, Select, Label, Text } from 'your-ui-library'; // Replace with your actual UI library
+
+const RuleCreation = () => {
+  // Define the initial state for the conditions and groups
+  const [conditions, setConditions] = useState([]);
+  const [groups, setGroups] = useState([]);
+
+  // Define the options for the select boxes
+  const selectConditionOptions = ['select', 'Request', 'Group'];
+  const requestAttributeOptions = ['select', 'rqAtt1', 'rqAtt2'];
+  const groupAttributeOptions = ['select', 'grpAtt1', 'grpAtt2'];
+  const requestOpOptions = ['select', 'equal', 'noEqual'];
+  const groupOpOptions = ['select', 'and', 'or', 'not'];
+  const selectOperationOptions = ['select', 'AND', 'OR'];
+
+  // Define the handler functions for adding and removing conditions and groups
+  const addCondition = () => {
+    // Create a new condition object with default values
+    const newCondition = {
+      type: 'condition',
+      selectCondition: 'select',
+      requestAttribute: 'select',
+      requestOp: 'select',
+      requestValue: '',
+    };
+    // Add the new condition to the state array
+    setConditions([...conditions, newCondition]);
+  };
+
+  const addGroupCondition = () => {
+    // Create a new group object with an empty array of conditions
+    const newGroup = {
+      type: 'group',
+      conditions: [],
+    };
+    // Add the new group to the state array
+    setGroups([...groups, newGroup]);
+  };
+
+  const removeCondition = (index) => {
+    // Remove the condition at the given index from the state array
+    setConditions(conditions.filter((condition, i) => i !== index));
+  };
+
+  const removeGroupCondition = (index) => {
+    // Remove the group at the given index from the state array
+    setGroups(groups.filter((group, i) => i !== index));
+  };
+
+  // Define the handler functions for changing the values of the condition fields
+  const handleChangeSelectCondition = (index, value) => {
+    // Update the selectCondition value of the condition at the given index
+    setConditions(conditions.map((condition, i) => {
+      if (i === index) {
+        return { ...condition, selectCondition: value };
+      } else {
+        return condition;
+      }
+    }));
+  };
+
+  const handleChangeRequestAttribute = (index, value) => {
+    // Update the requestAttribute value of the condition at the given index
+    setConditions(conditions.map((condition, i) => {
+      if (i === index) {
+        return { ...condition, requestAttribute: value };
+      } else {
+        return condition;
+      }
+    }));
+  };
+
+  const handleChangeRequestOp = (index, value) => {
+    // Update the requestOp value of the condition at the given index
+    setConditions(conditions.map((condition, i) => {
+      if (i === index) {
+        return { ...condition, requestOp: value };
+      } else {
+        return condition;
+      }
+    }));
+  };
+
+  const handleChangeRequestValue = (index, value) => {
+    // Update the requestValue value of the condition at the given index
+    setConditions(conditions.map((condition, i) => {
+      if (i === index) {
+        return { ...condition, requestValue: value };
+      } else {
+        return condition;
+      }
+    }));
+  };
+
+  // Define similar handler functions for the group condition fields
+  // ...
+
+  // Define the handler function for changing the selectOperation value between conditions or groups
+  const handleChangeSelectOperation = (index, value) => {
+    // Check if the index is for a condition or a group
+    if (index < conditions.length) {
+      // Update the selectOperation value of the condition at the given index
+      setConditions(conditions.map((condition, i) => {
+        if (i === index) {
+          return { ...condition, selectOperation: value };
+        } else {
+          return condition;
+        }
+      }));
+    } else {
+      // Adjust the index to match the group array
+      index = index - conditions.length;
+      // Update the selectOperation value of the group at the given index
+      setGroups(groups.map((group, i) => {
+        if (i === index) {
+          return { ...group, selectOperation: value };
+        } else {
+          return group;
+        }
+      }));
+    }
+  };
+
+  // Define the function for submitting the data and logging it in JSON format
+  const handleSubmit = () => {
+    // Concatenate the conditions and groups arrays into one
+    const allData = [...conditions, ...groups];
+    // Log the data in JSON format
+    console.log(JSON.stringify(allData));
+  };
+
+  return (
+    <Container>
+      <Row>
+        <Col><Button onClick={addCondition}>Add Condition</Button></Col>
+        <Col><Button onClick={addGroupCondition}>Add Group Condition</Button></Col>
+      </Row>
+
+      {conditions.map((condition, index) => (
+        <Row key={index} style={{ border: 'solid' }}>
+          <Col md={3}>
+            <Label>Source</Label>
+            <Select
+              value={condition.selectCondition}
+              options={selectConditionOptions}
+              onChange={(value) => handleChangeSelectCondition(index, value)}
+            />
+          </Col>
+          {condition.selectCondition === 'Request' && (
+            <>
+              <Col md={3}>
+                <Label>Request Attribute</Label>
+                <Select
+                  value={condition.requestAttribute}
+                  options={requestAttributeOptions}
+                  onChange={(value) => handleChangeRequestAttribute(index, value)}
+                />
+              </Col>
+              <Col md={3}>
+                <Label>Request Op</Label>
+                <Select
+                  value={condition.requestOp}
+                  options={requestOpOptions}
+                  onChange={(value) => handleChangeRequestOp(index, value)}
+                />
+              </Col>
+              <Col md={3}>
+                <Label>Value</Label>
+                <Text
+                  value={condition.requestValue}
+                  onChange={(value) => handleChangeRequestValue(index, value)}
+                />
+              </Col>
+            </>
+          )}
+          {condition.selectCondition === 'Group' && (
+            <>
+              {/* Similar logic for group condition fields */}
+            </>
+          )}
+          <Col md={12}>
+            <Button style={{ color: 'red', backgroundColor: 'lightgray' }} onClick={() => removeCondition(index)}>Remove Condition</Button>
+          </Col>
+        </Row>
+      ))}
+
+      {groups.map((group, index) => (
+        <Row key={index} style={{ border: 'solid' }}>
+          <Col md={12}>
+            <Button onClick={() => addConditionToGroup(index)}>Add Condition</Button>
+          </Col>
+          {group.conditions.map((condition, i) => (
+            <Row key={i} style={{ border: 'dashed' }}>
+              {/* Similar logic for condition fields within a group */}
+            </Row>
+          ))}
+          <Col md={12}>
+            <Button style={{ color: 'red', backgroundColor: 'lightgray' }} onClick={() => removeGroupCondition(index)}>Remove Group</Button>
+          </Col>
+        </Row>
+      ))}
+
+      {/* Add selectOperation rows between conditions and groups */}
+      {conditions.length > 1 && (
+        conditions.slice(0, -1).map((condition, index) => (
+          <Row key={index} style={{ border: 'dashed' }}>
+            <Col md={12}>
+              <Label>Select Operation</Label>
+              <Select
+                value={condition.selectOperation}
+                options={selectOperationOptions}
+                onChange={(value) => handleChangeSelectOperation(index, value)}
+              />
+            </Col>
+          </Row>
+        ))
+      )}
+      {groups.length > 1 && (
+        groups.slice(0, -1).map((group, index) => (
+          <Row key={index} style={{ border: 'dashed' }}>
+            <Col md={12}>
+              <Label>Select Operation</Label>
+              <Select
+                value={group.selectOperation}
+                options={selectOperationOptions}
+                onChange={(value) => handleChangeSelectOperation(index + conditions.length, value)}
+              />
+            </Col>
+          </Row>
+        ))
+      )}
+      {conditions.length > 0 && groups.length > 0 && (
+        <Row style={{ border: 'dashed' }}>
+          <Col md={12}>
+            <Label>Select Operation</Label>
+            <Select
+              value={conditions[conditions.length - 1].selectOperation}
+              options={selectOperationOptions}
+              onChange={(value) => handleChangeSelectOperation(conditions.length - 1, value)}
+            />
+          </Col>
+        </Row>
+      )}
+
+      <Row>
+        <Col md={12}>
+          <Button onClick={handleSubmit}>Submit</Button>
+        </Col>
+      </Row>
+    </Container>
+  );
+};
+
+export default RuleCreation;
