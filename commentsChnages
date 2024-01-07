@@ -1,107 +1,37 @@
-// Define the handler for removing a condition
-const removeCondition = (index) => {
+// Define the handler for changing the value of a field in a condition
+const handleChange = (index, field, value) => {
     // Make a copy of the state array
     let newConditions = [...conditions];
-    // Remove the condition object at the given index
-    newConditions.splice(index, 1);
+    // Update the value of the field in the condition object at the given index
+    newConditions[index][field] = value;
+    // If the field is selectCondition, reset the other fields to their initial values
+    if (field === 'selectCondition') {
+        newConditions[index].requestAttribute = 'select';
+        newConditions[index].requestOp = 'select';
+        newConditions[index].requestValue = '';
+        newConditions[index].groupAttribute = 'select';
+        newConditions[index].groupOp = 'select';
+        newConditions[index].groupValue = '';
+    }
     // Set the new state array
     setConditions(newConditions);
 };
 
-// Define the handler for removing a group condition
-const removeGroupCondition = (index) => {
+// Define the handler for changing the value of a field in a nested condition
+const handleNestedChange = (index, nestedIndex, field, value) => {
     // Make a copy of the state array
     let newConditions = [...conditions];
-    // Remove the group condition object at the given index
-    newConditions.splice(index, 1);
+    // Update the value of the field in the nested condition object at the given indexes
+    newConditions[index].conditions[nestedIndex][field] = value;
+    // If the field is selectCondition, reset the other fields to their initial values
+    if (field === 'selectCondition') {
+        newConditions[index].conditions[nestedIndex].requestAttribute = 'select';
+        newConditions[index].conditions[nestedIndex].requestOp = 'select';
+        newConditions[index].conditions[nestedIndex].requestValue = '';
+        newConditions[index].conditions[nestedIndex].groupAttribute = 'select';
+        newConditions[index].conditions[nestedIndex].groupOp = 'select';
+        newConditions[index].conditions[nestedIndex].groupValue = '';
+    }
     // Set the new state array
     setConditions(newConditions);
 };
-
-// Define the handler for removing a nested condition
-const removeNestedCondition = (index, nestedIndex) => {
-    // Make a copy of the state array
-    let newConditions = [...conditions];
-    // Remove the nested condition object at the given indexes
-    newConditions[index].conditions.splice(nestedIndex, 1);
-    // Set the new state array
-    setConditions(newConditions);
-};
-
-// Add buttons for removing a row and a group in the rendering logic
-return (
-    <div>
-        <button onClick={addCondition}>Add Condition</button>
-        <button onClick={addGroupCondition}>Add Group Condition</button>
-
-        {conditions.map((condition, index) => (
-            condition.type === "condition" ? 
-            <div key={index}>
-                {index > 0 && <div>Select Operation : <select value={condition.selectOperation} onChange={(e) => handleChange(index, 'selectOperation', e.target.value)}>
-                    {selectOperationOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                </select></div>}
-                Source : <select value={condition.selectCondition} onChange={(e) => handleChange(index, 'selectCondition', e.target.value)}>
-                    {selectConditionOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                </select>
-                {condition.selectCondition === 'Request' && <>
-                    Request Attribute : <select value={condition.requestAttribute} onChange={(e) => handleChange(index, 'requestAttribute', e.target.value)}>
-                        {requestAttributeOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                    </select>
-                    Request Operation : <select value={condition.requestOp} onChange={(e) => handleChange(index, 'requestOp', e.target.value)}>
-                        {requestOpOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                    </select>
-                    Request Value : <input type="text" value={condition.requestValue} onChange={(e) => handleChange(index, 'requestValue', e.target.value)} />
-                </>}
-                {condition.selectCondition === 'group' && <>
-                    Group Attribute : <select value={condition.groupAttribute} onChange={(e) => handleChange(index, 'groupAttribute', e.target.value)}>
-                        {groupAttributeOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                    </select>
-                    Group Operation : <select value={condition.groupOp} onChange={(e) => handleChange(index, 'groupOp', e.target.value)}>
-                        {groupOpOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                    </select>
-                    Group Value : <input type="text" value={condition.groupValue} onChange={(e) => handleChange(index, 'groupValue', e.target.value)} />
-                </>}
-                <button onClick={() => removeCondition(index)}>Remove Row</button>
-            </div> :
-            // Handle group condition rendering here
-            <div key={index}>
-                {index > 0 && <div>Select Operation : <select value={condition.selectOperation} onChange={(e) => handleChange(index, 'selectOperation', e.target.value)}>
-                    {selectOperationOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                </select></div>}
-                <button onClick={() => addNestedCondition(index)}>Add Condition</button>
-                {condition.conditions.map((nestedCondition, nestedIndex) => (
-                    <div key={nestedIndex}>
-                        {nestedIndex > 0 && <div>Select Operation : <select value={nestedCondition.selectOperation} onChange={(e) => handleNestedChange(index, nestedIndex, 'selectOperation', e.target.value)}>
-                            {selectOperationOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                        </select></div>}
-                        Source : <select value={nestedCondition.selectCondition} onChange={(e) => handleNestedChange(index, nestedIndex, 'selectCondition', e.target.value)}>
-                            {selectConditionOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                        </select>
-                        {nestedCondition.selectCondition === 'Request' && <>
-                            Request Attribute : <select value={nestedCondition.requestAttribute} onChange={(e) => handleNestedChange(index, nestedIndex, 'requestAttribute', e.target.value)}>
-                                {requestAttributeOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                            </select>
-                            Request Operation : <select value={nestedCondition.requestOp} onChange={(e) => handleNestedChange(index, nestedIndex, 'requestOp', e.target.value)}>
-                                {requestOpOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                            </select>
-                            Request Value : <input type="text" value={nestedCondition.requestValue} onChange={(e) => handleNestedChange(index, nestedIndex, 'requestValue', e.target.value)} />
-                        </>}
-                        {nestedCondition.selectCondition === 'group' && <>
-                            Group Attribute : <select value={nestedCondition.groupAttribute} onChange={(e) => handleNestedChange(index, nestedIndex, 'groupAttribute', e.target.value)}>
-                                {groupAttributeOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                            </select>
-                            Group Operation : <select value={nestedCondition.groupOp} onChange={(e) => handleNestedChange(index, nestedIndex, 'groupOp', e.target.value)}>
-                                {groupOpOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                            </select>
-                            Group Value : <input type="text" value={nestedCondition.groupValue} onChange={(e) => handleNestedChange(index, nestedIndex, 'groupValue', e.target.value)} />
-                        </>}
-                        <button onClick={() => removeNestedCondition(index, nestedIndex)}>Remove Row</button>
-                    </div>
-                ))}
-                <button onClick={() => removeGroupCondition(index)}>Remove Group</button>
-            </div>
-        ))}
-
-        <button onClick={handleSubmit}>Submit</button>
-    </div>
-);
