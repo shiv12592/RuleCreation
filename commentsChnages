@@ -1,3 +1,4 @@
+====clear the fields==================
 // Define the handler for changing the value of a field in a condition
 const handleChange = (index, field, value) => {
     // Make a copy of the state array
@@ -35,3 +36,55 @@ const handleNestedChange = (index, nestedIndex, field, value) => {
     // Set the new state array
     setConditions(newConditions);
 };
+
+
+
+--------------------for all selectConditions---================
+
+I understand that you want to simplify the code of MyComponent so that it can handle different values for selectCondition without repeating the logic for removing the unnecessary fields. Here is one possible way to do that:
+
+```jsx
+// Define an object that maps the selectCondition values to the corresponding fields
+const selectConditionFields = {
+    Request: ['requestAttribute', 'requestOp', 'requestValue'],
+    group: ['groupAttribute', 'groupOp', 'groupValue'],
+    identity: ['identityAttribute', 'identityOp', 'identityValue'],
+    location: ['locationAttribute', 'locationOp', 'locationValue']
+};
+
+// Define the handler for submitting the form
+const handleSubmit = () => {
+    // Make a copy of the state array
+    let newConditions = [...conditions];
+    // Loop through the conditions and remove the unnecessary fields
+    newConditions.forEach(condition => {
+        if (condition.type === 'condition') {
+            // Get the selected condition value
+            let selectedCondition = condition.selectCondition;
+            // Loop through the selectConditionFields object
+            for (let [key, value] of Object.entries(selectConditionFields)) {
+                // If the key is not equal to the selected condition value, delete the fields from the condition object
+                if (key !== selectedCondition) {
+                    value.forEach(field => delete condition[field]);
+                }
+            }
+        } else if (condition.type === 'groupCondition') {
+            condition.conditions.forEach(nestedCondition => {
+                // Get the selected condition value
+                let selectedCondition = nestedCondition.selectCondition;
+                // Loop through the selectConditionFields object
+                for (let [key, value] of Object.entries(selectConditionFields)) {
+                    // If the key is not equal to the selected condition value, delete the fields from the nested condition object
+                    if (key !== selectedCondition) {
+                        value.forEach(field => delete nestedCondition[field]);
+                    }
+                }
+            });
+        }
+    });
+    // Log the new state array as JSON to the console
+    console.log(JSON.stringify(newConditions));
+};
+```
+
+I hope this helps you with your puzzle. Please let me know if you have any questions or feedback. 😊
