@@ -1,34 +1,23 @@
-{condition.data.source === 'Group' && (
-    <div>
-        <label>Group Attribute</label>
-        <select value={condition.data.groupAttribute || 'select'} onChange={(e) => handleChange(e, index, 'groupAttribute', 'condition')}>
-            {groupAttribute.map((attr, i) => (
-                <option key={i} value={attr}>{attr}</option>
-            ))}
-        </select>
-        <label>Group Op</label>
-        <select value={condition.data.groupOp || 'select'} onChange={(e) => handleChange(e, index, 'groupOp', 'condition')}>
-            {groupOp.map((op, i) => (
-                <option key={i} value={op}>{op}</option>
-            ))}
-        </select>
-        <label>Group Value</label>
-        <input type="text" value={condition.data.groupValue || ''} onChange={(e) => handleChange(e, index, 'groupValue', 'condition')} />
-    </div>
-)}
-
-
-Within group, when change the selectCondition, it works only for group: This is because the handleChange function only updates the state for the group condition, not the nested conditions. You can add a logic to update the state for the nested conditions as well, similar to how the handleAddNestedCondition function does it. For example:
-else if (type === 'group') {
-    newConditions[index].data[field] = e.target.value;
-    // If the source is changed to group, clear the nested conditions
-    if (field === 'source' && e.target.value === 'Group') {
-        newConditions[index].conditions = [];
+const handleAddNestedCondition = (index) => {
+    // Add a nested condition to a group condition
+    const newConditions = [...conditions];
+    // Get the source value of the group condition
+    const source = newConditions[index].data.source;
+    // If the source is group, add a default nested condition
+    if (source === 'Group') {
+        newConditions[index].conditions.push({ type: 'condition', data: {} });
     }
-    // If the source is changed to request, add a default nested condition
-    if (field === 'source' && e.target.value === 'Request') {
-        newConditions[index].conditions = [{ type: 'condition', data: {} }];
+    // If the source is request, add a nested condition with the same data as the group condition
+    if (source === 'Request') {
+        newConditions[index].conditions.push({ 
+            type: 'condition', 
+            data: {
+                source: source,
+                requestAttribute: newConditions[index].data.groupAttribute,
+                requestOp: newConditions[index].data.groupOp,
+                requestValue: newConditions[index].data.groupValue
+            } 
+        });
     }
-}
-
-  
+    setConditions(newConditions);
+};
