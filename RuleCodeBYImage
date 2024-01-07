@@ -1,275 +1,198 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Button, Select } from 'react-bootstrap';
 
 const MyComponent = () => {
-  const [allData, setAllData] = useState([]);
+    const [conditions, setConditions] = useState([]);
 
-  // Define data
-  const conditionData = {
-    selectCondition: ['select', 'Request', 'Group'],
-    requestAttribute: ['select', 'rqAtt1', 'reqAtt2'],
-    groupAttribute: ['select', 'grpAtt1', 'grpAtt2'],
-    requestOp: ['select', 'equal', 'noEqual'],
-    groupOp: ['select', 'and', 'or', not],
-    selectOperation : ['select','AND','OR']
-  };
+    // The data for the select fields
+    const selectCondition = ['select', 'Request', 'Group'];
+    const requestAttribute = ['select', 'rqAtt1', 'reqAtt2'];
+    const groupAttribute = ['select', 'grpAtt1', 'grpAtt2'];
+    const requestOp = ['select', 'equal', 'noEqual'];
+    const groupOp = ['select', 'and', 'or', 'not'];
+    const selectOperation = ['select', 'AND', 'OR'];
 
-  // Map all data and render rows
-  const renderRows = () => {
-    // Initialize an empty array to store the rows
-    let rows = [];
-
-    // Loop through the allData state and create a row for each condition or group
-    for (let i = 0; i < allData.length; i++) {
-      let data = allData[i];
-
-      // Check if the data is a condition or a group
-      if (data.type === 'condition') {
-        // Create a row with four fields for source, attribute, operation, and value
-        let row = (
-          <Row key={i} className="margin-1-tb line-border">
-            <Col md={3}>
-              <label className="margin-1-lr">Source</label>
-              <Select
-                value={data.selectCondition}
-                onChange={(e) => handleSelectConditionChange(e, i)}
-                options={conditionData.selectCondition}
-              />
-            </Col>
-            <Col md={3}>
-              <label className="margin-1-lr">Attribute</label>
-              <Select
-                value={data.attribute}
-                onChange={(e) => handleAttributeChange(e, i)}
-                options={
-                  data.selectCondition === 'Request'
-                    ? conditionData.requestAttribute
-                    : conditionData.groupAttribute
-                }
-              />
-            </Col>
-            <Col md={3}>
-              <label className="margin-1-lr">Operation</label>
-              <Select
-                value={data.operation}
-                onChange={(e) => handleOperationChange(e, i)}
-                options={
-                  data.selectCondition === 'Request'
-                    ? conditionData.requestOp
-                    : conditionData.groupOp
-                }
-              />
-            </Col>
-            <Col md={3}>
-              <label className="margin-1-lr">Value</label>
-              <input
-                type="text"
-                value={data.value}
-                onChange={(e) => handleValueChange(e, i)}
-                placeholder={
-                  data.selectCondition === 'Request'
-                    ? 'req value'
-                    : 'group value'
-                }
-              />
-            </Col>
-            <Button
-              className="style danger, font-color-red, background - light-gray, margin 1 -tb"
-              onClick={() => handleRemoveRow(i)}
-            >
-              Remove Row
-            </Button>
-          </Row>
-        );
-
-        // Push the row to the rows array
-        rows.push(row);
-      } else if (data.type === 'group') {
-        // Create a row with two buttons for adding condition or group
-        let row = (
-          <Row key={i} className="margin-1-tb line-border">
-            <label>Add Condition</label>
-            <Button onClick={() => handleAddCondition(i)}>Add Condition</Button>
-            <label>Add Group of Condition</label>
-            <Button
-              className="background - light-gray"
-              onClick={() => handleAddGroup(i)}
-            >
-              Add Group Condition
-            </Button>
-            <Button onClick={() => handleRemoveGroup(i)}>Remove Group</Button>
-          </Row>
-        );
-
-        // Push the row to the rows array
-        rows.push(row);
-
-        // Recursively render the nested rows for the group
-        let nestedRows = renderRows(data.rows);
-
-        // Push the nested rows to the rows array
-        rows.push(...nestedRows);
-      }
-
-      // Check if there is a next row and add a select operation row
-      if (i < allData.length - 1) {
-        let row = (
-          <Row key={`${i}-op`} className="dash-border">
-            <label>Select Operation</label>
-            <Select
-              value={data.selectOperation}
-              onChange={(e) => handleSelectOperationChange(e, i)}
-              options={conditionData.selectOperation}
-            />
-          </Row>
-        );
-
-        // Push the row to the rows array
-        rows.push(row);
-      }
-    }
-
-    // Return the rows array
-    return rows;
-  };
-
-  // Handle the change of selectCondition field
-  const handleSelectConditionChange = (e, i) => {
-    // Get the new value
-    let value = e.target.value;
-
-    // Update the allData state by copying the previous state and modifying the selectCondition field of the i-th element
-    setAllData((prev) =>
-      prev.map((data, index) =>
-        index === i ? { ...data, selectCondition: value } : data
-      )
-    );
-  };
-
-  // Handle the change of attribute field
-  const handleAttributeChange = (e, i) => {
-    // Get the new value
-    let value = e.target.value;
-
-    // Update the allData state by copying the previous state and modifying the attribute field of the i-th element
-    setAllData((prev) =>
-      prev.map((data, index) => (index === i ? { ...data, attribute: value } : data))
-    );
-  };
-
-  // Handle the change of operation field
-  const handleOperationChange = (e, i) => {
-    // Get the new value
-    let value = e.target.value;
-
-    // Update the allData state by copying the previous state and modifying the operation field of the i-th element
-    setAllData((prev) =>
-      prev.map((data, index) => (index === i ? { ...data, operation: value } : data))
-    );
-  };
-
-  // Handle the change of value field
-  const handleValueChange = (e, i) => {
-    // Get the new value
-    let value = e.target.value;
-
-    // Update the allData state by copying the previous state and modifying the value field of the i-th element
-    setAllData((prev) =>
-      prev.map((data, index) => (index === i ? { ...data, value: value } : data))
-    );
-  };
-
-  // Handle the change of selectOperation field
-  const handleSelectOperationChange = (e, i) => {
-    // Get the new value
-    let value = e.target.value;
-
-    // Update the allData state by copying the previous state and modifying the selectOperation field of the i-th element
-    setAllData((prev) =>
-      prev.map((data, index) =>
-        index === i ? { ...data, selectOperation: value } : data
-      )
-    );
-  };
-
-  // Handle the click of add condition button
-  const handleAddCondition = (i) => {
-    // Create a new condition object with default values
-    let newCondition = {
-      type: 'condition',
-      selectCondition: 'select',
-      attribute: 'select',
-      operation: 'select',
-      value: '',
-      selectOperation: 'select'
+    const addCondition = () => {
+        setConditions([...conditions, { type: 'condition', data: {} }]);
     };
 
-    // Update the allData state by copying the previous state and inserting the new condition object after the i-th element
-    setAllData((prev) => [
-      ...prev.slice(0, i + 1),
-      newCondition,
-      ...prev.slice(i + 1)
-    ]);
-  };
-
-  // Handle the click of add group button
-  const handleAddGroup = (i) => {
-    // Create a new group object with an empty rows array
-    let newGroup = {
-      type: 'group',
-      rows: []
+    const addGroupCondition = () => {
+        setConditions([...conditions, { type: 'group', data: {}, conditions: [] }]);
     };
 
-    // Update the allData state by copying the previous state and inserting the new group object after the i-th element
-    setAllData((prev) => [...prev.slice(0, i + 1), newGroup, ...prev.slice(i + 1)]);
-  };
+    const handleChange = (e, index, field, type) => {
+        // Update the state with the input value
+        const newConditions = [...conditions];
+        if (type === 'condition') {
+            newConditions[index].data[field] = e.target.value;
+        } else if (type === 'group') {
+            newConditions[index].data[field] = e.target.value;
+        } else if (type === 'nested') {
+            newConditions[index].conditions[field].data = e.target.value;
+        }
+        setConditions(newConditions);
+    };
 
-  // Handle the click of remove row button
-  const handleRemoveRow = (i) => {
-    // Update the allData state by copying the previous state and removing the i-th element
-    setAllData((prev) => prev.filter((data, index) => index !== i));
-  };
+    const handleAddNestedCondition = (index) => {
+        // Add a nested condition to a group condition
+        const newConditions = [...conditions];
+        newConditions[index].conditions.push({ type: 'condition', data: {} });
+        setConditions(newConditions);
+    };
 
-  // Handle the click of remove group button
-  const handleRemoveGroup = (i) => {
-    // Update the allData state by copying the previous state and removing the i-th element and its nested rows
-    setAllData((prev) => {
-      // Find the next group or the end of the array
-      let nextGroupIndex = prev.findIndex(
-        (data, index) => index > i && data.type === 'group'
-      );
-      if (nextGroupIndex === -1) {
-        nextGroupIndex = prev.length;
-      }
+    const handleRemoveRow = (index, type) => {
+        // Remove a row from the state
+        const newConditions = [...conditions];
+        if (type === 'condition') {
+            newConditions.splice(index, 1);
+        } else if (type === 'group') {
+            newConditions.splice(index, 1);
+        } else if (type === 'nested') {
+            newConditions[index].conditions.pop();
+        }
+        setConditions(newConditions);
+    };
 
-      // Return the filtered array
-      return [
-        ...prev.slice(0, i),
-        ...prev.slice(nextGroupIndex)
-      ];
-    });
-  };
+    const handleSubmit = () => {
+        console.log(JSON.stringify(conditions));
+    };
 
-  return (
-    <div className="col-md-12">
-      <Container className="col-md-12">
-        <Row className="line-border">
-          <label>Add Condition</label>
-          <Button onClick={() => handleAddCondition(-1)}>Add Condition</Button>
-          <label>Add Group of Condition</label>
-          <Button
-            className="background - light-gray"
-            onClick={() => handleAddGroup(-1)}
-          >
-            Add 
-Group Condition
-</Button>
-</Row>
-{renderRows()}
-<Button onClick={() => console.log(JSON.stringify(allData))}>Submit</Button>
-</Container>
-</div>
-);
+    return (
+        <div>
+            <button onClick={addCondition}>Add Condition</button>
+            <button onClick={addGroupCondition}>Add Group Condition</button>
+
+            {conditions.map((condition, index) => (
+                condition.type === 'condition' ? 
+                    <ConditionRow 
+                        key={index} 
+                        index={index} 
+                        condition={condition} 
+                        selectCondition={selectCondition}
+                        requestAttribute={requestAttribute}
+                        requestOp={requestOp}
+                        selectOperation={selectOperation}
+                        handleChange={handleChange}
+                        handleRemoveRow={handleRemoveRow}
+                    /> :
+                    <GroupConditionRow 
+                        key={index} 
+                        index={index} 
+                        groupCondition={condition} 
+                        selectCondition={selectCondition}
+                        groupAttribute={groupAttribute}
+                        groupOp={groupOp}
+                        selectOperation={selectOperation}
+                        handleChange={handleChange}
+                        handleAddNestedCondition={handleAddNestedCondition}
+                        handleRemoveRow={handleRemoveRow}
+                    />
+            ))}
+
+            <button onClick={handleSubmit}>Submit</button>
+        </div>
+    );
+};
+
+const ConditionRow = ({ index, condition, selectCondition, requestAttribute, requestOp, selectOperation, handleChange, handleRemoveRow }) => {
+    return (
+        <div>
+            {index > 0 && (
+                <div>
+                    <label>Select Operation</label>
+                    <select value={condition.data.selectOperation || 'select'} onChange={(e) => handleChange(e, index, 'selectOperation', 'condition')}>
+                        {selectOperation.map((op, i) => (
+                            <option key={i} value={op}>{op}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
+            <div>
+                <label>Source</label>
+                <select value={condition.data.source || 'select'} onChange={(e) => handleChange(e, index, 'source', 'condition')}>
+                    {selectCondition.map((cond, i) => (
+                        <option key={i} value={cond}>{cond}</option>
+                    ))}
+                </select>
+            </div>
+            {condition.data.source === 'Request' && (
+                <div>
+                    <label>Request Attribute</label>
+                    <select value={condition.data.requestAttribute || 'select'} onChange={(e) => handleChange(e, index, 'requestAttribute', 'condition')}>
+                        {requestAttribute.map((attr, i) => (
+                            <option key={i} value={attr}>{attr}</option>
+                        ))}
+                    </select>
+                    <label>Request Op</label>
+                    <select value={condition.data.requestOp || 'select'} onChange={(e) => handleChange(e, index, 'requestOp', 'condition')}>
+                        {requestOp.map((op, i) => (
+                            <option key={i} value={op}>{op}</option>
+                        ))}
+                    </select>
+                    <label>Request Value</label>
+                    <input type="text" value={condition.data.requestValue || ''} onChange={(e) => handleChange(e, index, 'requestValue', 'condition')} />
+                </div>
+            )}
+            <button onClick={() => handleRemoveRow(index, 'condition')}>Remove Row</button>
+        </div>
+    );
+};
+
+const GroupConditionRow = ({ index, groupCondition, selectCondition, groupAttribute, groupOp, selectOperation, handleChange, handleAddNestedCondition, handleRemoveRow }) => {
+    return (
+        <div>
+            {index > 0 && (
+                <div>
+                    <label>Select Operation</label>
+                    <select value={groupCondition.data.selectOperation || 'select'} onChange={(e) => handleChange(e, index, 'selectOperation', 'group')}>
+                        {selectOperation.map((op, i) => (
+                            <option key={i} value={op}>{op}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
+            <div>
+                <label>Source</label>
+                <select value={groupCondition.data.source || 'select'} onChange={(e) => handleChange(e, index, 'source', 'group')}>
+                    {selectCondition.map((cond, i) => (
+                        <option key={i} value={cond}>{cond}</option>
+                    ))}
+                </select>
+            </div>
+            {groupCondition.data.source === 'Group' && (
+                <div>
+                    <label>Group Attribute</label>
+                    <select value={groupCondition.data.groupAttribute || 'select'} onChange={(e) => handleChange(e, index, 'groupAttribute', 'group')}>
+                        {groupAttribute.map((attr, i) => (
+                            <option key={i} value={attr}>{attr}</option>
+                        ))}
+                    </select>
+                    <label>Group Op</label>
+                    <select value={groupCondition.data.groupOp || 'select'} onChange={(e) => handleChange(e, index, 'groupOp', 'group')}>
+                        {groupOp.map((op, i) => (
+                            <option key={i} value={op}>{op}</option>
+                        ))}
+                    </select>
+                    <label>Group Value</label>
+                    <input type="text" value={groupCondition.data.groupValue || ''} onChange={(e) => handleChange(e, index, 'groupValue', 'group')} />
+                </div>
+            )}
+            <button onClick={() => handleAddNestedCondition(index)}>Add Condition</button>
+            {groupCondition.conditions.map((condition, i) => (
+                <ConditionRow 
+                    key={i} 
+                    index={i} 
+                    condition={condition} 
+                    selectCondition={selectCondition}
+                    requestAttribute={requestAttribute}
+                    requestOp={requestOp}
+                    selectOperation={selectOperation}
+                    handleChange={(e, index, field) => handleChange(e, index, field, 'nested')}
+                    handleRemoveRow={() => handleRemoveRow(index, 'nested')}
+                />
+            ))}
+            <button onClick={() => handleRemoveRow(index, 'group')}>Remove Row</button>
+        </div>
+    );
 };
 
 export default MyComponent;
