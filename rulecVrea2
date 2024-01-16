@@ -45,31 +45,52 @@ const MyComponent = () => {
                 <div key={index}>
                     {/* ... (existing code) */}
                 </div> :
-                // Handle group condition rendering here
-                <div key={index}>
-                    {index > 0 && <div>Select Operation : <select value={condition.selectOperation} onChange={(e) => handleChange(index, 'selectOperation', e.target.value)}>
-                        {selectOperationOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                    </select></div>}
-                    <button onClick={() => addNestedConditionOrGroup(index, false)}>Add Condition</button>
-                    <button onClick={() => addNestedConditionOrGroup(index, true)}>Add Group Condition</button>
+// Handle group condition rendering here
+<div key={index}>
+    {/* Render select operation if it's not the first condition/group */}
+    {index > 0 && (
+        <div>
+            Select Operation : 
+            <select 
+                value={condition.selectOperation} 
+                onChange={(e) => handleChange(index, 'selectOperation', e.target.value)}
+            >
+                {selectOperationOptions.map(option => 
+                    <option key={option} value={option}>{option}</option>
+                )}
+            </select>
+        </div>
+    )}
+    {/* Button to add a new condition */}
+    <button onClick={() => addNestedConditionOrGroup(index, false)}>
+        Add Condition
+    </button>
+    {/* Button to add a new group condition */}
+    <button onClick={() => addNestedConditionOrGroup(index, true)}>
+        Add Group Condition
+    </button>
+    {/* Render nested conditions recursively */}
+    {condition.conditions.map((nestedCondition, nestedIndex) => (
+        <div key={nestedIndex}>
+            {/* ... (similar structure for nested conditions) */}
+            {/* Check if the nested condition is a groupCondition */}
+            {nestedCondition.type === 'groupCondition' && (
+                <div>
+                    {/* Button to add a new nested group condition */}
+                    <button onClick={() => addNestedConditionOrGroup(index, true)}>
+                        Add Nested Group Condition
+                    </button>
                     {/* Render nested conditions recursively */}
-                    {condition.conditions.map((nestedCondition, nestedIndex) => (
-                        <div key={nestedIndex}>
-                            {/* ... (similar structure for nested conditions) */}
-                            {nestedCondition.type === 'groupCondition' && (
-                                <div>
-                                    <button onClick={() => addNestedConditionOrGroup(index, true)}>Add Group Condition</button>
-                                    {/* Render nested conditions recursively */}
-                                    {nestedCondition.conditions.map((nestedNestedCondition, nestedNestedIndex) => (
-                                        <div key={nestedNestedIndex}>
-                                            {/* ... (similar structure for nested nested conditions) */}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                    {nestedCondition.conditions.map((nestedNestedCondition, nestedNestedIndex) => (
+                        <div key={nestedNestedIndex}>
+                            {/* ... (similar structure for nested nested conditions) */}
                         </div>
                     ))}
-                    {/* ... (existing code) */}
+                </div>
+            )}
+        </div>
+    ))}
+    {/* ... (existing code) */}
                 </div>
             ))}
             {/* ... (existing code) */}
