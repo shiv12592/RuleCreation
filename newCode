@@ -116,6 +116,17 @@ const handleChange = (index, field, value) => {
   setConditions(newConditions);
 };
 
+// Define the handler for removing a condition
+const removeCondition = (index) => {
+  // Make a copy of the state array
+  let newConditions = [...conditions];
+
+  // Remove the condition at the specified index
+  newConditions.splice(index, 1);
+
+  // Update the state array
+  setConditions(newConditions);
+};
 
   // Define the handler for adding a group condition
   const addGroupCondition = (parentIndex) => {
