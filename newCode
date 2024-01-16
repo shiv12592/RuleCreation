@@ -121,39 +121,35 @@ const MyComponent = () => {
     setConditions(newConditions);
   };
 
-  // Define the handler for submitting the form
-  const handleSubmit = () => {
-    // Make a copy of the state array
-    let newConditions = [...conditions];
-    // Loop through the conditions and remove the unnecessary fields
-    newConditions.forEach(condition => {
-      if (condition.type === 'condition') {
-        // Get the selected condition value
-        let selectedCondition = condition.selectCondition;
-        // Loop through the selectConditionFields object
-        for (let [key, value] of Object.entries(selectConditionFields)) {
-          // If the key is not equal to the selected condition value, delete the fields from the condition object
-          if (key !==// ... (Previous code)
+// Define the handler for submitting the form
+const handleSubmit = () => {
+  // Make a copy of the state array
+  let newConditions = [...conditions];
 
+  // Function to clean unnecessary fields
+  const cleanFields = (condition) => {
+    if (condition.type === 'condition') {
+      // Get the selected condition value
+      let selectedCondition = condition.selectCondition;
+      // Loop through the selectConditionFields object
+      for (let [key, value] of Object.entries(selectConditionFields)) {
         // If the key is not equal to the selected condition value, delete the fields from the condition object
         if (key !== selectedCondition) {
           delete condition[value];
         }
-      } else if (condition.type === 'groupCondition') {
-        // Recursively call the function for each nested condition
-        condition.conditions.forEach(nestedCondition => {
-          for (let [key, value] of Object.entries(selectConditionFields)) {
-            if (key !== nestedCondition.selectCondition) {
-              delete nestedCondition[value];
-            }
-          }
-        });
       }
-    });
-
-    // Now, you can do whatever you want with the cleaned conditions
-    console.log(newConditions);
+    } else if (condition.type === 'groupCondition') {
+      // Recursively call the function for each nested condition
+      condition.conditions.forEach((nestedCondition) => cleanFields(nestedCondition));
+    }
   };
+
+  // Clean unnecessary fields in each condition
+  newConditions.forEach(cleanFields);
+
+  // Now, you can do whatever you want with the cleaned conditions
+  console.log(newConditions);
+};
 
   return (
     <div>
