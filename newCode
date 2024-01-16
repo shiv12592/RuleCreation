@@ -94,90 +94,62 @@ const Condition = ({ condition, index, handleChange, handleNestedChange, addGrou
 
 // Define the component that renders the conditions array
 const MyComponent = () => {
-  // Define the initial state for the conditions
   const [conditions, setConditions] = useState([]);
 
-  // Define the handler for adding a condition
   const addCondition = () => {
-    // Add a new condition object to the state array
-    setConditions([...conditions, { type: 'condition', selectCondition: 'select', requestAttribute: 'select', requestOp: 'select', requestValue: '', groupAttribute: 'select', groupOp: 'select', groupValue: '', identityAttribute: 'select', identityOp: 'select', identityValue: '', locationAttribute: 'select', locationOp: 'select', locationValue: '' }]);
+    setConditions((prevConditions) => [
+      ...prevConditions,
+      { type: 'condition', selectCondition: 'select', requestAttribute: 'select', requestOp: 'select', requestValue: '', groupAttribute: 'select', groupOp: 'select', groupValue: '', identityAttribute: 'select', identityOp: 'select', identityValue: '', locationAttribute: 'select', locationOp: 'select', locationValue: '' },
+    ]);
   };
 
-
-// Define the handler for updating state based on user input
-const handleChange = (index, field, value) => {
-  // Make a copy of the state array
-  let newConditions = [...conditions];
-
-  // Update the specific field in the condition object
-  newConditions[index][field] = value;
-
-  // Update the state array
-  setConditions(newConditions);
-};
-
-// Define the handler for removing a condition
-const removeCondition = (index) => {
-  // Make a copy of the state array
-  let newConditions = [...conditions];
-
-  // Remove the condition at the specified index
-  newConditions.splice(index, 1);
-
-  // Update the state array
-  setConditions(newConditions);
-};
-
-  // Define the handler for adding a group condition
-  const addGroupCondition = (parentIndex) => {
-    // Create a new group condition object
-    const newGroupCondition = { type: 'groupCondition', conditions: [{ selectCondition: 'select', requestAttribute: 'select', requestOp: 'select', requestValue: '', groupAttribute: 'select', groupOp: 'select', groupValue: '', identityAttribute: 'select', identityOp: 'select', identityValue: '', locationAttribute: 'select', locationOp: 'select', locationValue: '' }], selectOperation : "select" };
-    // Make a copy of the state array
+  const handleChange = (index, field, value) => {
     let newConditions = [...conditions];
-    // Check if the parent index is defined
-    if (parentIndex !== undefined) {
-      // Insert the new group condition object into the conditions array of the parent group condition
-      newConditions[parentIndex].conditions.push(newGroupCondition);
-    } else {
-      // Add the new group condition object to the state array
-      newConditions.push(newGroupCondition);
-    }
-    // Update the state array
+    newConditions[index][field] = value;
     setConditions(newConditions);
   };
 
-// Define the handler for submitting the form
-const handleSubmit = () => {
-  // Make a copy of the state array
-  let newConditions = [...conditions];
-
-  // Function to clean unnecessary fields
-  const cleanFields = (condition) => {
-    if (condition.type === 'condition') {
-      // Get the selected condition value
-      let selectedCondition = condition.selectCondition;
-      // Loop through the selectConditionFields object
-      for (let [key, value] of Object.entries(selectConditionFields)) {
-        // If the key is not equal to the selected condition value, delete the fields from the condition object
-        if (key !== selectedCondition) {
-          delete condition[value];
-        }
-      }
-    } else if (condition.type === 'groupCondition') {
-      // Recursively call the function for each nested condition
-      condition.conditions.forEach((nestedCondition) => cleanFields(nestedCondition));
-    }
+  const removeCondition = (index) => {
+    let newConditions = [...conditions];
+    newConditions.splice(index, 1);
+    setConditions(newConditions);
   };
 
-  // Clean unnecessary fields in each condition
-  newConditions.forEach(cleanFields);
+  const addGroupCondition = (parentIndex) => {
+    const newGroupCondition = { type: 'groupCondition', conditions: [{ selectCondition: 'select', requestAttribute: 'select', requestOp: 'select', requestValue: '', groupAttribute: 'select', groupOp: 'select', groupValue: '', identityAttribute: 'select', identityOp: 'select', identityValue: '', locationAttribute: 'select', locationOp: 'select', locationValue: '' }], selectOperation: 'select' };
+    let newConditions = [...conditions];
+    if (parentIndex !== undefined) {
+      newConditions[parentIndex].conditions.push(newGroupCondition);
+    } else {
+      newConditions.push(newGroupCondition);
+    }
+    setConditions(newConditions);
+  };
 
-  // Now, you can do whatever you want with the cleaned conditions
-  console.log(newConditions);
-};
+  const handleSubmit = () => {
+    let newConditions = [...conditions];
+    const cleanFields = (condition) => {
+      if (condition.type === 'condition') {
+        let selectedCondition = condition.selectCondition;
+        for (let [key, value] of Object.entries(selectConditionFields)) {
+          if (key !== selectedCondition) {
+            delete condition[value];
+          }
+        }
+      } else if (condition.type === 'groupCondition') {
+        condition.conditions.forEach((nestedCondition) => cleanFields(nestedCondition));
+      }
+    };
+    newConditions.forEach(cleanFields);
+    console.log(newConditions);
+  };
+
+  console.log("Render Conditions:", conditions);
 
   return (
     <div>
+      <button onClick={() => addGroupCondition()}>Add Group Condition</button>
+      <button onClick={addCondition}>Add Condition</button>
       {conditions.map((condition, index) => (
         <Condition
           key={index}
@@ -186,15 +158,16 @@ const handleSubmit = () => {
           handleChange={handleChange}
           addGroupCondition={addGroupCondition}
           removeCondition={removeCondition}
+          renderAddGroupButton={index === conditions.length - 1}
         />
       ))}
-      <button onClick={addCondition}>Add Condition</button>
       <button onClick={handleSubmit}>Submit</button>
     </div>
   );
 };
 
 export default MyComponent;
+
 ==========================
 
 
