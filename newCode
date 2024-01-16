@@ -103,6 +103,20 @@ const MyComponent = () => {
     setConditions([...conditions, { type: 'condition', selectCondition: 'select', requestAttribute: 'select', requestOp: 'select', requestValue: '', groupAttribute: 'select', groupOp: 'select', groupValue: '', identityAttribute: 'select', identityOp: 'select', identityValue: '', locationAttribute: 'select', locationOp: 'select', locationValue: '' }]);
   };
 
+
+// Define the handler for updating state based on user input
+const handleChange = (index, field, value) => {
+  // Make a copy of the state array
+  let newConditions = [...conditions];
+
+  // Update the specific field in the condition object
+  newConditions[index][field] = value;
+
+  // Update the state array
+  setConditions(newConditions);
+};
+
+
   // Define the handler for adding a group condition
   const addGroupCondition = (parentIndex) => {
     // Create a new group condition object
