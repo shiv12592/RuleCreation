@@ -317,8 +317,14 @@ const addGroupCondition = (parentIndex) => {
   // Make a copy of the state array
   let newConditions = [...conditions];
 
-  // Check if the parent index is defined and if it's a group condition
-  if (parentIndex !== undefined && newConditions[parentIndex].type === 'groupCondition') {
+  // Check if the parent index is within bounds and if it's a group condition
+  if (
+    parentIndex !== undefined &&
+    parentIndex >= 0 &&
+    parentIndex < newConditions.length &&
+    newConditions[parentIndex] &&
+    newConditions[parentIndex].type === 'groupCondition'
+  ) {
     // Insert the new group condition object into the conditions array of the parent group condition
     newConditions[parentIndex].conditions.push(newGroupCondition);
   } else {
