@@ -337,3 +337,80 @@ const addGroupCondition = (parentIndex) => {
 };
 
 
+===================================================
+
+
+
+const MyComponent = () => {
+  // ... (existing code)
+
+  // Define the handler for adding a group condition
+  const addGroupCondition = (parentIndex) => {
+    // Create a new group condition object
+    const newGroupCondition = {
+      type: 'groupCondition',
+      conditions: [],
+      selectOperation: "select"
+    };
+
+    // Make a copy of the state array
+    let newConditions = [...conditions];
+
+    // Check if the parent index is defined
+    if (parentIndex !== undefined) {
+      // Insert the new group condition object into the conditions array of the parent group condition
+      newConditions[parentIndex].conditions.push(newGroupCondition);
+    } else {
+      // Add the new group condition object to the state array
+      newConditions.push(newGroupCondition);
+    }
+
+    // Update the state array
+    setConditions(newConditions);
+  };
+
+  // Define the handler for adding a nested condition
+  const addNestedCondition = (parentIndex) => {
+    // Make a copy of the state array
+    let newConditions = [...conditions];
+
+    // Add a new condition object to the conditions array of the group condition object at the given index
+    newConditions[parentIndex].conditions.push({
+      type: 'condition',
+      selectCondition: 'select',
+      // ... (other default values)
+    });
+
+    // Set the new state array
+    setConditions(newConditions);
+  };
+
+  // ... (existing code)
+
+  return (
+    <div>
+      <button onClick={addCondition}>Add Condition</button>
+      <button onClick={() => addGroupCondition()}>Add Group Condition</button>
+
+      {conditions.map((condition, index) => (
+        // Render each condition using the custom Condition component
+        <Condition
+          key={index}
+          condition={condition}
+          index={index}
+          handleChange={handleChange}
+          handleNestedChange={handleNestedChange}
+          addGroupCondition={() => addGroupCondition(index)}
+          addNestedCondition={() => addNestedCondition(index)}
+          removeCondition={removeCondition}
+          removeGroupCondition={removeGroupCondition}
+          removeNestedCondition={removeNestedCondition}
+        />
+      ))}
+
+      <button onClick={handleSubmit}>Submit</button>
+    </div>
+  );
+};
+
+
