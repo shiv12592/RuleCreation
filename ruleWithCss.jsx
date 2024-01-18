@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button, Form, Row, Col, Container } from 'react-bootstrap';
 
 const MyComponent = () => {
     // Define the initial state for the conditions
@@ -159,12 +160,10 @@ const MyComponent = () => {
         identity: ['identityAttribute', 'identityOp', 'identityValue'],
         location: ['locationAttribute', 'locationOp', 'locationValue']
     };
-// Import the react-bootstrap components
-import { Button, Form, Row, Col, Container } from 'react-bootstrap';
 
 // Use the react-bootstrap components in the return part
 return (
-    <Container className="border p-3">
+    <Container className="border p-3 col-md-12">
         <Row>
             <Col>
                 <Button variant="dark" onClick={addCondition}>Add Condition</Button>
