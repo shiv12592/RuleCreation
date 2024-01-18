@@ -320,79 +320,79 @@ return (
                                     </Form.Group>
                                 </>}
                             </Col>
-                            <Col md={3}>
-                                {nestedCondition.selectCondition === 'group' && <>
-                                    <Form.Group>
-                                        <Form.Label>Group Attribute</Form.Label>
-                                        <Form.Select value={nestedCondition.groupAttribute} onChange={(e) => handleNestedChange(index, nestedIndex, 'groupAttribute', e.target.value)}>
-                                            {groupAttributeOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                                        </Form.Select>
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.Label>Group Operation</Form.Label>
-                                        <Form.Select value={nestedCondition.groupOp} onChange={(e) => handleNestedChange(index, nestedIndex, 'groupOp', e.target.value)}>
-                                            {groupOpOptions.map(option => <option key={option} value={option}>{option}</option>)}
-</Form.Select>
-</Form.Group>
-<Form.Group>
-<Form.Label>Group Value</Form.Label>
-<Form.Control type="text" value={nestedCondition.groupValue} onChange={(e) => handleNestedChange(index, nestedIndex, 'groupValue', e.target.value)} />
-</Form.Group>
-</>}
-</Col>
-<Col md={3}>
-{nestedCondition.selectCondition === 'identity' && <>
-<Form.Group>
-<Form.Label>Identity Attribute</Form.Label>
-<Form.Select value={nestedCondition.identityAttribute} onChange={(e) => handleNestedChange(index, nestedIndex, 'identityAttribute', e.target.value)}>
-{identityAttributeOptions.map(option => <option key={option} value={option}>{option}</option>)}
-</Form.Select>
-</Form.Group>
-<Form.Group>
-<Form.Label>Identity Operation</Form.Label>
-<Form.Select value={nestedCondition.identityOp} onChange={(e) => handleNestedChange(index, nestedIndex, 'identityOp', e.target.value)}>
-{identityOpOptions.map(option => <option key={option} value={option}>{option}</option>)}
-</Form.Select>
-</Form.Group>
-<Form.Group>
-<Form.Label>Identity Value</Form.Label>
-<Form.Control type="text" value={nestedCondition.identityValue} onChange={(e) => handleNestedChange(index, nestedIndex, 'identityValue', e.target.value)} />
-</Form.Group>
-</>}
-</Col>
-<Col md={3}>
-{nestedCondition.selectCondition === 'location' && <>
-<Form.Group>
-<Form.Label>Location Attribute</Form.Label>
-<Form.Select value={nestedCondition.locationAttribute} onChange={(e) => handleNestedChange(index, nestedIndex, 'locationAttribute', e.target.value)}>
-{locationAttributeOptions.map(option => <option key={option} value={option}>{option}</option>)}
-</Form.Select>
-</Form.Group>
-<Form.Group>
-<Form.Label>Location Operation</Form.Label>
-<Form.Select value={nestedCondition.locationOp} onChange={(e) => handleNestedChange(index, nestedIndex, 'locationOp', e.target.value)}>
-{locationOpOptions.map(option => <option key={option} value={option}>{option}</option>)}
-</Form.Select>
-</Form.Group>
-<Form.Group>
-<Form.Label>Location Value</Form.Label>
-<Form.Control type="text" value={nestedCondition.locationValue} onChange={(e) => handleNestedChange(index, nestedIndex, 'locationValue', e.target.value)} />
-</Form.Group>
-</>}
-</Col>
-<Col md={3}>
-<Button variant="secondary" style={{ color: 'red', textDecoration: 'underline' }} onClick={() => removeNestedCondition(index, nestedIndex)}>Remove Row</Button>
-</Col>
+							 <Col md={3}>
+							  {nestedCondition.selectCondition === 'group' && <>
+								<Form.Group>
+								  <Form.Label>Group Attribute</Form.Label>
+								  <Form.Select value={nestedCondition.groupAttribute} onChange={(e) => handleNestedChange(index, nestedIndex, 'groupAttribute', e.target.value)}>
+									{groupAttributeOptions.map(option => <option key={option} value={option}>{option}</option>)}
+								  </Form.Select>
+								</Form.Group>
+								<Form.Group>
+								  <Form.Label>Group Operation</Form.Label>
+								  <Form.Select value={nestedCondition.groupOp} onChange={(e) => handleNestedChange(index, nestedIndex, 'groupOp', e.target.value)}>
+									{groupOpOptions.map(option => <option key={option} value={option}>{option}</option>)}
+								  </Form.Select>
+								</Form.Group>
+								<Form.Group>
+								  <Form.Label>Group Value</Form.Label>
+								  <Form.Control type="text" value={nestedCondition.groupValue} onChange={(e) => handleNestedChange(index, nestedIndex, 'groupValue', e.target.value)} />
+								</Form.Group>
+							  </>}
+							</Col>
+							<Col md={3}>
+							  {nestedCondition.selectCondition === 'identity' && <>
+								<Form.Group>
+								  <Form.Label>Identity Attribute</Form.Label>
+								  <Form.Select value={nestedCondition.identityAttribute} onChange={(e) => handleNestedChange(index, nestedIndex, 'identityAttribute', e.target.value)}>
+									{identityAttributeOptions.map(option => <option key={option} value={option}>{option}</option>)}
+								  </Form.Select>
+								</Form.Group>
+								<Form.Group>
+								  <Form.Label>Identity Operation</Form.Label>
+								  <Form.Select value={nestedCondition.identityOp} onChange={(e) => handleNestedChange(index, nestedIndex, 'identityOp', e.target.value)}>
+									{identityOpOptions.map(option => <option key={option} value={option}>{option}</option>)}
+								  </Form.Select>
+								</Form.Group>
+								<Form.Group>
+								  <Form.Label>Identity Value</Form.Label>
+								  <Form.Control type="text" value={nestedCondition.identityValue} onChange={(e) => handleNestedChange(index, nestedIndex, 'identityValue', e.target.value)} />
+								</Form.Group>
+							  </>}
+							</Col>
+							<Col md={3}>
+							  {nestedCondition.selectCondition === 'location' && <>
+								<Form.Group>
+								  <Form.Label>Location Attribute</Form.Label>
+								  <Form.Select value={nestedCondition.locationAttribute} onChange={(e) => handleNestedChange(index, nestedIndex, 'locationAttribute', e.target.value)}>
+									{locationAttributeOptions.map(option => <option key={option} value={option}>{option}</option>)}
+								  </Form.Select>
+								</Form.Group>
+								<Form.Group>
+								  <Form.Label>Location Operation</Form.Label>
+								  <Form.Select value={nestedCondition.locationOp} onChange={(e) => handleNestedChange(index, nestedIndex, 'locationOp', e.target.value)}>
+									{locationOpOptions.map(option => <option key={option} value={option}>{option}</option>)}
+								  </Form.Select>
+								</Form.Group>
+								<Form.Group>
+								  <Form.Label>Location Value</Form.Label>
+								  <Form.Control type="text" value={nestedCondition.locationValue} onChange={(e) => handleNestedChange(index, nestedIndex, 'locationValue', e.target.value)} />
+								</Form.Group>
+							  </>}
+							</Col>
+							<Col md={3}>
+							  <Button variant="secondary" style={{ color: 'red', textDecoration: 'underline' }} onClick={() => removeNestedCondition(index, nestedIndex)}>Remove Row</Button>
+							</Col>
+	</Row>
+	))}
+	<Button variant="dark" onClick={() => removeGroupCondition(index)}>Remove Group</Button>
+	</Col>
+	</Row>
+	))}
+<Row>
+  <Col>
+    <Button variant="primary" onClick={handleSubmit}>Submit</Button>
+  </Col>
 </Row>
-))}
-<Button variant="dark" onClick={() => removeGroupCondition(index)}>Remove Group</Button>
-</Col>
-</Row>
-))}
-    <Row>
-        <Col>
-            <Button variant="primary" onClick={handleSubmit}>Submit</Button>
-        </Col>
-    </Row>
 </Container>
 );
