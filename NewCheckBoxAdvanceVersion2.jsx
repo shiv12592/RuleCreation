@@ -21,6 +21,11 @@ const RuleConditionRows = () => {
       // Update the array of entries for the location value field
       setLocationValues(value.split(','))
     }
+    if (field === 'locationField' && conditions[index].source === 'Location') {
+      // Update the location field value based on the dropdown selection
+      updatedConditions[index]['locationField'] = value
+      setConditions(updatedConditions)
+    }
   }
 
   const handleSelectRow = (index) => {
@@ -74,6 +79,9 @@ const RuleConditionRows = () => {
       // Update the conditions array and clear the selected rows
       setConditions(groupedConditions)
       setSelectedRows([])
+    } else if (selectedRows.length === 1) {
+      // Handle the case where only one row is selected with a group
+      // TODO: Add your logic here to remove the select operation from the single row before grouping
     }
   }
 
@@ -143,6 +151,11 @@ const RuleConditionRows = () => {
     if (field === 'value' && conditions[index].rows[i].source === 'Location') {
       // Update the array of entries for the location value field
       setLocationValues(value.split(','))
+    }
+    if (field === 'locationField' && conditions[index].rows[i].source === 'Location') {
+      // Update the location field value based on the dropdown selection
+      updatedConditions[index].rows[i]['locationField'] = value
+      setConditions(updatedConditions)
     }
   }
 
