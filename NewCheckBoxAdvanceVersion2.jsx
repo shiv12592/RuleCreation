@@ -330,3 +330,23 @@ const RuleConditionRows = () => {
   }
 
 export default RuleConditionRows
+================
+
+  else if (selectedRows.length === 1) {
+  // Handle the case where only one row is selected with a group
+  // Find the index of the group condition that contains the single row selected
+  let groupIndex = conditions.findIndex(condition => condition.rows && condition.selectOperation && condition.rows.some(row => row === conditions[selectedRows[0]]));
+  if (groupIndex !== -1) {
+    // Make a copy of the single row
+    let singleRow = {...conditions[selectedRows[0]]};
+    // Remove the select operation from the single row
+    delete singleRow.selectOperation;
+    // Make a copy of the nested row
+    let nestedRow = {...conditions[groupIndex].rows.find(row => row === conditions[selectedRows[0]])};
+    // Remove the select operation from the nested row
+    delete nestedRow.selectOperation;
+    // Update the conditions array with the modified single row and nested row
+    setConditions([...conditions.slice(0, selectedRows[0]), singleRow, ...conditions.slice(selectedRows[0] + 1)]);
+    setConditions([...conditions.slice(0, groupIndex), {...conditions[groupIndex], rows: [...conditions[groupIndex].rows.filter(row => row !== conditions[selectedRows[0]]), nestedRow]}, ...conditions.slice(groupIndex + 1)]);
+  }
+}
