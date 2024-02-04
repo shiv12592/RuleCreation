@@ -82,16 +82,17 @@ const RuleConditionRows = () => {
     } else if (selectedRows.length === 1) {
       // Handle the case where only one row is selected with a group
       // TODO: Add your logic here to remove the select operation from the single row before grouping
-      let groupIndex = conditions.findIndex(
-        (condition) => condition.rows && condition.selectOperation && condition.rows.some((row) => row === conditions[selectedRows[0]])
-      )
+      let groupIndex = conditions.findIndex(condition => condition.rows && condition.selectOperation && condition.rows.some(row => row === conditions[selectedRows[0]]));
       if (groupIndex !== -1) {
+        // Make a copy of the single row
+        let singleRow = {...conditions[selectedRows[0]]};
         // Remove the select operation from the single row
-        delete conditions[selectedRows[0]].selectOperation
-        // Update the conditions array
-        setConditions([...conditions])
+        delete singleRow.selectOperation;
+        // Update the conditions array with the modified single row
+        setConditions([...conditions.slice(0, selectedRows[0]), singleRow, ...conditions.slice(selectedRows[0] + 1)]);
       }
     }
+  }
 
     const handleUngroupSelected = () => {
       // Ungroup selected rows that have a nested array and a select operation
@@ -327,5 +328,5 @@ const RuleConditionRows = () => {
       </div>
     )
   }
-}
+
 export default RuleConditionRows
