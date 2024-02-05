@@ -312,21 +312,19 @@ const RuleConditionRows = () => {
       </div>
     )
   }
-  return (
-    <Container className="col-md-12 pad-1 card-rounded" style={{ border: '1px solid black', padding: '12px', marginTop: '12px' }}>
-      <Button variant="lightblue" size="sm" onClick={handleAddConditionRow}>
-        Add Condition Row
-      </Button>
+ return (
+    <div className="col-md-12 pad-1 card-rounded">
+      <button onClick={handleAddConditionRow}>Add Condition Row</button>
       {isAddClicked ? (
-        <Table bordered style={{ margin: '12px' }}>
+        <table style={{ border: '1px solid black' }}>
           <tbody>
-            <tr>
+            <tr style={{ border: '1px solid black' }}>
               <td>
-                <Form.Label>Select Operation</Form.Label>
-                <Form.Control as="select" value={selectOperation} onChange={(e) => setSelectOperation(e.target.value)}>
+                <label>Select Operation</label>
+                <select value={selectOperation} onChange={(e) => setSelectOperation(e.target.value)}>
                   <option value="AND">AND</option>
                   <option value="OR">OR</option>
-                </Form.Control>
+                </select>
               </td>
               <td>
                 {conditions.map((condition, index) => (
@@ -335,31 +333,21 @@ const RuleConditionRows = () => {
               </td>
             </tr>
           </tbody>
-        </Table>
+        </table>
       ) : null}
-      <Row style={{ marginTop: '12px' }}>
-        <Col>
-          <Button variant="lightblue" size="sm" onClick={handleGroupSelected}>
-            Group Selected
-          </Button>
-        </Col>
-        <Col>
-          <Button variant="lightblue" size="sm" onClick={handleUngroupSelected}>
-            Un-group Selected
-          </Button>
-        </Col>
-        <Col>
-          <Button variant="lightblue" size="sm" onClick={handleDeleteSelected}>
-            Delete Selected
-          </Button>
-        </Col>
-        <Col>
-          <Button variant="lightblue" size="sm" onClick={handleSubmit}>
-            Submit
-          </Button>
-        </Col>
-      </Row>
-    </Container>
+      <button style={{ backgroundColor: 'lightblue', color: 'white', margin: '5px' }} onClick={handleGroupSelected}>
+        Group Selected
+      </button>
+      <button style={{ backgroundColor: 'lightblue', color: 'white', margin: '5px' }} onClick={handleUngroupSelected}>
+        Un-group Selected
+      </button>
+      <button style={{ backgroundColor: 'lightblue', color: 'white', margin: '5px' }} onClick={handleDeleteSelected}>
+        Delete Selected
+      </button>
+      <button style={{ backgroundColor: 'lightblue', color: 'white', margin: '5px' }} onClick={handleSubmit}>
+        Submit
+      </button>
+    </div>
   )
 }
 
