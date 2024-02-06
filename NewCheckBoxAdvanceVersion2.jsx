@@ -1,3 +1,4 @@
+//updated no checkbox inside the inner groups
 import React, { useState } from 'react'
 import { Button, Table, Form, Col, Container, Row } from 'react-bootstrap'
 const RuleConditionRows = () => {
@@ -194,20 +195,22 @@ const RuleConditionRows = () => {
     setLocationValues(updatedLocationValues)
   }
 
-  const renderConditionRow = (condition, index, i, isGrouped = false) => {
+  const renderConditionRow = (condition, index, i, isGrouped = false, isInner = false) => {
     // Render a single condition row based on the condition object and index
     return condition.rows && condition.selectOperation ? (
       // Render a grouped condition row with a nested table and a select operation
       <table style={{ border: '1px solid black', margin: '10px' }}>
         <tbody>
           <tr style={{ border: '1px solid black' }}>
-            <td>
-              <input
-                type="checkbox"
-                checked={isGrouped ? condition.checked : selectedRows.includes(index)}
-                onChange={() => (isGrouped ? handleChangeInner(index, i, 'checked', !condition.checked) : handleSelectRow(index))}
-              />
-            </td>
+            {!isInner && (
+              <td>
+                <input
+                  type="checkbox"
+                  checked={isGrouped ? condition.checked : selectedRows.includes(index)}
+                  onChange={() => (isGrouped ? handleChangeInner(index, i, 'checked', !condition.checked) : handleSelectRow(index))}
+                />
+              </td>
+            )}
             <td>
               <label>Select Operation</label>
               <select value={condition.selectOperation} onChange={(e) => handleChange(index, 'selectOperation', e.target.value)}>
@@ -217,7 +220,7 @@ const RuleConditionRows = () => {
             </td>
             <td>
               {condition.rows.map((row, i) => (
-                <div key={i}>{renderConditionRow(row, index, i, true)}</div>
+                <div key={i}>{renderConditionRow(row, index, i, true, true)}</div>
               ))}
             </td>
           </tr>
@@ -226,11 +229,13 @@ const RuleConditionRows = () => {
     ) : (
       // Render a normal condition row with dropdowns and input
       <div style={{ border: '1px solid black', margin: '10px', padding: '10px' }}>
-        <input
-          type="checkbox"
-          checked={isGrouped ? condition.checked : selectedRows.includes(index)}
-          onChange={() => (isGrouped ? handleChangeInner(index, i, 'checked', !condition.checked) : handleSelectRow(index))}
-        />
+        {!isInner && (
+          <input
+            type="checkbox"
+            checked={isGrouped ? condition.checked : selectedRows.includes(index)}
+            onChange={() => (isGrouped ? handleChangeInner(index, i, 'checked', !condition.checked) : handleSelectRow(index))}
+          />
+        )}
         <select
           value={condition.source}
           onChange={(e) =>
@@ -312,7 +317,8 @@ const RuleConditionRows = () => {
       </div>
     )
   }
- return (
+
+  return (
     <div className="col-md-12 pad-1 card-rounded">
       <button onClick={handleAddConditionRow}>Add Condition Row</button>
       {isAddClicked ? (
