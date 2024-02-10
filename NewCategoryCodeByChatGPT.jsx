@@ -16,28 +16,20 @@ const MyComponent = (props) => {
   const usersList = useSelector(getUsers);
 
   useEffect(() => {
-    // update the loading state based on the appsSearchList status
-    if (appsSearchList.status === 'loading') {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  }, [appsSearchList.status]);
+    setLoading(appsSearchList.status === 'loading' || usersList.status === 'loading');
+  }, [appsSearchList.status, usersList.status]);
 
   useEffect(() => {
-    // update the loading state based on the usersList status
-    if (usersList.status === 'loading') {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
-  }, [usersList.status]);
-
-  useEffect(() => {
-    if (appsSearchList.data) {
+    if (appsSearchList.status === 'loaded') {
       setCarIdSuggestions(appsSearchList.data);
     }
-  }, [appsSearchList.data]);
+  }, [appsSearchList.status, appsSearchList.data]);
+
+  useEffect(() => {
+    if (usersList.status === 'loaded') {
+      setRuleOwnerSuggestions(usersList.data);
+    }
+  }, [usersList.status, usersList.data]);
 
   const handleCategoryChange = useCallback(
     (e) => {
@@ -45,8 +37,6 @@ const MyComponent = (props) => {
       setCategory(selectedCategory);
       if (selectedCategory === 'Organizational Policies') {
         setRuleOwner('Patrick Jeniffer');
-      } else {
-        setRuleOwner('');
       }
       props.onCategoryChange(selectedCategory); // pass the category value to the parent component
     },
@@ -69,7 +59,6 @@ const MyComponent = (props) => {
   const handleCarIdSelect = useCallback(
     (app) => {
       setCarId(`${app.applName} (${app.applId})`);
-      setCarIdSuggestions([]);
       if (category === 'Application Policies') {
         setRuleOwner(app.techOwnerFullName);
       }
@@ -80,36 +69,19 @@ const MyComponent = (props) => {
 
   const handleCarIdClear = useCallback(() => {
     setCarId('');
-    setCarIdSuggestions([]);
     setRuleOwner('');
     props.onCarIdClear(); // notify the parent component that the car id is cleared
   }, [props]);
 
   const handleRuleOwnerChange = useCallback(
-    async (e) => {
-      const input = e.target.value;
-      setRuleOwner(input);
-      try {
-        await dispatch(loadUsers(input));
-      } catch (error) {
-        console.error(error);
-      }
+    (e) => {
+      setRuleOwner(e.target.value);
     },
-    [dispatch]
-  );
-
-  const handleRuleOwnerSelect = useCallback(
-    (user) => {
-      setRuleOwner(user.techOwnerFullName);
-      setRuleOwnerSuggestions([]);
-      props.onRuleOwnerSelect(user); // pass the selected user object to the parent component
-    },
-    [props]
+    []
   );
 
   const handleRuleOwnerClear = useCallback(() => {
     setRuleOwner('');
-    setRuleOwnerSuggestions([]);
     props.onRuleOwnerClear(); // notify the parent component that the rule owner is cleared
   }, [props]);
 
@@ -214,7 +186,7 @@ const MyComponent = (props) => {
             borderRadius: '5px'
           }}>
           {ruleOwnerSuggestions.map((user) => (
-            <li key={user.ecn} onClick={() => handleRuleOwnerSelect(user)} style={{ padding: '10px', cursor: 'pointer' }}>
+            <li key={user.ecn} style={{ padding: '10px', cursor: 'pointer' }}>
               {user.techOwnerFullName} ({user.ecn}) - {user.managerName} ({user.managerEcn})
             </li>
           ))}
