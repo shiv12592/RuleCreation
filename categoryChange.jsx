@@ -256,3 +256,41 @@ const ParentComponent = () => {
 };
 
 export default ParentComponent;
+
+
+//////////////chnages////////////////
+import React, { useState } from 'react';
+
+const MyComponent = (props) => {
+  // ...
+
+  return (
+    <div>
+      <label>
+        Car ID
+        <input type="text" value={carId} onChange={handleCarIdChange} placeholder="Search by name or ID and select" />
+        <ul style={{listStyle: 'none', padding: '0', margin: '0', maxHeight: '200px', overflowY: 'auto', border: '1px solid #ccc', borderRadius: '5px'}}>
+          {appsSearchList.data.map(app => (
+            <li key={app.applId} onClick={() => handleCarIdSelect(app)} style={{padding: '10px', cursor: 'pointer'}}>
+              {app.applName} ({app.applId}) - {app.techOwnerFullName}
+            </li>
+          ))}
+        </ul>
+      </label>
+
+      <label>
+        Rule Owner
+        <input type="text" value={ruleOwner} onChange={handleRuleOwnerChange} placeholder="Search by Owner Name" />
+        <ul style={{listStyle: 'none', padding: '0', margin: '0', maxHeight: '200px', overflowY: 'auto', border: '1px solid #ccc', borderRadius: '5px'}}>
+          {usersList.data.map(user => (
+            <li key={user.ecn} onClick={() => handleRuleOwnerSelect(user)} style={{padding: '10px', cursor: 'pointer'}}>
+              {user.techOwnerFullName} ({user.ecn}) - {user.managerName} ({user.managerEcn})
+            </li>
+          ))}
+        </ul>
+      </label>
+    </div>
+  );
+};
+
+export default MyComponent;
