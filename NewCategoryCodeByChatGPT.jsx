@@ -9,15 +9,20 @@ const MyComponent = (props) => {
   const [ruleOwner, setRuleOwner] = useState('');
   const [carIdSuggestions, setCarIdSuggestions] = useState([]);
   const [ruleOwnerSuggestions, setRuleOwnerSuggestions] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingApps, setLoadingApps] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const dispatch = useDispatch();
   const appsSearchList = useSelector(getSearchedApps);
   const usersList = useSelector(getUsers);
 
   useEffect(() => {
-    setLoading(appsSearchList.status === 'loading' || usersList.status === 'loading');
-  }, [appsSearchList.status, usersList.status]);
+    setLoadingApps(appsSearchList.status === 'loaded');
+  }, [appsSearchList.status]);
+
+  useEffect(() => {
+    setLoadingUsers(usersList.status === 'loaded');
+  }, [usersList.status]);
 
   useEffect(() => {
     if (appsSearchList.status === 'loaded') {
@@ -110,7 +115,7 @@ const MyComponent = (props) => {
             placeholder="Search by name or ID and select"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loading && <span style={{ marginLeft: '5px' }}>Loading...</span>}
+          {loadingApps && <span style={{ marginLeft: '5px' }}>Loading...</span>}
           {carId && (
             <button
               onClick={handleCarIdClear}
@@ -159,7 +164,7 @@ const MyComponent = (props) => {
             placeholder="Search by Owner Name"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loading && <span style={{ marginLeft: '5px' }}>Loading...</span>}
+          {loadingUsers && <span style={{ marginLeft: '5px' }}>Loading...</span>}
           {ruleOwner && (
             <button
               onClick={handleRuleOwnerClear}
