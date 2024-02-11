@@ -17,24 +17,24 @@ const MyComponent = (props) => {
   const usersList = useSelector(getUsers);
 
   useEffect(() => {
-    setLoadingApps(appsSearchList.status === 'loaded');
-  }, [appsSearchList.status]);
+    setLoadingApps(!!appsSearchList.data);
+  }, [appsSearchList.data]);
 
   useEffect(() => {
-    setLoadingUsers(usersList.status === 'loaded');
-  }, [usersList.status]);
+    setLoadingUsers(!!usersList.data);
+  }, [usersList.data]);
 
   useEffect(() => {
-    if (appsSearchList.status === 'loaded') {
+    if (appsSearchList.data) {
       setCarIdSuggestions(appsSearchList.data);
     }
-  }, [appsSearchList.status, appsSearchList.data]);
+  }, [appsSearchList.data]);
 
   useEffect(() => {
-    if (usersList.status === 'loaded') {
+    if (usersList.data) {
       setRuleOwnerSuggestions(usersList.data);
     }
-  }, [usersList.status, usersList.data]);
+  }, [usersList.data]);
 
   const handleCategoryChange = useCallback(
     (e) => {
@@ -64,6 +64,7 @@ const MyComponent = (props) => {
   const handleCarIdSelect = useCallback(
     (app) => {
       setCarId(`${app.applName} (${app.applId})`);
+      setCarIdSuggestions([]);
       if (category === 'Application Policies') {
         setRuleOwner(app.techOwnerFullName);
       }
@@ -75,18 +76,26 @@ const MyComponent = (props) => {
   const handleCarIdClear = useCallback(() => {
     setCarId('');
     setRuleOwner('');
+    setCarIdSuggestions([]);
     props.onCarIdClear(); // notify the parent component that the car id is cleared
   }, [props]);
 
   const handleRuleOwnerChange = useCallback(
-    (e) => {
-      setRuleOwner(e.target.value);
+    async (e) => {
+      const input = e.target.value;
+      setRuleOwner(input);
+      try {
+        await dispatch(loadUsers(input));
+      } catch (error) {
+        console.error(error);
+      }
     },
-    []
+    [dispatch]
   );
 
   const handleRuleOwnerClear = useCallback(() => {
     setRuleOwner('');
+    setRuleOwnerSuggestions([]);
     props.onRuleOwnerClear(); // notify the parent component that the rule owner is cleared
   }, [props]);
 
@@ -131,27 +140,29 @@ const MyComponent = (props) => {
             </button>
           )}
         </div>
-        <ul
-          style={{
-            listStyle: 'none',
-            padding: '0',
-            margin: '0',
-            maxHeight: '200px',
-            overflowY: 'auto',
-            border: '1px solid #ccc',
-            borderRadius: '5px',
-          }}
-        >
-          {carIdSuggestions.map((app) => (
-            <li
-              key={app.applId}
-              onClick={() => handleCarIdSelect(app)}
-              style={{ padding: '10px', cursor: 'pointer' }}
-            >
-              {app.applName} ({app.applId}) - {app.techOwnerFullName}
-            </li>
-          ))}
-        </ul>
+        {carIdSuggestions.length > 0 && (
+          <ul
+            style={{
+              listStyle: 'none',
+              padding: '0',
+              margin: '0',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+            }}
+          >
+            {carIdSuggestions.map((app) => (
+              <li
+                key={app.applId}
+                onClick={() => handleCarIdSelect(app)}
+                style={{ padding: '10px', cursor: 'pointer' }}
+              >
+                {app.applName} ({app.applId}) - {app.techOwnerFullName}
+              </li>
+            ))}
+          </ul>
+        )}
       </label>
 
       <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
@@ -180,22 +191,24 @@ const MyComponent = (props) => {
             </button>
           )}
         </div>
-        <ul
-          style={{
-            listStyle: 'none',
-            padding: '0',
-            margin: '0',
-            maxHeight: '200px',
-            overflowY: 'auto',
-            border: '1px solid #ccc',
-            borderRadius: '5px'
-          }}>
-          {ruleOwnerSuggestions.map((user) => (
-            <li key={user.ecn} style={{ padding: '10px', cursor: 'pointer' }}>
-              {user.techOwnerFullName} ({user.ecn}) - {user.managerName} ({user.managerEcn})
-            </li>
-          ))}
-        </ul>
+        {ruleOwnerSuggestions.length > 0 && (
+          <ul
+            style={{
+              listStyle: 'none',
+              padding: '0',
+              margin: '0',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              border: '1px solid #ccc',
+              borderRadius: '5px'
+            }}>
+            {ruleOwnerSuggestions.map((user) => (
+              <li key={user.ecn} style={{ padding: '10px', cursor: 'pointer' }}>
+                {user.techOwnerFullName} ({user.ecn}) - {user.managerName} ({user.managerEcn})
+              </li>
+            ))}
+          </ul>
+        )}
       </label>
     </>
   )
