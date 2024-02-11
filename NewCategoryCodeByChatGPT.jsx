@@ -11,7 +11,6 @@ const MyComponent = (props) => {
   const [ruleOwnerSuggestions, setRuleOwnerSuggestions] = useState([]);
   const [loadingApps, setLoadingApps] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [searching, setSearching] = useState(false);
 
   const dispatch = useDispatch();
   const appsSearchList = useSelector(getSearchedApps);
@@ -43,25 +42,31 @@ const MyComponent = (props) => {
       setCategory(selectedCategory);
       if (selectedCategory === 'Organizational Policies') {
         setRuleOwner('Patrick Jeniffer');
-        setRuleOwnerSuggestions([]); // Clear suggestions as the search box is disabled
       }
-      props.onCategoryChange(selectedCategory);
+      props.onCategoryChange(selectedCategory); // pass the category value to the parent component
     },
     [props]
   );
 
+  const handleCategoryClear = useCallback(() => {
+    setCategory('');
+    setCarId('');
+    setRuleOwner('');
+    setCarIdSuggestions([]);
+    setRuleOwnerSuggestions([]);
+    props.onCategoryClear(); // notify the parent component that the category is cleared
+  }, [props]);
+
   const handleCarIdChange = useCallback(
-    debounce(async (e) => {
+    async (e) => {
       const input = e.target.value;
       setCarId(input);
-      setSearching(true);
       try {
         await dispatch(searchApps(input));
       } catch (error) {
         console.error(error);
       }
-      setSearching(false);
-    }, 300),
+    },
     [dispatch]
   );
 
@@ -72,7 +77,7 @@ const MyComponent = (props) => {
       if (category === 'Application Policies') {
         setRuleOwner(app.techOwnerFullName);
       }
-      props.onCarIdSelect(app);
+      props.onCarIdSelect(app); // pass the selected app object to the parent component
     },
     [category, props]
   );
@@ -81,29 +86,31 @@ const MyComponent = (props) => {
     setCarId('');
     setRuleOwner('');
     setCarIdSuggestions([]);
-    props.onCarIdClear();
+    props.onCarIdClear(); // notify the parent component that the car id is cleared
   }, [props]);
 
   const handleRuleOwnerChange = useCallback(
-    debounce(async (e) => {
+    async (e) => {
       const input = e.target.value;
       setRuleOwner(input);
-      setSearching(true);
       try {
         await dispatch(loadUsers(input));
       } catch (error) {
         console.error(error);
       }
-      setSearching(false);
-    }, 300),
+    },
     [dispatch]
   );
 
   const handleRuleOwnerClear = useCallback(() => {
     setRuleOwner('');
     setRuleOwnerSuggestions([]);
-    props.onRuleOwnerClear();
+    props.onRuleOwnerClear(); // notify the parent component that the rule owner is cleared
   }, [props]);
+
+  const CircularProgress = () => (
+    <div className="progress-circle"></div>
+  );
 
   return (
     <>
@@ -118,6 +125,20 @@ const MyComponent = (props) => {
           <option value="Application Policies">Application Policies</option>
           <option value="Organizational Policies">Organizational Policies</option>
         </select>
+        {category && (
+          <button
+            onClick={handleCategoryClear}
+            style={{
+              marginLeft: '5px',
+              padding: '5px',
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              cursor: 'pointer',
+            }}
+          >
+            X
+          </button>
+        )}
       </label>
 
       <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
@@ -128,10 +149,9 @@ const MyComponent = (props) => {
             value={carId}
             onChange={handleCarIdChange}
             placeholder="Search by name or ID and select"
-            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}
-            disabled={category === 'Organizational Policies'}
+            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {searching && <CircularProgress style={{ marginLeft: '5px' }} />}
+          {loadingApps ? <CircularProgress /> : null}
           {carId && (
             <button
               onClick={handleCarIdClear}
@@ -180,21 +200,20 @@ const MyComponent = (props) => {
             value={ruleOwner}
             onChange={handleRuleOwnerChange}
             placeholder="Search by Owner Name"
-            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}
-            disabled={category === 'Organizational Policies'}
+            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {searching && <CircularProgress style={{ marginLeft: '5px' }} />}
+          {loadingUsers ? <CircularProgress /> : null}
           {ruleOwner && (
             <button
               onClick={handleRuleOwnerClear}
               style={{
-                marginLeft: '5px',
+                marginLeft:
+                  '5px',
                 padding: '5px',
                 border: '1px solid #ccc',
                 borderRadius: '5px',
-                cursor: 'pointer',
-              }}
-            >
+                cursor: 'pointer'
+              }}>
               X
             </button>
           )}
@@ -208,28 +227,18 @@ const MyComponent = (props) => {
               maxHeight: '200px',
               overflowY: 'auto',
               border: '1px solid #ccc',
-              borderRadius: '5px',
-            }}
-          >
+              borderRadius: '5px'
+            }}>
             {ruleOwnerSuggestions.map((user) => (
-              <li
-                key={user.applId}
-                style={{ padding: '10px', cursor: 'pointer' }}
-              >
-                {user.techOwnerFullName}
+              <li key={user.applId} style={{ padding: '10px', cursor: 'pointer' }}>
+                {user.techOwnerFullName} 
               </li>
             ))}
           </ul>
         )}
       </label>
-
-      {category === 'Organizational Policies' && ruleOwner && (
-        <label style={{ display: 'flex', flexDirection: 'column', margin: '10px', border: '2px solid blue', borderRadius: '5px', padding: '5px' }}>
-          Selected Rule Owner: {ruleOwner}
-        </label>
-      )}
     </>
-  );
-};
+  )
+}
 
 export default MyComponent;
