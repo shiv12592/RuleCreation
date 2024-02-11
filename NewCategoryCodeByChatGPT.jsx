@@ -11,6 +11,7 @@ const MyComponent = (props) => {
   const [ruleOwnerSuggestions, setRuleOwnerSuggestions] = useState([]);
   const [loadingApps, setLoadingApps] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   const dispatch = useDispatch();
   const appsSearchList = useSelector(getSearchedApps);
@@ -42,22 +43,25 @@ const MyComponent = (props) => {
       setCategory(selectedCategory);
       if (selectedCategory === 'Organizational Policies') {
         setRuleOwner('Patrick Jeniffer');
+        setRuleOwnerSuggestions([]); // Clear suggestions as the search box is disabled
       }
-      props.onCategoryChange(selectedCategory); // pass the category value to the parent component
+      props.onCategoryChange(selectedCategory);
     },
     [props]
   );
 
   const handleCarIdChange = useCallback(
-    async (e) => {
+    debounce(async (e) => {
       const input = e.target.value;
       setCarId(input);
+      setSearching(true);
       try {
         await dispatch(searchApps(input));
       } catch (error) {
         console.error(error);
       }
-    },
+      setSearching(false);
+    }, 300),
     [dispatch]
   );
 
@@ -68,7 +72,7 @@ const MyComponent = (props) => {
       if (category === 'Application Policies') {
         setRuleOwner(app.techOwnerFullName);
       }
-      props.onCarIdSelect(app); // pass the selected app object to the parent component
+      props.onCarIdSelect(app);
     },
     [category, props]
   );
@@ -77,26 +81,28 @@ const MyComponent = (props) => {
     setCarId('');
     setRuleOwner('');
     setCarIdSuggestions([]);
-    props.onCarIdClear(); // notify the parent component that the car id is cleared
+    props.onCarIdClear();
   }, [props]);
 
   const handleRuleOwnerChange = useCallback(
-    async (e) => {
+    debounce(async (e) => {
       const input = e.target.value;
       setRuleOwner(input);
+      setSearching(true);
       try {
         await dispatch(loadUsers(input));
       } catch (error) {
         console.error(error);
       }
-    },
+      setSearching(false);
+    }, 300),
     [dispatch]
   );
 
   const handleRuleOwnerClear = useCallback(() => {
     setRuleOwner('');
     setRuleOwnerSuggestions([]);
-    props.onRuleOwnerClear(); // notify the parent component that the rule owner is cleared
+    props.onRuleOwnerClear();
   }, [props]);
 
   return (
@@ -122,9 +128,10 @@ const MyComponent = (props) => {
             value={carId}
             onChange={handleCarIdChange}
             placeholder="Search by name or ID and select"
-            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
+            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}
+            disabled={category === 'Organizational Policies'} // Disable search box if category is 'Organizational Policies'
           />
-          {loadingApps && <span style={{ marginLeft: '5px' }}>Loading...</span>}
+          {searching && <CircularProgress style={{ marginLeft: '5px' }} />} {/* Circular Progress bar instead of 'Loading...' */}
           {carId && (
             <button
               onClick={handleCarIdClear}
@@ -173,20 +180,21 @@ const MyComponent = (props) => {
             value={ruleOwner}
             onChange={handleRuleOwnerChange}
             placeholder="Search by Owner Name"
-            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
+            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}
+            disabled={category === 'Organizational Policies'} // Disable search box if category is 'Organizational Policies'
           />
-          {loadingUsers && <span style={{ marginLeft: '5px' }}>Loading...</span>}
+          {searching && <CircularProgress style={{ marginLeft: '5px' }} />} {/* Circular Progress bar instead of 'Loading...' */}
           {ruleOwner && (
             <button
               onClick={handleRuleOwnerClear}
               style={{
-                marginLeft:
-                  '5px',
+                marginLeft: '5px',
                 padding: '5px',
                 border: '1px solid #ccc',
                 borderRadius: '5px',
-                cursor: 'pointer'
-              }}>
+                cursor: 'pointer',
+              }}
+            >
               X
             </button>
           )}
@@ -200,18 +208,22 @@ const MyComponent = (props) => {
               maxHeight: '200px',
               overflowY: 'auto',
               border: '1px solid #ccc',
-              borderRadius: '5px'
-            }}>
+              borderRadius: '5px',
+            }}
+          >
             {ruleOwnerSuggestions.map((user) => (
-              <li key={user.ecn} style={{ padding: '10px', cursor: 'pointer' }}>
-                {user.techOwnerFullName} ({user.ecn}) - {user.managerName} ({user.managerEcn})
+              <li
+                key={user.applId}
+                style={{ padding: '10px', cursor: 'pointer' }}
+              >
+                {user.techOwnerFullName}
               </li>
             ))}
           </ul>
         )}
       </label>
     </>
-  )
-}
+  );
+};
 
 export default MyComponent;
