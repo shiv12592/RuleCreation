@@ -129,7 +129,6 @@ const MyComponent = (props) => {
             onChange={handleCarIdChange}
             placeholder="Search by name or ID and select"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}
-            disabled={category === 'Organizational Policies'} // Disable search box if category is 'Organizational Policies'
           />
           {searching && <CircularProgress style={{ marginLeft: '5px' }} />} {/* Circular Progress bar instead of 'Loading...' */}
           {carId && (
