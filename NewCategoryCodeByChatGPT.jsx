@@ -129,7 +129,7 @@ const MyComponent = (props) => {
 
       <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
         Car ID
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
           <input
             type="text"
             value={carId}
@@ -137,7 +137,7 @@ const MyComponent = (props) => {
             placeholder="Search by name or ID and select"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingApps && <div className="spinner"></div>}
+          {loadingApps && <div className="spinner" style={{ position: 'absolute', right: '5px' }}></div>}
           {carId && (
             <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
               {carId}
@@ -172,7 +172,7 @@ const MyComponent = (props) => {
 
       <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
         Rule Owner
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
           <input
             type="text"
             value={ruleOwner}
@@ -180,7 +180,7 @@ const MyComponent = (props) => {
             placeholder="Search by Owner Name"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingUsers && <div className="spinner"></div>}
+          {loadingUsers && <div className="spinner" style={{ position: 'absolute', right: '5px' }}></div>}
           {ruleOwner && (
             <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
               {ruleOwner}
