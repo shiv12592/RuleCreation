@@ -160,7 +160,7 @@ const MyComponent = (props) => {
             placeholder="Search by name or ID and select"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingApps && <div className="progress-bar" style={{ position: 'absolute', right: '5px' }}></div>}
+          {loadingApps && <span style={{ marginLeft: '5px' }}>Loading...</span>}
           {carId && (
             <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
               {carId}
@@ -203,7 +203,7 @@ const MyComponent = (props) => {
             placeholder="Search by Owner Name"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingUsers && <div className="progress-bar" style={{ position: 'absolute', right: '5px' }}></div>}
+          {loadingUsers && <span style={{ marginLeft: '5px' }}>Loading...</span>}
           {ruleOwner && (
             <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
               {ruleOwner}
