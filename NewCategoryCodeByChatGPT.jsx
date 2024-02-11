@@ -42,6 +42,8 @@ const MyComponent = (props) => {
       setCategory(selectedCategory);
       if (selectedCategory === 'Organizational Policies') {
         setRuleOwner('Patrick Jeniffer');
+      } else {
+        setRuleOwner('');
       }
       props.onCategoryChange(selectedCategory); // pass the category value to the parent component
     },
@@ -112,6 +114,27 @@ const MyComponent = (props) => {
     props.onRuleOwnerClear(); // notify the parent component that the rule owner is cleared
   }, [props]);
 
+  const handleCarIdSuggestionSelect = useCallback(
+    (app) => {
+      setCarId(`${app.applName} (${app.applId})`);
+      setCarIdSuggestions([]); // Clear suggestions after selection
+      if (category === 'Application Policies') {
+        setRuleOwner(app.techOwnerFullName);
+      }
+      props.onCarIdSelect(app); // pass the selected app object to the parent component
+    },
+    [category, props]
+  );
+
+  const handleRuleOwnerSuggestionSelect = useCallback(
+    (user) => {
+      setRuleOwner(user.techOwnerFullName);
+      setRuleOwnerSuggestions([]); // Clear suggestions after selection
+      props.onRuleOwnerSelect(user); // pass the selected user object to the parent component
+    },
+    [props]
+  );
+
   return (
     <>
       <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
@@ -137,7 +160,7 @@ const MyComponent = (props) => {
             placeholder="Search by name or ID and select"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingApps && <div className="spinner" style={{ position: 'absolute', right: '5px' }}></div>}
+          {loadingApps && <div className="progress-bar" style={{ position: 'absolute', right: '5px' }}></div>}
           {carId && (
             <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
               {carId}
@@ -160,7 +183,7 @@ const MyComponent = (props) => {
             {carIdSuggestions.map((app) => (
               <li
                 key={app.applId}
-                onClick={() => handleCarIdSelect(app)}
+                onClick={() => handleCarIdSuggestionSelect(app)}
                 style={{ padding: '10px', cursor: 'pointer' }}
               >
                 {app.applName} ({app.applId}) - {app.techOwnerFullName}
@@ -180,7 +203,7 @@ const MyComponent = (props) => {
             placeholder="Search by Owner Name"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingUsers && <div className="spinner" style={{ position: 'absolute', right: '5px' }}></div>}
+          {loadingUsers && <div className="progress-bar" style={{ position: 'absolute', right: '5px' }}></div>}
           {ruleOwner && (
             <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
               {ruleOwner}
@@ -200,7 +223,7 @@ const MyComponent = (props) => {
               borderRadius: '5px'
             }}>
             {ruleOwnerSuggestions.map((user) => (
-              <li key={user.applId} onClick={() => handleRuleOwnerSelect(user)} style={{ padding: '10px', cursor: 'pointer' }}>
+              <li key={user.applId} onClick={() => handleRuleOwnerSuggestionSelect(user)} style={{ padding: '10px', cursor: 'pointer' }}>
                 {user.techOwnerFullName} 
               </li>
             ))}
