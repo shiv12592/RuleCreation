@@ -172,56 +172,78 @@ const MyComponent = (props) => {
         )}
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
-        Rule Owner
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <input
-            type="text"
-            value={ruleOwner}
-            onChange={handleRuleOwnerChange}
-            placeholder="Search by Owner Name"
-            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}
-            disabled={category === 'Organizational Policies'} // Disable search box if category is 'Organizational Policies'
-          />
-          {searching && <CircularProgress style={{ marginLeft: '5px' }} />} {/* Circular Progress bar instead of 'Loading...' */}
-          {ruleOwner && (
-            <button
-              onClick={handleRuleOwnerClear}
+      {category === 'Organizational Policies' && (
+        <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
+          Rule Owner
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <input
+              type="text"
+              value={ruleOwner}
+              placeholder="Patrick Jeniffer" // Placeholder set to "Patrick Jeniffer" when category is "Organizational Policies"
+              style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}
+              disabled
+            />
+          </div>
+        </label>
+      )}
+
+      {category !== 'Organizational Policies' && (
+        <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
+          Rule Owner
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <input
+              type="text"
+              value={ruleOwner}
+              onChange={handleRuleOwnerChange}
+              placeholder="Search by Owner Name"
+              style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px', width: '200px' }}
+            />
+            {searching && <CircularProgress style={{ marginLeft: '5px' }} />} {/* Circular Progress bar instead of 'Loading...' */}
+            {ruleOwner && (
+              <button
+                onClick={handleRuleOwnerClear}
+                style={{
+                  marginLeft: '5px',
+                  padding: '5px',
+                  border: '1px solid #ccc',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                }}
+              >
+                X
+              </button>
+            )}
+          </div>
+          {ruleOwnerSuggestions.length > 0 && (
+            <ul
               style={{
-                marginLeft: '5px',
-                padding: '5px',
+                listStyle: 'none',
+                padding: '0',
+                margin: '0',
+                maxHeight: '200px',
+                overflowY: 'auto',
                 border: '1px solid #ccc',
                 borderRadius: '5px',
-                cursor: 'pointer',
               }}
             >
-              X
-            </button>
+              {ruleOwnerSuggestions.map((user) => (
+                <li
+                  key={user.applId}
+                  style={{ padding: '10px', cursor: 'pointer' }}
+                >
+                  {user.techOwnerFullName}
+                </li>
+              ))}
+            </ul>
           )}
-        </div>
-        {ruleOwnerSuggestions.length > 0 && (
-          <ul
-            style={{
-              listStyle: 'none',
-              padding: '0',
-              margin: '0',
-              maxHeight: '200px',
-              overflowY: 'auto',
-              border: '1px solid #ccc',
-              borderRadius: '5px',
-            }}
-          >
-            {ruleOwnerSuggestions.map((user) => (
-              <li
-                key={user.applId}
-                style={{ padding: '10px', cursor: 'pointer' }}
-              >
-                {user.techOwnerFullName}
-              </li>
-            ))}
-          </ul>
-        )}
-      </label>
+        </label>
+      )}
+      
+      {category === 'Organizational Policies' && ruleOwner && (
+        <label style={{ display: 'flex', flexDirection: 'column', margin: '10px', border: '2px solid blue', borderRadius: '5px', padding: '5px' }}>
+          Selected Rule Owner: {ruleOwner}
+        </label>
+      )}
     </>
   );
 };
