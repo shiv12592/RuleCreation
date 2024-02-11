@@ -81,11 +81,16 @@ const MyComponent = (props) => {
   }, [props]);
 
   const handleRuleOwnerChange = useCallback(
-    (e) => {
+    async (e) => {
       const input = e.target.value;
       setRuleOwner(input);
+      try {
+        await dispatch(loadUsers(input));
+      } catch (error) {
+        console.error(error);
+      }
     },
-    []
+    [dispatch]
   );
 
   const handleRuleOwnerClear = useCallback(() => {
