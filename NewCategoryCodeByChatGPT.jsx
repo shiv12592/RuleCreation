@@ -11,6 +11,8 @@ const MyComponent = (props) => {
   const [ruleOwnerSuggestions, setRuleOwnerSuggestions] = useState([]);
   const [loadingApps, setLoadingApps] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadedCarId, setLoadedCarId] = useState(false);
+  const [loadedRuleOwner, setLoadedRuleOwner] = useState(false);
 
   const dispatch = useDispatch();
   const appsSearchList = useSelector(getSearchedApps);
@@ -73,6 +75,7 @@ const MyComponent = (props) => {
         setRuleOwner(app.techOwnerFullName);
       }
       props.onCarIdSelect(app); // pass the selected app object to the parent component
+      setLoadedCarId(true); // Set loaded state to true
     },
     [category, props]
   );
@@ -82,6 +85,7 @@ const MyComponent = (props) => {
     setRuleOwner('');
     setCarIdSuggestions([]);
     props.onCarIdClear(); // notify the parent component that the car id is cleared
+    setLoadedCarId(false); // Reset loaded state to false
   }, [props]);
 
   const handleRuleOwnerChange = useCallback(
@@ -104,6 +108,7 @@ const MyComponent = (props) => {
       setRuleOwner(user.techOwnerFullName);
       setRuleOwnerSuggestions([]); // Clear suggestions after selection
       props.onRuleOwnerSelect(user); // pass the selected user object to the parent component
+      setLoadedRuleOwner(true); // Set loaded state to true
     },
     [props]
   );
@@ -112,6 +117,7 @@ const MyComponent = (props) => {
     setRuleOwner('');
     setRuleOwnerSuggestions([]);
     props.onRuleOwnerClear(); // notify the parent component that the rule owner is cleared
+    setLoadedRuleOwner(false); // Reset loaded state to false
   }, [props]);
 
   const handleCarIdSuggestionSelect = useCallback(
@@ -122,6 +128,7 @@ const MyComponent = (props) => {
         setRuleOwner(app.techOwnerFullName);
       }
       props.onCarIdSelect(app); // pass the selected app object to the parent component
+      setLoadedCarId(true); // Set loaded state to true
     },
     [category, props]
   );
@@ -131,6 +138,7 @@ const MyComponent = (props) => {
       setRuleOwner(user.techOwnerFullName);
       setRuleOwnerSuggestions([]); // Clear suggestions after selection
       props.onRuleOwnerSelect(user); // pass the selected user object to the parent component
+      setLoadedRuleOwner(true); // Set loaded state to true
     },
     [props]
   );
@@ -160,7 +168,8 @@ const MyComponent = (props) => {
             placeholder="Search by name or ID and select"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingApps && <span style={{ marginLeft: '5px' }}>Loading...</span>}
+          {loadingApps && !loadedCarId && <span style={{ marginLeft: '5px', color: 'red' }}>Loading...</span>}
+          {loadingApps && loadedCarId && <span style={{ marginLeft: '5px', color: 'green' }}>Loaded...</span>}
           {carId && (
             <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
               {carId}
@@ -203,7 +212,8 @@ const MyComponent = (props) => {
             placeholder="Search by Owner Name"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingUsers && <span style={{ marginLeft: '5px' }}>Loading...</span>}
+          {loadingUsers && !loadedRuleOwner && <span style={{ marginLeft: '5px', color: 'red' }}>Loading...</span>}
+          {loadingUsers && loadedRuleOwner && <span style={{ marginLeft: '5px', color: 'green' }}>Loaded...</span>}
           {ruleOwner && (
             <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
               {ruleOwner}
@@ -221,9 +231,14 @@ const MyComponent = (props) => {
               overflowY: 'auto',
               border: '1px solid #ccc',
               borderRadius: '5px'
-            }}>
+            }}
+          >
             {ruleOwnerSuggestions.map((user) => (
-              <li key={user.applId} onClick={() => handleRuleOwnerSuggestionSelect(user)} style={{ padding: '10px', cursor: 'pointer' }}>
+              <li
+                key={user.applId}
+                onClick={() => handleRuleOwnerSuggestionSelect(user)}
+                style={{ padding: '10px', cursor: 'pointer' }}
+              >
                 {user.techOwnerFullName} 
               </li>
             ))}
