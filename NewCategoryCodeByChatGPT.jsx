@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { debounce } from 'lodash';
 import { searchApps, loadUsers } from './api.js';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const MyComponent = (props) => {
   const [category, setCategory] = useState('');
@@ -168,7 +169,7 @@ const MyComponent = (props) => {
             placeholder="Search by name or ID and select"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingApps && !loadedCarId && <span style={{ marginLeft: '5px', color: 'red' }}>Loading...</span>}
+          {loadingApps && !loadedCarId && <CircularProgress size={20} style={{ marginLeft: '5px' }} color="secondary" />}
           {loadingApps && loadedCarId && <span style={{ marginLeft: '5px', color: 'green' }}>Loaded...</span>}
           {carId && (
             <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
@@ -212,7 +213,7 @@ const MyComponent = (props) => {
             placeholder="Search by Owner Name"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingUsers && !loadedRuleOwner && <span style={{ marginLeft: '5px', color: 'red' }}>Loading...</span>}
+          {loadingUsers && !loadedRuleOwner && <CircularProgress size={20} style={{ marginLeft: '5px' }} color="secondary" />}
           {loadingUsers && loadedRuleOwner && <span style={{ marginLeft: '5px', color: 'green' }}>Loaded...</span>}
           {ruleOwner && (
             <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
