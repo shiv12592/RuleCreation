@@ -49,8 +49,7 @@ const MyComponent = (props) => {
   );
 
   const handleCarIdChange = useCallback(
-    async (e) => {
-      const input = e.target.value;
+    debounce(async (input) => {
       setCarId(input);
       try {
         setLoadingApps(true); // Start loading
@@ -60,14 +59,14 @@ const MyComponent = (props) => {
       } finally {
         setLoadingApps(false); // Finish loading
       }
-    },
+    }, 300),
     [dispatch]
   );
 
   const handleCarIdSelect = useCallback(
     (app) => {
       setCarId(`${app.applName} (${app.applId})`);
-      setCarIdSuggestions([]);
+      setCarIdSuggestions([]); // Clear suggestions after selection
       if (category === 'Application Policies') {
         setRuleOwner(app.techOwnerFullName);
       }
@@ -84,8 +83,7 @@ const MyComponent = (props) => {
   }, [props]);
 
   const handleRuleOwnerChange = useCallback(
-    async (e) => {
-      const input = e.target.value;
+    debounce(async (input) => {
       setRuleOwner(input);
       try {
         setLoadingUsers(true); // Start loading
@@ -95,8 +93,17 @@ const MyComponent = (props) => {
       } finally {
         setLoadingUsers(false); // Finish loading
       }
-    },
+    }, 300),
     [dispatch]
+  );
+
+  const handleRuleOwnerSelect = useCallback(
+    (user) => {
+      setRuleOwner(user.techOwnerFullName);
+      setRuleOwnerSuggestions([]); // Clear suggestions after selection
+      props.onRuleOwnerSelect(user); // pass the selected user object to the parent component
+    },
+    [props]
   );
 
   const handleRuleOwnerClear = useCallback(() => {
@@ -126,7 +133,7 @@ const MyComponent = (props) => {
           <input
             type="text"
             value={carId}
-            onChange={handleCarIdChange}
+            onChange={(e) => handleCarIdChange(e.target.value)}
             placeholder="Search by name or ID and select"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
@@ -169,7 +176,7 @@ const MyComponent = (props) => {
           <input
             type="text"
             value={ruleOwner}
-            onChange={handleRuleOwnerChange}
+            onChange={(e) => handleRuleOwnerChange(e.target.value)}
             placeholder="Search by Owner Name"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
@@ -193,7 +200,7 @@ const MyComponent = (props) => {
               borderRadius: '5px'
             }}>
             {ruleOwnerSuggestions.map((user) => (
-              <li key={user.applId} style={{ padding: '10px', cursor: 'pointer' }}>
+              <li key={user.applId} onClick={() => handleRuleOwnerSelect(user)} style={{ padding: '10px', cursor: 'pointer' }}>
                 {user.techOwnerFullName} 
               </li>
             ))}
