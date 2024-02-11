@@ -48,23 +48,17 @@ const MyComponent = (props) => {
     [props]
   );
 
-  const handleCategoryClear = useCallback(() => {
-    setCategory('');
-    setCarId('');
-    setRuleOwner('');
-    setCarIdSuggestions([]);
-    setRuleOwnerSuggestions([]);
-    props.onCategoryClear(); // notify the parent component that the category is cleared
-  }, [props]);
-
   const handleCarIdChange = useCallback(
     async (e) => {
       const input = e.target.value;
       setCarId(input);
       try {
+        setLoadingApps(true); // Start loading
         await dispatch(searchApps(input));
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoadingApps(false); // Finish loading
       }
     },
     [dispatch]
@@ -94,9 +88,12 @@ const MyComponent = (props) => {
       const input = e.target.value;
       setRuleOwner(input);
       try {
+        setLoadingUsers(true); // Start loading
         await dispatch(loadUsers(input));
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoadingUsers(false); // Finish loading
       }
     },
     [dispatch]
@@ -107,10 +104,6 @@ const MyComponent = (props) => {
     setRuleOwnerSuggestions([]);
     props.onRuleOwnerClear(); // notify the parent component that the rule owner is cleared
   }, [props]);
-
-  const CircularProgress = () => (
-    <div className="progress-circle"></div>
-  );
 
   return (
     <>
@@ -125,20 +118,6 @@ const MyComponent = (props) => {
           <option value="Application Policies">Application Policies</option>
           <option value="Organizational Policies">Organizational Policies</option>
         </select>
-        {category && (
-          <button
-            onClick={handleCategoryClear}
-            style={{
-              marginLeft: '5px',
-              padding: '5px',
-              border: '1px solid #ccc',
-              borderRadius: '5px',
-              cursor: 'pointer',
-            }}
-          >
-            X
-          </button>
-        )}
       </label>
 
       <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
@@ -151,20 +130,12 @@ const MyComponent = (props) => {
             placeholder="Search by name or ID and select"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingApps ? <CircularProgress /> : null}
+          {loadingApps && <div className="spinner"></div>}
           {carId && (
-            <button
-              onClick={handleCarIdClear}
-              style={{
-                marginLeft: '5px',
-                padding: '5px',
-                border: '1px solid #ccc',
-                borderRadius: '5px',
-                cursor: 'pointer',
-              }}
-            >
-              X
-            </button>
+            <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
+              {carId}
+              <button onClick={handleCarIdClear} style={{ marginLeft: '5px', cursor: 'pointer' }}>X</button>
+            </div>
           )}
         </div>
         {carIdSuggestions.length > 0 && (
@@ -202,20 +173,12 @@ const MyComponent = (props) => {
             placeholder="Search by Owner Name"
             style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
           />
-          {loadingUsers ? <CircularProgress /> : null}
+          {loadingUsers && <div className="spinner"></div>}
           {ruleOwner && (
-            <button
-              onClick={handleRuleOwnerClear}
-              style={{
-                marginLeft:
-                  '5px',
-                padding: '5px',
-                border: '1px solid #ccc',
-                borderRadius: '5px',
-                cursor: 'pointer'
-              }}>
-              X
-            </button>
+            <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
+              {ruleOwner}
+              <button onClick={handleRuleOwnerClear} style={{ marginLeft: '5px', cursor: 'pointer' }}>X</button>
+            </div>
           )}
         </div>
         {ruleOwnerSuggestions.length > 0 && (
