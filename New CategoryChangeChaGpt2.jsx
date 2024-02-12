@@ -1,179 +1,160 @@
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { loadUsers, searchApps } from "../actions"; // import your actions
-import { Container, Row, Col, Form, ProgressBar, Button } from "react-bootstrap"; // import bootstrap components
+import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { getSearchedApps, getUsers, loadUsers, searchApps } from './actions'; // Import actions accordingly
+import { Row, Col } from 'react-bootstrap';
 
-const RuleCategoryChange = ({ onRuleChange }) => {
-  // get data from redux store
+const RuleCategoryChange = ({ onChange }) => {
+  const [category, setCategory] = useState('');
+  const [inputCarIdText, setInputCarIdText] = useState('');
+  const [inputRuleOwnerText, setInputRuleOwnerText] = useState('');
+  const [selectedCarIdLabel, setSelectedCarIdLabel] = useState('');
+  const [selectedRuleOwnerLabel, setSelectedRuleOwnerLabel] = useState('');
+
   const appsSearchList = useSelector(getSearchedApps);
   const usersList = useSelector(getUsers);
-
-  // create local state for input fields and labels
-  const [category, setCategory] = useState("");
-  const [carId, setCarId] = useState("");
-  const [ruleOwner, setRuleOwner] = useState("");
-  const [carIdLabel, setCarIdLabel] = useState("");
-  const [ruleOwnerLabel, setRuleOwnerLabel] = useState("");
-
-  // create a dispatch function
+  
   const dispatch = useDispatch();
 
-  // handle category change
+  // Handle category change
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
-    // reset other fields
-    setCarId("");
-    setRuleOwner("");
-    setCarIdLabel("");
-    setRuleOwnerLabel("");
-  };
-
-  // handle car id change
-  const handleCarIdChange = (e) => {
-    setCarId(e.target.value);
-    // dispatch search apps action
-    dispatch(searchApps(e.target.value));
-  };
-
-  // handle car id select
-  const handleCarIdSelect = (app) => {
-    // set car id label
-    setCarIdLabel(`${app.applName} (${app.applId})`);
-    // set rule owner label based on category
-    if (category === "Application policies" || category === "") {
-      setRuleOwnerLabel(app.techOwnerFullName);
+    if (e.target.value === 'Organizational Policies') {
+      setSelectedRuleOwnerLabel('Patrick Jeniffer');
     }
-    // clear car id input
-    setCarId("");
-    // dispatch load users action
-    dispatch(loadUsers(app.applId));
+    onChange({ category: e.target.value });
   };
 
-  // handle rule owner change
-  const handleRuleOwnerChange = (e) => {
-    setRuleOwner(e.target.value);
-    // dispatch search apps action
-    dispatch(searchApps(e.target.value));
+  // Handle car id input change
+  const handleCarIdInputChange = (e) => {
+    setInputCarIdText(e.target.value);
+    dispatch(loadUsers(e.target.value)); // Load users based on car id input
   };
 
-  // handle rule owner select
-  const handleRuleOwnerSelect = (user) => {
-    // set rule owner label
-    setRuleOwnerLabel(user.techOwnerFullName);
-    // clear rule owner input
-    setRuleOwner("");
+  // Handle car id suggestion selection
+  const handleCarIdSuggestionSelect = (suggestion) => {
+    setInputCarIdText(''); // Clear the input text
+    setSelectedCarIdLabel(`${suggestion.applName} (${suggestion.applId})`); // Set the label text
+    if (category === 'Application Policies' || category === '') {
+      setSelectedRuleOwnerLabel(suggestion.techOwnerFullName); // Set the rule owner label text
+    }
+    onChange({ carId: suggestion.applId }); // Send the selected car id to parent component
   };
 
-  // handle car id label clear
+  // Handle rule owner input change
+  const handleRuleOwnerInputChange = (e) => {
+    setInputRuleOwnerText(e.target.value);
+    dispatch(searchApps(e.target.value)); // Search apps based on rule owner input
+  };
+
+  // Handle rule owner suggestion selection
+  const handleRuleOwnerSuggestionSelect = (suggestion) => {
+    setInputRuleOwnerText(''); // Clear the input text
+    setSelectedRuleOwnerLabel(suggestion.techOwnerFullName); // Set the label text
+    onChange({ ruleOwner: suggestion.techOwnerFullName }); // Send the selected rule owner to parent component
+  };
+
+  // Handle car id label clear
   const handleCarIdLabelClear = () => {
-    setCarIdLabel("");
+    setSelectedCarIdLabel(''); // Clear the label text
+    onChange({ carId: '' }); // Send an empty car id to parent component
   };
 
-  // handle rule owner label clear
+  // Handle rule owner label clear
   const handleRuleOwnerLabelClear = () => {
-    setRuleOwnerLabel("");
-    // set default rule owner based on category
-    if (category === "Organizational policies") {
-      setRuleOwnerLabel("Patrick Jeniffer");
-    }
+    setSelectedRuleOwnerLabel(''); // Clear the label text
+    onChange({ ruleOwner: '' }); // Send an empty rule owner to parent component
   };
 
-  // handle rule change
-  const handleRuleChange = () => {
-    // create a rule object
-    const rule = {
-      category,
-      carId: carIdLabel,
-      ruleOwner: ruleOwnerLabel,
-    };
-    // pass the rule to the parent component
-    onRuleChange(rule);
+  // Render the car id suggestions list
+  const renderCarIdSuggestions = () => {
+    if (appsSearchList.status === 'loaded' && appsSearchList.data.length > 0) {
+      return (
+        <ul className="suggestions-list">
+          {appsSearchList.data.map((suggestion) => (
+            <li
+              key={suggestion.applId}
+              onClick={() => handleCarIdSuggestionSelect(suggestion)}
+            >
+              {suggestion.applName} ({suggestion.applId}) -{' '}
+              {suggestion.techOwnerFullName}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    return null;
+  };
+
+  // Render the rule owner suggestions list
+  const renderRuleOwnerSuggestions = () => {
+    if (usersList.status === 'loaded' && usersList.data.length > 0) {
+      return (
+        <ul className="suggestions-list">
+          {usersList.data.map((suggestion) => (
+            <li
+              key={suggestion.applId}
+              onClick={() => handleRuleOwnerSuggestionSelect(suggestion)}
+            >
+              {suggestion.techOwnerFullName}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    return null;
   };
 
   return (
-    <Container>
-      <Row>
-        <Col>
-          <Form.Label>Category</Form.Label>
-          <Form.Control
-            as="select"
-            value={category}
-            onChange={handleCategoryChange}
-          >
-            <option value="">Select a category</option>
-            <option value="Application policies">Application policies</option>
-            <option value="Organizational policies">Organizational policies</option>
-          </Form.Control>
-        </Col>
-        <Col>
-          <Form.Label>Car Id</Form.Label>
-          <Form.Control
-            type="text"
-            value={carId}
-            onChange={handleCarIdChange}
-            placeholder="Search by car id"
-          />
-          {carIdLabel && (
-            <div className="label-container">
-              <span className="label-text">{carIdLabel}</span>
-              <Button variant="light" onClick={handleCarIdLabelClear}>
-                X
-              </Button>
-            </div>
-          )}
-          {appsSearchList.status === "loading" && <ProgressBar animated now={100} />}
-          {appsSearchList.data && (
-            <ul className="suggestion-list">
-              {appsSearchList.data.map((app) => (
-                <li
-                  key={app.applId}
-                  onClick={() => handleCarIdSelect(app)}
-                  className="suggestion-item"
-                >
-                  {app.applName} ({app.applId})
-                </li>
-              ))}
-            </ul>
-          )}
-        </Col>
-        <Col>
-          <Form.Label>Rule Owner</Form.Label>
-          <Form.Control
-            type="text"
-            value={ruleOwner}
-            onChange={handleRuleOwnerChange}
-            placeholder="Search by rule owner"
-          />
-          {ruleOwnerLabel && (
-            <div className="label-container">
-              <span className="label-text">{ruleOwnerLabel}</span>
-              <Button variant="light" onClick={handleRuleOwnerLabelClear}>
-                X
-              </Button>
-            </div>
-          )}
-          {usersList.status === "loading" && <ProgressBar animated now={100} />}
-          {usersList.data && (
-            <ul className="suggestion-list">
-              {usersList.data.map((user) => (
-                <li
-                  key={user.techOwnerFullName}
-                  onClick={() => handleRuleOwnerSelect(user)}
-                  className="suggestion-item"
-                >
-                  {user.techOwnerFullName}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <Button onClick={handleRuleChange}>Submit</Button>
-        </Col>
-      </Row>
-    </Container>
+    <Row>
+      <Col>
+        <label>CATEGORY</label>
+        <select value={category} onChange={handleCategoryChange}>
+          <option value="">-- Select --</option>
+          <option value="Application Policies">Application Policies</option>
+          <option value="Organizational Policies">Organizational Policies</option>
+        </select>
+
+        {/* Car ID */}
+        <div className="car-id-field">
+          <label>CAR ID</label>
+          <div className="car-id-input">
+            <input
+              type="text"
+              value={inputCarIdText}
+              onChange={handleCarIdInputChange}
+              placeholder="Car Id - Search by name or ID and select"
+            />
+            {renderCarIdSuggestions()}
+          </div>
+          <div className="car-id-label">
+            <span>{selectedCarIdLabel}</span>
+            {selectedCarIdLabel && (
+              <button onClick={handleCarIdLabelClear}>X</button>
+            )}
+          </div>
+        </div>
+
+        {/* Rule Owner */}
+        <div className="rule-owner-field">
+          <label>RULE OWNER</label>
+          <div className="rule-owner-input">
+            <input
+              type="text"
+              value={inputRuleOwnerText}
+              onChange={handleRuleOwnerInputChange}
+              placeholder="Rule Owner - Search by name and select"
+            />
+            {renderRuleOwnerSuggestions()}
+          </div>
+          <div className="rule-owner-label">
+            <span>{selectedRuleOwnerLabel}</span>
+            {selectedRuleOwnerLabel && (
+              <button onClick={handleRuleOwnerLabelClear}>X</button>
+            )}
+          </div>
+        </div>
+      </Col>
+    </Row>
   );
 };
 
