@@ -78,6 +78,7 @@ const MyComponent = (props) => {
       }
       props.onCarIdSelect(app); // pass the selected app object to the parent component
       setLoadedCarId(true); // Set loaded state to true
+      setCarId(''); // Clear input box after selection
     },
     [category, props]
   );
@@ -111,6 +112,7 @@ const MyComponent = (props) => {
       setRuleOwnerSuggestions([]); // Clear suggestions after selection
       props.onRuleOwnerSelect(user); // pass the selected user object to the parent component
       setLoadedRuleOwner(true); // Set loaded state to true
+      setRuleOwner(''); // Clear input box after selection
     },
     [props]
   );
@@ -122,12 +124,27 @@ const MyComponent = (props) => {
     setLoadedRuleOwner(false); // Reset loaded state to false
   }, [props]);
 
+  const handleCarIdSuggestionSelect = useCallback(
+    (app) => {
+      setCarId(`${app.applName} (${app.applId})`);
+      setCarIdSuggestions([]); // Clear suggestions after selection
+      if (category === 'Application Policies' || category === '') {
+        setRuleOwner(app.techOwnerFullName);
+      }
+      props.onCarIdSelect(app); // pass the selected app object to the parent component
+      setLoadedCarId(true); // Set loaded state to true
+      setCarId(''); // Clear input box after selection
+    },
+    [category, props]
+  );
+
   const handleRuleOwnerSuggestionSelect = useCallback(
     (user) => {
       setRuleOwner(user.techOwnerFullName);
       setRuleOwnerSuggestions([]); // Clear suggestions after selection
       props.onRuleOwnerSelect(user); // pass the selected user object to the parent component
       setLoadedRuleOwner(true); // Set loaded state to true
+      setRuleOwner(''); // Clear input box after selection
     },
     [props]
   );
@@ -181,7 +198,7 @@ const MyComponent = (props) => {
             {carIdSuggestions.map((app) => (
               <li
                 key={app.applId}
-                onClick={() => handleCarIdSelect(app)}
+                onClick={() => handleCarIdSuggestionSelect(app)}
                 style={{ padding: '10px', cursor: 'pointer' }}
               >
                 {category === 'Application Policies' || category === '' ? `${app.applName} (${app.applId}) - ${app.techOwnerFullName}` : `${app.applName} (${app.applId})`}
