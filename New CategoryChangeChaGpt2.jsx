@@ -69,17 +69,19 @@ const RuleCategoryChange = ({ onChange }) => {
   const renderCarIdSuggestions = () => {
     if (appsSearchList.status === 'loaded' && appsSearchList.data.length > 0) {
       return (
-        <ul className="suggestions-list">
-          {appsSearchList.data.map((suggestion) => (
-            <li
-              key={suggestion.applId}
-              onClick={() => handleCarIdSuggestionSelect(suggestion)}
-            >
-              {suggestion.applName} ({suggestion.applId}) -{' '}
-              {suggestion.techOwnerFullName}
-            </li>
-          ))}
-        </ul>
+        <div className="suggestions-popup">
+          <ul className="suggestions-list">
+            {appsSearchList.data.map((suggestion) => (
+              <li
+                key={suggestion.applId}
+                onClick={() => handleCarIdSuggestionSelect(suggestion)}
+              >
+                {suggestion.applName} ({suggestion.applId}) -{' '}
+                {suggestion.techOwnerFullName}
+              </li>
+            ))}
+          </ul>
+        </div>
       );
     }
     return null;
@@ -89,16 +91,18 @@ const RuleCategoryChange = ({ onChange }) => {
   const renderRuleOwnerSuggestions = () => {
     if (usersList.status === 'loaded' && usersList.data.length > 0) {
       return (
-        <ul className="suggestions-list">
-          {usersList.data.map((suggestion) => (
-            <li
-              key={suggestion.applId}
-              onClick={() => handleRuleOwnerSuggestionSelect(suggestion)}
-            >
-              {suggestion.techOwnerFullName}
-            </li>
-          ))}
-        </ul>
+        <div className="suggestions-popup">
+          <ul className="suggestions-list">
+            {usersList.data.map((suggestion) => (
+              <li
+                key={suggestion.applId}
+                onClick={() => handleRuleOwnerSuggestionSelect(suggestion)}
+              >
+                {suggestion.applId}-{suggestion.techOwnerFullName}
+              </li>
+            ))}
+          </ul>
+        </div>
       );
     }
     return null;
