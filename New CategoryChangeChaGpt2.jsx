@@ -72,15 +72,12 @@ const MyComponent = (props) => {
   const handleCarIdSelect = useCallback(
     (app) => {
       setCarId(`${app.applName} (${app.applId})`);
-      setCarIdSuggestions([]); // Clear suggestions after selection
-      if (category === 'Application Policies' || category === '') {
-        setRuleOwner(app.techOwnerFullName);
-      }
+      setRuleOwner(app.techOwnerFullName);
       props.onCarIdSelect(app); // pass the selected app object to the parent component
       setLoadedCarId(true); // Set loaded state to true
       setCarId(''); // Clear input box after selection
     },
-    [category, props]
+    [props]
   );
 
   const handleCarIdClear = useCallback(() => {
@@ -127,15 +124,12 @@ const MyComponent = (props) => {
   const handleCarIdSuggestionSelect = useCallback(
     (app) => {
       setCarId(`${app.applName} (${app.applId})`);
-      setCarIdSuggestions([]); // Clear suggestions after selection
-      if (category === 'Application Policies' || category === '') {
-        setRuleOwner(app.techOwnerFullName);
-      }
+      setRuleOwner(app.techOwnerFullName);
       props.onCarIdSelect(app); // pass the selected app object to the parent component
       setLoadedCarId(true); // Set loaded state to true
       setCarId(''); // Clear input box after selection
     },
-    [category, props]
+    [props]
   );
 
   const handleRuleOwnerSuggestionSelect = useCallback(
@@ -201,7 +195,7 @@ const MyComponent = (props) => {
                 onClick={() => handleCarIdSuggestionSelect(app)}
                 style={{ padding: '10px', cursor: 'pointer' }}
               >
-                {category === 'Application Policies' || category === '' ? `${app.applName} (${app.applId}) - ${app.techOwnerFullName}` : `${app.applName} (${app.applId})`}
+                {`${app.applName} (${app.applId}) - ${app.techOwnerFullName}`}
               </li>
             ))}
           </ul>
