@@ -83,7 +83,6 @@ const MyComponent = (props) => {
   const handleCarIdClear = useCallback(() => {
     setCarId('');
     setRuleOwner('');
-    setCarIdSuggestions([]);
     props.onCarIdClear(); // notify the parent component that the car id is cleared
     setLoadedCarId(false); // Reset loaded state to false
   }, [props]);
@@ -109,7 +108,6 @@ const MyComponent = (props) => {
       setRuleOwnerSuggestions([]); // Clear suggestions after selection
       props.onRuleOwnerSelect(user); // pass the selected user object to the parent component
       setLoadedRuleOwner(true); // Set loaded state to true
-      setRuleOwner(''); // Clear input box after selection
     },
     [props]
   );
@@ -120,28 +118,6 @@ const MyComponent = (props) => {
     props.onRuleOwnerClear(); // notify the parent component that the rule owner is cleared
     setLoadedRuleOwner(false); // Reset loaded state to false
   }, [props]);
-
-  const handleCarIdSuggestionSelect = useCallback(
-    (app) => {
-      setCarId(`${app.applName} (${app.applId})`);
-      setRuleOwner(app.techOwnerFullName);
-      props.onCarIdSelect(app); // pass the selected app object to the parent component
-      setLoadedCarId(true); // Set loaded state to true
-      setCarId(''); // Clear input box after selection
-    },
-    [props]
-  );
-
-  const handleRuleOwnerSuggestionSelect = useCallback(
-    (user) => {
-      setRuleOwner(user.techOwnerFullName);
-      setRuleOwnerSuggestions([]); // Clear suggestions after selection
-      props.onRuleOwnerSelect(user); // pass the selected user object to the parent component
-      setLoadedRuleOwner(true); // Set loaded state to true
-      setRuleOwner(''); // Clear input box after selection
-    },
-    [props]
-  );
 
   return (
     <>
@@ -177,29 +153,6 @@ const MyComponent = (props) => {
             </div>
           )}
         </div>
-        {carIdSuggestions.length > 0 && (
-          <ul
-            style={{
-              listStyle: 'none',
-              padding: '0',
-              margin: '0',
-              maxHeight: '200px',
-              overflowY: 'auto',
-              border: '1px solid #ccc',
-              borderRadius: '5px',
-            }}
-          >
-            {carIdSuggestions.map((app) => (
-              <li
-                key={app.applId}
-                onClick={() => handleCarIdSuggestionSelect(app)}
-                style={{ padding: '10px', cursor: 'pointer' }}
-              >
-                {`${app.applName} (${app.applId}) - ${app.techOwnerFullName}`}
-              </li>
-            ))}
-          </ul>
-        )}
       </label>
 
       <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
@@ -221,29 +174,6 @@ const MyComponent = (props) => {
             </div>
           )}
         </div>
-        {ruleOwnerSuggestions.length > 0 && (
-          <ul
-            style={{
-              listStyle: 'none',
-              padding: '0',
-              margin: '0',
-              maxHeight: '200px',
-              overflowY: 'auto',
-              border: '1px solid #ccc',
-              borderRadius: '5px'
-            }}
-          >
-            {ruleOwnerSuggestions.map((user) => (
-              <li
-                key={user.applId}
-                onClick={() => handleRuleOwnerSuggestionSelect(user)}
-                style={{ padding: '10px', cursor: 'pointer' }}
-              >
-                {user.techOwnerFullName} 
-              </li>
-            ))}
-          </ul>
-        )}
       </label>
     </>
   )
