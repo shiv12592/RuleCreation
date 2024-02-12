@@ -1,182 +1,180 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { debounce } from 'lodash';
-import { searchApps, loadUsers } from './api.js';
-import CircularProgress from '@mui/material/CircularProgress';
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { loadUsers, searchApps } from "../actions"; // import your actions
+import { Container, Row, Col, Form, ProgressBar, Button } from "react-bootstrap"; // import bootstrap components
 
-const MyComponent = (props) => {
-  const [category, setCategory] = useState('');
-  const [carId, setCarId] = useState('');
-  const [ruleOwner, setRuleOwner] = useState('');
-  const [carIdSuggestions, setCarIdSuggestions] = useState([]);
-  const [ruleOwnerSuggestions, setRuleOwnerSuggestions] = useState([]);
-  const [loadingApps, setLoadingApps] = useState(false);
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [loadedCarId, setLoadedCarId] = useState(false);
-  const [loadedRuleOwner, setLoadedRuleOwner] = useState(false);
-
-  const dispatch = useDispatch();
+const RuleCategoryChange = ({ onRuleChange }) => {
+  // get data from redux store
   const appsSearchList = useSelector(getSearchedApps);
   const usersList = useSelector(getUsers);
 
-  useEffect(() => {
-    setLoadingApps(!!appsSearchList.data);
-  }, [appsSearchList.data]);
+  // create local state for input fields and labels
+  const [category, setCategory] = useState("");
+  const [carId, setCarId] = useState("");
+  const [ruleOwner, setRuleOwner] = useState("");
+  const [carIdLabel, setCarIdLabel] = useState("");
+  const [ruleOwnerLabel, setRuleOwnerLabel] = useState("");
 
-  useEffect(() => {
-    setLoadingUsers(!!usersList.data);
-  }, [usersList.data]);
+  // create a dispatch function
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (appsSearchList.data) {
-      setCarIdSuggestions(appsSearchList.data);
+  // handle category change
+  const handleCategoryChange = (e) => {
+    setCategory(e.target.value);
+    // reset other fields
+    setCarId("");
+    setRuleOwner("");
+    setCarIdLabel("");
+    setRuleOwnerLabel("");
+  };
+
+  // handle car id change
+  const handleCarIdChange = (e) => {
+    setCarId(e.target.value);
+    // dispatch search apps action
+    dispatch(searchApps(e.target.value));
+  };
+
+  // handle car id select
+  const handleCarIdSelect = (app) => {
+    // set car id label
+    setCarIdLabel(`${app.applName} (${app.applId})`);
+    // set rule owner label based on category
+    if (category === "Application policies" || category === "") {
+      setRuleOwnerLabel(app.techOwnerFullName);
     }
-  }, [appsSearchList.data]);
+    // clear car id input
+    setCarId("");
+    // dispatch load users action
+    dispatch(loadUsers(app.applId));
+  };
 
-  useEffect(() => {
-    if (usersList.data) {
-      setRuleOwnerSuggestions(usersList.data);
+  // handle rule owner change
+  const handleRuleOwnerChange = (e) => {
+    setRuleOwner(e.target.value);
+    // dispatch search apps action
+    dispatch(searchApps(e.target.value));
+  };
+
+  // handle rule owner select
+  const handleRuleOwnerSelect = (user) => {
+    // set rule owner label
+    setRuleOwnerLabel(user.techOwnerFullName);
+    // clear rule owner input
+    setRuleOwner("");
+  };
+
+  // handle car id label clear
+  const handleCarIdLabelClear = () => {
+    setCarIdLabel("");
+  };
+
+  // handle rule owner label clear
+  const handleRuleOwnerLabelClear = () => {
+    setRuleOwnerLabel("");
+    // set default rule owner based on category
+    if (category === "Organizational policies") {
+      setRuleOwnerLabel("Patrick Jeniffer");
     }
-  }, [usersList.data]);
+  };
 
-  const handleCategoryChange = useCallback(
-    (e) => {
-      const selectedCategory = e.target.value;
-      setCategory(selectedCategory);
-      if (selectedCategory === 'Organizational Policies') {
-        setRuleOwner('Patrick Jeniffer');
-      } else {
-        setRuleOwner('');
-      }
-      setCarId(''); // Clear carId when category changes
-      props.onCategoryChange(selectedCategory); // pass the category value to the parent component
-    },
-    [props]
-  );
-
-  const handleCarIdChange = useCallback(
-    debounce(async (input) => {
-      setCarId(input);
-      try {
-        setLoadingApps(true); // Start loading
-        await dispatch(searchApps(input));
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoadingApps(false); // Finish loading
-      }
-    }, 300),
-    [dispatch]
-  );
-
-  const handleCarIdSelect = useCallback(
-    (app) => {
-      setCarId(`${app.applName} (${app.applId})`);
-      setRuleOwner(app.techOwnerFullName);
-      props.onCarIdSelect(app); // pass the selected app object to the parent component
-      setLoadedCarId(true); // Set loaded state to true
-      setCarId(''); // Clear input box after selection
-    },
-    [props]
-  );
-
-  const handleCarIdClear = useCallback(() => {
-    setCarId('');
-    setRuleOwner('');
-    props.onCarIdClear(); // notify the parent component that the car id is cleared
-    setLoadedCarId(false); // Reset loaded state to false
-  }, [props]);
-
-  const handleRuleOwnerChange = useCallback(
-    debounce(async (input) => {
-      setRuleOwner(input);
-      try {
-        setLoadingUsers(true); // Start loading
-        await dispatch(loadUsers(input));
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoadingUsers(false); // Finish loading
-      }
-    }, 300),
-    [dispatch]
-  );
-
-  const handleRuleOwnerSelect = useCallback(
-    (user) => {
-      setRuleOwner(user.techOwnerFullName);
-      setRuleOwnerSuggestions([]); // Clear suggestions after selection
-      props.onRuleOwnerSelect(user); // pass the selected user object to the parent component
-      setLoadedRuleOwner(true); // Set loaded state to true
-    },
-    [props]
-  );
-
-  const handleRuleOwnerClear = useCallback(() => {
-    setRuleOwner('');
-    setRuleOwnerSuggestions([]);
-    props.onRuleOwnerClear(); // notify the parent component that the rule owner is cleared
-    setLoadedRuleOwner(false); // Reset loaded state to false
-  }, [props]);
+  // handle rule change
+  const handleRuleChange = () => {
+    // create a rule object
+    const rule = {
+      category,
+      carId: carIdLabel,
+      ruleOwner: ruleOwnerLabel,
+    };
+    // pass the rule to the parent component
+    onRuleChange(rule);
+  };
 
   return (
-    <>
-      <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
-        Category
-        <select
-          value={category}
-          onChange={handleCategoryChange}
-          style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
-        >
-          <option value="">--Select--</option>
-          <option value="Application Policies">Application Policies</option>
-          <option value="Organizational Policies">Organizational Policies</option>
-        </select>
-      </label>
-
-      <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
-        Car ID
-        <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-          <input
+    <Container>
+      <Row>
+        <Col>
+          <Form.Label>Category</Form.Label>
+          <Form.Control
+            as="select"
+            value={category}
+            onChange={handleCategoryChange}
+          >
+            <option value="">Select a category</option>
+            <option value="Application policies">Application policies</option>
+            <option value="Organizational policies">Organizational policies</option>
+          </Form.Control>
+        </Col>
+        <Col>
+          <Form.Label>Car Id</Form.Label>
+          <Form.Control
             type="text"
             value={carId}
-            onChange={(e) => handleCarIdChange(e.target.value)}
-            placeholder="Search by name or ID and select"
-            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
+            onChange={handleCarIdChange}
+            placeholder="Search by car id"
           />
-          {loadingApps && !loadedCarId && <CircularProgress size={20} style={{ marginLeft: '5px' }} color="secondary" />}
-          {loadingApps && loadedCarId && <span style={{ marginLeft: '5px', color: 'green' }}>Loaded...</span>}
-          {carId && (
-            <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
-              {carId}
-              <button onClick={handleCarIdClear} style={{ marginLeft: '5px', cursor: 'pointer' }}>X</button>
+          {carIdLabel && (
+            <div className="label-container">
+              <span className="label-text">{carIdLabel}</span>
+              <Button variant="light" onClick={handleCarIdLabelClear}>
+                X
+              </Button>
             </div>
           )}
-        </div>
-      </label>
-
-      <label style={{ display: 'flex', flexDirection: 'column', margin: '10px' }}>
-        Rule Owner
-        <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-          <input
+          {appsSearchList.status === "loading" && <ProgressBar animated now={100} />}
+          {appsSearchList.data && (
+            <ul className="suggestion-list">
+              {appsSearchList.data.map((app) => (
+                <li
+                  key={app.applId}
+                  onClick={() => handleCarIdSelect(app)}
+                  className="suggestion-item"
+                >
+                  {app.applName} ({app.applId})
+                </li>
+              ))}
+            </ul>
+          )}
+        </Col>
+        <Col>
+          <Form.Label>Rule Owner</Form.Label>
+          <Form.Control
             type="text"
             value={ruleOwner}
-            onChange={(e) => handleRuleOwnerChange(e.target.value)}
-            placeholder="Search by Owner Name"
-            style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
+            onChange={handleRuleOwnerChange}
+            placeholder="Search by rule owner"
           />
-          {loadingUsers && !loadedRuleOwner && <CircularProgress size={20} style={{ marginLeft: '5px' }} color="secondary" />}
-          {loadingUsers && loadedRuleOwner && <span style={{ marginLeft: '5px', color: 'green' }}>Loaded...</span>}
-          {ruleOwner && (
-            <div style={{ marginLeft: '5px', border: '1px solid blue', borderRadius: '5px', padding: '5px' }}>
-              {ruleOwner}
-              <button onClick={handleRuleOwnerClear} style={{ marginLeft: '5px', cursor: 'pointer' }}>X</button>
+          {ruleOwnerLabel && (
+            <div className="label-container">
+              <span className="label-text">{ruleOwnerLabel}</span>
+              <Button variant="light" onClick={handleRuleOwnerLabelClear}>
+                X
+              </Button>
             </div>
           )}
-        </div>
-      </label>
-    </>
-  )
-}
+          {usersList.status === "loading" && <ProgressBar animated now={100} />}
+          {usersList.data && (
+            <ul className="suggestion-list">
+              {usersList.data.map((user) => (
+                <li
+                  key={user.techOwnerFullName}
+                  onClick={() => handleRuleOwnerSelect(user)}
+                  className="suggestion-item"
+                >
+                  {user.techOwnerFullName}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Button onClick={handleRuleChange}>Submit</Button>
+        </Col>
+      </Row>
+    </Container>
+  );
+};
 
-export default MyComponent;
+export default RuleCategoryChange;
