@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loadUsers, searchApps } from './actions'; // Import actions accordingly
 
+// Define your selector functions or use predefined selectors from your project
+const getSearchedApps = (state) => state.searchedApps;
+const getUsers = (state) => state.users;
+
 const RuleCategoryChangeEditApproval = ({ category, carId, ruleOwner, onChange }) => {
     const dispatch = useDispatch();
     const appsSearchList = useSelector(getSearchedApps);
@@ -78,9 +82,9 @@ const RuleCategoryChangeEditApproval = ({ category, carId, ruleOwner, onChange }
                         onChange={handleCarIdInputChange}
                         placeholder="Search by name or ID and select"
                     />
-                    {showCarIdSuggestions && usersList.data.length > 0 && (
+                    {showCarIdSuggestions && usersList().data.length > 0 && (
                         <div className="suggestions">
-                            {usersList.data.map((app) => (
+                            {usersList().data.map((app) => (
                                 <div className="suggestion" key={app.applId} onClick={() => handleCarIdSelection(app)}>
                                     {app.applName} ({app.applId}) - {app.techOwnerFullName}
                                 </div>
@@ -109,9 +113,9 @@ const RuleCategoryChangeEditApproval = ({ category, carId, ruleOwner, onChange }
                         onChange={handleRuleOwnerInputChange}
                         placeholder="Search by name or ID and select"
                     />
-                    {showRuleOwnerSuggestions && appsSearchList.data.length > 0 && (
+                    {showRuleOwnerSuggestions && appsSearchList().data.length > 0 && (
                         <div className="suggestions">
-                            {appsSearchList.data.map((user) => (
+                            {appsSearchList().data.map((user) => (
                                 <div className="suggestion" key={user.ecn} onClick={() => handleRuleOwnerSelection(user)}>
                                     {user.techOwnerFullName}
                                 </div>
