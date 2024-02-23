@@ -11,6 +11,10 @@ const RuleCategoryChange = ({ category, carId, ruleOwner, onChange }) => {
     const appsSearchList = useSelector(state => state.appsSearchList);
     const usersList = useSelector(state => state.usersList);
 
+    const setCategory = (newCategory) => onChange({ category: newCategory, carId, ruleOwner });
+    const setCarId = (newCarId) => onChange({ category, carId: newCarId, ruleOwner });
+    const setRuleOwner = (newRuleOwner) => onChange({ category, carId, ruleOwner: newRuleOwner });
+
     // Handle category change
     const handleCategoryChange = (e) => {
         const updatedCategory = e.target.value;
@@ -20,7 +24,8 @@ const RuleCategoryChange = ({ category, carId, ruleOwner, onChange }) => {
             updatedRuleOwner = 'Patrick Jeniffer';
         }
 
-        onChange({ category: updatedCategory, carId, ruleOwner: updatedRuleOwner });
+        setCategory(updatedCategory);
+        setRuleOwner(updatedRuleOwner);
     };
 
     // Handle car id input change
@@ -41,8 +46,6 @@ const RuleCategoryChange = ({ category, carId, ruleOwner, onChange }) => {
         // Clear input text and hide suggestions
         setInputCarIdText('');
         setShowCarIdSuggestions(false);
-        // Send selected values back to parent component
-        onChange({ category, carId: `${app.applName} (${app.applId})`, ruleOwner: app.techOwnerFullName });
     };
 
     // Handle rule owner input change
@@ -53,8 +56,8 @@ const RuleCategoryChange = ({ category, carId, ruleOwner, onChange }) => {
         dispatch(searchApps(value));
         // Show suggestions if input text is not empty
         setShowRuleOwnerSuggestions(value !== '');
-        // Send selected values back to parent component
-        onChange({ category, carId, ruleOwner: value });
+        // Set rule owner value
+        setRuleOwner(value);
     };
 
     // Handle rule owner selection from suggestions
@@ -64,8 +67,6 @@ const RuleCategoryChange = ({ category, carId, ruleOwner, onChange }) => {
         // Clear input text and hide suggestions
         setInputRuleOwnerText('');
         setShowRuleOwnerSuggestions(false);
-        // Send selected values back to parent component
-        onChange({ category, carId, ruleOwner: user.techOwnerFullName });
     };
 
     return (
