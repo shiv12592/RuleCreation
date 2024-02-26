@@ -1,106 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-const AddRequest = () => {
+function App() {
+  // initialize the state with an empty array
   const [requestData, setRequestData] = useState([]);
-  const [currentRow, setCurrentRow] = useState({});
 
-  const handleAddRow = () => {
-    setCurrentRow({
-      attribute: '',
-      operation: '',
-      value: '',
-    });
+  // handle the change of the select and input fields
+  const handleChange = (e, index) => {
+    const { name, value } = e.target;
+    const list = [...requestData];
+    list[index][name] = value;
+    setRequestData(list);
   };
 
-  const handleChange = (event, field) => {
-    setCurrentRow({
-      ...currentRow,
-      [field]: event.target.value,
-    });
+  // handle the click of the add request button
+  const handleAdd = () => {
+    // add a new object with empty values to the state array
+    setRequestData([
+      ...requestData,
+      { attribute: "", operation: "", value: "" },
+    ]);
   };
 
-  const handleSaveRequest = () => {
-    const newRequest = {
-      ...currentRow,
-    };
-    setRequestData([...requestData, newRequest]);
-    setCurrentRow({}); // Clear current row data after saving
+  // handle the click of the remove request button
+  const handleRemove = (index) => {
+    // remove the object at the given index from the state array
+    const list = [...requestData];
+    list.splice(index, 1);
+    setRequestData(list);
   };
 
-  const handleRemoveRequest = (index) => {
-    const updatedData = [...requestData];
-    updatedData.splice(index, 1);
-    setRequestData(updatedData);
-  };
-
+  // render the form elements based on the state array
   return (
-    <div>
-      <table>
-        <tbody>
-          {/* Iterate over requestData to render existing rows */}
-          {requestData.map((request, index) => (
-            <tr key={index}>
-              <td>{request.attribute}</td>
-              <td>{request.operation}</td>
-              <td>{request.value}</td>
-              <td>
-                <button onClick={() => handleRemoveRequest(index)}>
-                  Remove Request
-                </button>
-              </td>
-            </tr>
-          ))}
-
-          {/* Render the "Add Request" row dynamically */}
-          {currentRow.attribute || currentRow.operation || currentRow.value ? (
-            <tr key="new-row" style={{ backgroundColor: 'lightblue' }}> {/* Highlight added row */}
-              <td>
-                <select
-                  value={currentRow.attribute}
-                  onChange={(event) => handleChange(event, 'attribute')}
-                >
-                  <option value="">Select Attribute</option>
-                  <option value="attr1">attr1</option>
-                  <option value="attr2">attr2</option>
-                  <option value="attr3">attr3</option>
-                </select>
-              </td>
-              <td>
-                <select
-                  value={currentRow.operation}
-                  onChange={(event) => handleChange(event, 'operation')}
-                >
-                  <option value="">Select Operation</option>
-                  <option value="add">add</option>
-                  <option value="delete">delete</option>
-                  <option value="update">update</option>
-                </select>
-              </td>
-              <td>
-                <input
-                  type="text"
-                  value={currentRow.value}
-                  onChange={(event) => handleChange(event, 'value')}
-                />
-              </td>
-              <td>
-                <button onClick={handleSaveRequest}>Save Request</button>
-              </td>
-            </tr>
-          ) : (
-            <tr>
-              <td colSpan="4">
-                <button onClick={handleAddRow}>Add Request Attribute</button>
-              </td>
-            </tr>
+    <div className="App">
+      <h3>Request Form</h3>
+      {requestData.map((item, i) => (
+        <div key={i}>
+          <select
+            name="attribute"
+            value={item.attribute}
+            onChange={(e) => handleChange(e, i)}
+          >
+            <option value="">Select an attribute</option>
+            <option value="attr1">attr1</option>
+            <option value="attr2">attr2</option>
+            <option value="attr3">attr3</option>
+          </select>
+          {item.attribute && ( // only show the operation select if attribute is selected
+            <select
+              name="operation"
+              value={item.operation}
+              onChange={(e) => handleChange(e, i)}
+            >
+              <option value="">Select an operation</option>
+              <option value="add">add</option>
+              <option value="delete">delete</option>
+              <option value="update">update</option>
+            </select>
           )}
-        </tbody>
-      </table>
-      <button onClick={() => console.log(JSON.stringify(requestData))}>
-        Log Request Data
-      </button>
+          {item.operation && ( // only show the value input if operation is selected
+            <input
+              name="value"
+              value={item.value}
+              onChange={(e) => handleChange(e, i)}
+              placeholder="Enter a value"
+            />
+          )}
+          {requestData.length > 1 && ( // only show the remove button if there are more than one rows
+            <button onClick={() => handleRemove(i)}>Remove Request</button>
+          )}
+        </div>
+      ))}
+      <button onClick={handleAdd}>Add Request</button>
+      <div>
+        <h3>Request Data</h3>
+        <pre>{JSON.stringify(requestData, null, 2)}</pre>
+      </div>
     </div>
   );
-};
+}
 
-export default AddRequest;
+export default App;
