@@ -5,19 +5,18 @@ const DatePicker = () => {
   const [endDate, setEndDate] = useState(null);
   const [error, setError] = useState('');
 
-  const handleStartDateChange = (date) => {
-    setStartDate(date);
-    setEndDate(null); // Reset end date
-    setError(''); // Clear any errors
-  };
-
-  const handleEndDateChange = (date) => {
-    if (startDate && date < startDate) {
-      setError('End date cannot be before start date.');
-    } else {
-      setEndDate(date);
-      setError('');
-    }
+  const handleDateChange = (date, setDate) => {
+    const currentDate = new Date();
+    const selectedDateWithTime = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      currentDate.getHours(),
+      currentDate.getMinutes(),
+      currentDate.getSeconds()
+    );
+    setDate(selectedDateWithTime);
+    setError('');
   };
 
   const convertToEpoch = (date) => {
@@ -28,11 +27,23 @@ const DatePicker = () => {
     <div>
       <input
         type="date"
-        onChange={(e) => handleStartDateChange(new Date(e.target.value))}
+        onChange={(e) => {
+          const date = new Date(e.target.value);
+          if (!startDate || date >= startDate) {
+            handleDateChange(date, setStartDate);
+          }
+        }}
       />
       <input
         type="date"
-        onChange={(e) => handleEndDateChange(new Date(e.target.value))}
+        onChange={(e) => {
+          const date = new Date(e.target.value);
+          if (startDate && date < startDate) {
+            setError('End date cannot be before start date.');
+          } else {
+            handleDateChange(date, setEndDate);
+          }
+        }}
         disabled={!startDate}
       />
       {error && <div style={{ color: 'red' }}>{error}</div>}
