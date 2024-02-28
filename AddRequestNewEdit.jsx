@@ -1,83 +1,103 @@
+// import React and useState hook
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 
-const AddRequest = ({ requestData, onChange }) => {
-  const [rows, setRows] = useState(requestData || []);
+// define the AddRequest component
+const AddRequest = ({ onChange, requestData }) => {
+  // use state to keep track of the request attributes
+  const [attributes, setAttributes] = useState(requestData || []);
 
-  const handleAddRow = () => {
-    const newRow = { attribute: '', operation: '', value: '' };
-    setRows([...rows, newRow]);
+  // define the options for the select elements
+  const attributeOptions = ['attr1', 'attr2', 'attr3'];
+  const operationOptions = ['add', 'delete', 'update'];
+
+  // define a function to handle adding a new attribute
+  const handleAddAttribute = () => {
+    // create a new attribute object with default values
+    const newAttribute = {
+      attribute: '',
+      operation: '',
+      value: ''
+    };
+    // update the state with the new attribute
+    setAttributes([...attributes, newAttribute]);
+    // invoke the onChange prop with the new attribute array
+    onChange([...attributes, newAttribute]);
   };
 
-  const handleRemoveRow = (index) => {
-    const updatedRows = [...rows];
-    updatedRows.splice(index, 1);
-    setRows(updatedRows);
-    onChange(updatedRows);
+  // define a function to handle removing an attribute
+  const handleRemoveAttribute = (index) => {
+    // filter out the attribute at the given index
+    const newAttributes = attributes.filter((attr, i) => i !== index);
+    // update the state with the new attribute array
+    setAttributes(newAttributes);
+    // invoke the onChange prop with the new attribute array
+    onChange(newAttributes);
   };
 
-  const handleSelectChange = (index, field, value) => {
-    const updatedRows = [...rows];
-    updatedRows[index][field] = value;
-    setRows(updatedRows);
-    onChange(updatedRows);
+  // define a function to handle changing an attribute value
+  const handleChangeAttribute = (index, key, value) => {
+    // create a copy of the attribute array
+    const newAttributes = [...attributes];
+    // update the attribute at the given index with the new value
+    newAttributes[index][key] = value;
+    // update the state with the new attribute array
+    setAttributes(newAttributes);
+    // invoke the onChange prop with the new attribute array
+    onChange(newAttributes);
   };
 
-  const handleInputChange = (index, value) => {
-    const updatedRows = [...rows];
-    updatedRows[index].value = value;
-    setRows(updatedRows);
-    onChange(updatedRows);
-  };
-
+  // return the JSX element for the component
   return (
-    <div>
-      {rows.map((row, index) => (
-        <div key={index}>
+    <div className="add-request">
+      <h3>Add Request</h3>
+      {attributes.map((attr, i) => (
+        <div className="attribute-row" key={i}>
           <select
-            value={row.attribute}
-            onChange={(e) => handleSelectChange(index, 'attribute', e.target.value)}
+            value={attr.attribute}
+            onChange={(e) =>
+              handleChangeAttribute(i, 'attribute', e.target.value)
+            }
           >
             <option value="">Select Attribute</option>
-            <option value="attr1">attr1</option>
-            <option value="attr2">attr2</option>
-            <option value="attr3">attr3</option>
+            {attributeOptions.map((option) => (
+              <option value={option} key={option}>
+                {option}
+              </option>
+            ))}
           </select>
-
-          {row.attribute && (
+          {attr.attribute && (
             <select
-              value={row.operation}
-              onChange={(e) => handleSelectChange(index, 'operation', e.target.value)}
+              value={attr.operation}
+              onChange={(e) =>
+                handleChangeAttribute(i, 'operation', e.target.value)
+              }
             >
               <option value="">Select Operation</option>
-              <option value="add">Add</option>
-              <option value="delete">Delete</option>
-              <option value="update">Update</option>
+              {operationOptions.map((option) => (
+                <option value={option} key={option}>
+                  {option}
+                </option>
+              ))}
             </select>
           )}
-
-          {row.operation && (
+          {attr.operation && (
             <input
               type="text"
-              value={row.value}
-              onChange={(e) => handleInputChange(index, e.target.value)}
+              value={attr.value}
+              onChange={(e) =>
+                handleChangeAttribute(i, 'value', e.target.value)
+              }
             />
           )}
-
-          {index === rows.length - 1 ? (
-            <button onClick={handleAddRow}>Add Request Attribute</button>
-          ) : (
-            <button onClick={() => handleRemoveRow(index)}>Remove Request</button>
-          )}
+          <button onClick={() => handleRemoveAttribute(i)}>
+            Remove Request
+          </button>
         </div>
       ))}
+      <button onClick={handleAddAttribute}>Add Request Attribute</button>
     </div>
   );
 };
 
-AddRequest.propTypes = {
-  requestData: PropTypes.array,
-  onChange: PropTypes.func.isRequired,
-};
-
+// export the component
 export default AddRequest;
