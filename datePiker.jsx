@@ -4,6 +4,8 @@ const DatePicker = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [error, setError] = useState('');
+    const [startDateEpoch, setStartDateEpoch] = useState('');
+  const [endDateEpoch, setEndDateEpoch] = useState('');
 
   const handleDateChange = (date, setDate) => {
     const currentDate = new Date();
@@ -22,6 +24,13 @@ const DatePicker = () => {
   const convertToEpoch = (date) => {
     return date ? Math.floor(date.getTime() / 1000) : '';
   };
+   useEffect(() => {
+    setStartDateEpoch(convertToEpoch(startDate));
+  }, [startDate]);
+
+  useEffect(() => {
+    setEndDateEpoch(convertToEpoch(endDate));
+  }, [endDate]);
 
   return (
     <div>
