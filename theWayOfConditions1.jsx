@@ -176,3 +176,49 @@ const RuleConditionRows = () => {
 }
 
 export default RuleConditionRows
+----------------------------------------------------
+
+
+    conditionsData: {
+      conditions: [
+        {
+          source: 'identity',
+          attribute: 'identityAttr1',
+          value: 'fsdrfgf',
+          isChecked: false
+        },
+        {
+          source: 'location',
+          attribute: 'locationAttr1',
+          value: 'sdfsd',
+          isChecked: false
+        },
+        {
+          source: 'request',
+          attribute: 'requestAtt1',
+          value: 'dfds',
+          isChecked: false
+        }
+      ],
+      groupedConditions: [
+        {
+          id: 1709739397208,
+          operation: 'OR',
+          conditions: [
+            {
+              source: 'request',
+              attribute: 'requestAtt1',
+              value: '',
+              isChecked: true
+            },
+            {
+              source: 'identity',
+              attribute: 'identityAttr1',
+              value: '',
+              isChecked: true
+            }
+          ]
+        }
+      ]
+    }
+  }
