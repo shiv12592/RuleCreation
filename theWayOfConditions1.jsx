@@ -63,6 +63,21 @@ const RuleConditionRows = () => {
     setConditions(remainingConditions)
   }
 
+  const handleGroupOperationChange = (groupId, value) => {
+    const updatedGroups = groupedConditions.map((group) => {
+      if (group.id === groupId) {
+        return { ...group, operation: value }
+      }
+      return group
+    })
+    setGroupedConditions(updatedGroups)
+  }
+
+  const submitData = () => {
+    const allData = { conditions, groupedConditions }
+    console.log(JSON.stringify(allData, null, 2))
+  }
+
   return (
     <div>
       <button onClick={addConditionRow}>Add Condition Row</button>
@@ -113,7 +128,16 @@ const RuleConditionRows = () => {
           {groupedConditions.map((group, groupIndex) => (
             <tr key={group.id}>
               <td>
-                <input type="checkbox" checked={true} onChange={() => ungroupSelected(group.id)} />
+                <input type="checkbox" onChange={() => ungroupSelected(group.id)} />
+              </td>
+              <td>
+                <select value={group.operation} onChange={(e) => handleGroupOperationChange(group.id, e.target.value)}>
+                  {['AND', 'OR', 'NOT'].map((op) => (
+                    <option key={op} value={op}>
+                      {op}
+                    </option>
+                  ))}
+                </select>
               </td>
               <td colSpan="3">
                 <strong>{group.operation} Group:</strong>
@@ -135,6 +159,7 @@ const RuleConditionRows = () => {
       </table>
       <button onClick={groupSelected}>Group Selected</button>
       <button onClick={deleteSelected}>Delete Selected</button>
+      <button onClick={submitData}>Submit</button>
     </div>
   )
 }
