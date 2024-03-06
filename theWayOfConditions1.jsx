@@ -4,6 +4,7 @@ const RuleConditionRows = () => {
   const [conditions, setConditions] = useState([])
   const [groupedConditions, setGroupedConditions] = useState([])
   const [selectOperation, setSelectOperation] = useState('AND')
+  const [selectedGroupIds, setSelectedGroupIds] = useState([])
 
   const sources = ['request', 'identity', 'location']
   const attributes = {
@@ -41,6 +42,16 @@ const RuleConditionRows = () => {
     setConditions(newConditions)
   }
 
+  const handleGroupCheckboxChange = (groupId) => {
+    setSelectedGroupIds((prevSelectedGroupIds) => {
+      if (prevSelectedGroupIds.includes(groupId)) {
+        return prevSelectedGroupIds.filter((id) => id !== groupId)
+      } else {
+        return [...prevSelectedGroupIds, groupId]
+      }
+    })
+  }
+
   const groupSelected = () => {
     const selectedConditions = conditions.filter((condition) => condition.isChecked)
     const unselectedConditions = conditions.filter((condition) => !condition.isChecked)
@@ -48,14 +59,13 @@ const RuleConditionRows = () => {
     setConditions(unselectedConditions)
   }
 
-  const ungroupSelected = (groupId) => {
-    const groups = [...groupedConditions]
-    const groupIndex = groups.findIndex((group) => group.id === groupId)
-    if (groupIndex !== -1) {
-      const rowsToUngroup = groups[groupIndex].conditions
-      setGroupedConditions(groups.filter((_, index) => index !== groupIndex))
-      setConditions([...conditions, ...rowsToUngroup])
-    }
+  const ungroupSelected = () => {
+    const groupsToUngroup = groupedConditions.filter((group) => selectedGroupIds.includes(group.id))
+    const remainingGroups = groupedConditions.filter((group) => !selectedGroupIds.includes(group.id))
+    const ungroupedConditions = groupsToUngroup.flatMap((group) => group.conditions)
+    setGroupedConditions(remainingGroups)
+    setConditions([...conditions, ...ungroupedConditions])
+    setSelectedGroupIds([])
   }
 
   const deleteSelected = () => {
@@ -128,7 +138,7 @@ const RuleConditionRows = () => {
           {groupedConditions.map((group, groupIndex) => (
             <tr key={group.id}>
               <td>
-                <input type="checkbox" onChange={() => ungroupSelected(group.id)} />
+                <input type="checkbox" onChange={() => handleGroupCheckboxChange(group.id)} />
               </td>
               <td>
                 <select value={group.operation} onChange={(e) => handleGroupOperationChange(group.id, e.target.value)}>
@@ -160,6 +170,7 @@ const RuleConditionRows = () => {
       <button onClick={groupSelected}>Group Selected</button>
       <button onClick={deleteSelected}>Delete Selected</button>
       <button onClick={submitData}>Submit</button>
+      <button onClick={ungroupSelected}>Ungroup</button>
     </div>
   )
 }
