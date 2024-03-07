@@ -32,7 +32,17 @@ for belo you need to pass default data as ,,
     //     selectOperation: 'OR'
     //   }
   ])
-  
+
+
+
+  const handleSubmit = () => {
+    // Submit all added conditions and display them in JSON format in the console
+    console.log('wihtout formate-------------', JSON.stringify({ conditions, selectOperation }, null, 2))
+    console.log('with formate-------------', JSON.stringify({ conditions: format(conditions, selectOperation) }, null, 2))
+  }
+
+
+
 const renderConditionRow = (condition, index, isGrouped = false, isInner = false) => {
     // Define a function to determine if the fields should be disabled
     const isDisabled = () => {
