@@ -1,4 +1,39 @@
-  const renderConditionRow = (condition, index, isGrouped = false, isInner = false) => {
+
+for belo you need to pass default data as ,,
+
+   const [conditions, setConditions] = useState([
+    //   {
+    //     Source: 'Request',
+    //     requestAttribute: '',
+    //     requestValue: 'sdfsd',
+    //     selectOperation: 'AND'
+    //   },
+    //   {
+    //     Source: 'Identity',
+    //     identityAttribute: '',
+    //     identityValue: 'dfvsd',
+    //     selectOperation: 'AND'
+    //   },
+    //   {
+    //     rows: [
+    //       {
+    //         Source: 'Request',
+    //         requestAttribute: '',
+    //         requestValue: 'basjdghasjf',
+    //         selectOperation: 'AND'
+    //       },
+    //       {
+    //         Source: 'Identity',
+    //         identityAttribute: '',
+    //         identityValue: 'sdfsd',
+    //         selectOperation: 'AND'
+    //       }
+    //     ],
+    //     selectOperation: 'OR'
+    //   }
+  ])
+  
+const renderConditionRow = (condition, index, isGrouped = false, isInner = false) => {
     // Define a function to determine if the fields should be disabled
     const isDisabled = () => {
       // Add your condition here, for example, if you want to disable all inner fields
