@@ -136,7 +136,7 @@ const RuleConditionRows = () => {
 
   const handleSubmit = () => {
     // Submit all added conditions and display them in JSON format in the console
-    console.log(JSON.stringify({ conditionFormated: format(conditions, selectOperation) }, null, 2))
+    console.log(JSON.stringify({ conditions: format(conditions, selectOperation) }, null, 2))
   }
 
   const format = (conditions, selectOperation) => {
