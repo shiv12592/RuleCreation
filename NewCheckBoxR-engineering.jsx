@@ -207,3 +207,16 @@ without format------------------------
   ],
   "selectOperation": "AND"
 }
+
+----------------object map
+
+
+                {Object.keys(conditions).map((key, index) => (
+                  <div key={index}>
+                    {conditions[key].map((condition, index2) => (
+                      <div key={`${index}-${index2}`}>{renderConditionRow(condition, index2)}</div>
+                    ))}
+                  </div>
+                ))}
+
+
