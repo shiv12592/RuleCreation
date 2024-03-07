@@ -208,6 +208,41 @@ without format------------------------
   "selectOperation": "AND"
 }
 
+ with formate------------- {
+  "conditions": {
+    "AND": [
+      {
+        "Source": "Request",
+        "requestAttribute": "",
+        "requestValue": "sdfsd"
+      },
+      {
+        "Source": "Identity",
+        "identityAttribute": "",
+        "identityValue": "dfvsd"
+      },
+      {
+        "OR": [
+          {
+            "Source": "Request",
+            "requestAttribute": "",
+            "requestValue": "basjdghasjf"
+          },
+          {
+            "Source": "Identity",
+            "identityAttribute": "",
+            "identityValue": "sdfsd"
+          }
+        ]
+      },
+      {
+        "Source": "Request",
+        "requestAttribute": "requestAttribute2",
+        "requestValue": "modified data"
+      }
+    ]
+  }
+}
 ----------------object map
 
 
@@ -218,5 +253,81 @@ without format------------------------
                     ))}
                   </div>
                 ))}
+
+
+
+-------------------------------------groups formating missing------------------
+
+useEffect(() => {
+    // Default data
+    const defaultData = {
+      conditions: {
+        AND: [
+          {
+            Source: 'Request',
+            requestAttribute: '',
+            requestValue: 'sdfsd'
+          },
+          {
+            Source: 'Identity',
+            identityAttribute: '',
+            identityValue: 'dfvsd'
+          },
+          {
+            OR: [
+              {
+                Source: 'Request',
+                requestAttribute: '',
+                requestValue: 'basjdghasjf'
+              },
+              {
+                Source: 'Identity',
+                identityAttribute: '',
+                identityValue: 'sdfsd'
+              }
+            ]
+          },
+          {
+            Source: 'Request',
+            requestAttribute: 'requestAttribute2',
+            requestValue: 'modified data'
+          }
+        ]
+      },
+      selectOperation: 'AND'
+    }
+
+    // Reformatting function
+    const reformatData = (data) => {
+      const reformattedConditions = []
+
+      const traverseConditions = (conditions, selectOperation) => {
+        Object.entries(conditions).forEach(([operation, items]) => {
+          if (Array.isArray(items)) {
+            // If it's an array, add each item with the selectOperation
+            reformattedConditions.push(...items.map((item) => ({ ...item, selectOperation })))
+          } else {
+            // If it's an object, recurse into it with its selectOperation
+            traverseConditions(items, operation)
+          }
+        })
+      }
+
+      traverseConditions(data.conditions, data.selectOperation)
+      console.log('refromated code-------', JSON.stringify(reformattedConditions, null, 2))
+      return {
+        conditions: reformattedConditions,
+        selectOperation: data.selectOperation || 'AND' // Default selectOperation
+      }
+    }
+
+    // Format the default data
+    const formattedData = reformatData(defaultData)
+
+    // Set the formatted data to state
+    setConditions(formattedData.conditions)
+    setSelectOperation(formattedData.selectOperation)
+    setIsAddClicked(true) // Set isAddClicked to true to render the conditions
+  }, [])
 
 
