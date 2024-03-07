@@ -164,3 +164,46 @@ const renderConditionRow = (condition, index, isGrouped = false, isInner = false
       </div>
     )
   }
+
+
+
+without format------------------------
+{
+  "conditions": [
+    {
+      "Source": "Request",
+      "requestAttribute": "",
+      "requestValue": "sdfsd",
+      "selectOperation": "AND"
+    },
+    {
+      "Source": "Identity",
+      "identityAttribute": "",
+      "identityValue": "dfvsd",
+      "selectOperation": "AND"
+    },
+    {
+      "rows": [
+        {
+          "Source": "Request",
+          "requestAttribute": "",
+          "requestValue": "basjdghasjf",
+          "selectOperation": "AND"
+        },
+        {
+          "Source": "Identity",
+          "identityAttribute": "",
+          "identityValue": "sdfsd",
+          "selectOperation": "AND"
+        }
+      ],
+      "selectOperation": "OR"
+    },
+    {
+      "Source": "Request",
+      "requestAttribute": "requestAttribute2",
+      "requestValue": "modified data"
+    }
+  ],
+  "selectOperation": "AND"
+}
