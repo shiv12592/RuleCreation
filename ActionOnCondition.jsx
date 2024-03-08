@@ -100,3 +100,70 @@ export class EditRulePlain extends Component {
 }
 
 // ... (existing export)
+
+
+-----------------------------------------updated allow deny--------------------
+
+
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
+
+const ActionOnCondition = ({ action, onChange, ruleType }) => {
+  const [showInput, setShowInput] = useState({
+    conditionMet: ruleType === 'Deny', // Initially show conditionMet if ruleType is 'Deny'
+    conditionNotMet: ruleType === 'Allow' // Initially show conditionNotMet if ruleType is 'Allow'
+  });
+
+  const handleButtonClick = condition => {
+    setShowInput(prevState => ({ ...prevState, [condition]: !prevState[condition] }));
+  };
+
+  const handleInputChange = (condition, value) => {
+    onChange({ ...action, [condition]: { message: value } });
+  };
+
+  return (
+    <div>
+      {ruleType === 'Allow' ? (
+        <div key="conditionNotMet" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+          <div style={{ marginRight: '10px' }}>Condition Not Met</div>
+          <button onClick={() => handleButtonClick('conditionNotMet')}>Message</button>
+          {showInput.conditionNotMet && (
+            <input
+              type="text"
+              value={action.conditionNotMet.message}
+              onChange={e => handleInputChange('conditionNotMet', e.target.value)}
+            />
+          )}
+        </div>
+      ) : (
+        <div key="conditionMet" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+          <div style={{ marginRight: '10px' }}>Condition Met</div>
+          <button onClick={() => handleButtonClick('conditionMet')}>Message</button>
+          {showInput.conditionMet && (
+            <input
+              type="text"
+              value={action.conditionMet.message}
+              onChange={e => handleInputChange('conditionMet', e.target.value)}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+ActionOnCondition.propTypes = {
+  action: PropTypes.shape({
+    conditionMet: PropTypes.shape({
+      message: PropTypes.string
+    }),
+    conditionNotMet: PropTypes.shape({
+      message: PropTypes.string
+    })
+  }).isRequired,
+  onChange: PropTypes.func.isRequired,
+  ruleType: PropTypes.string.isRequired
+};
+
+export default ActionOnCondition;
