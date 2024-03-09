@@ -376,3 +376,136 @@ const reFormat = (formattedObject) => {
   };
 };
 
+
+
+tested formates-----
+   conditions, selectOperation--- {
+  "conditions": [
+    {
+      "source": "Request",
+      "value": "nmnbm bn"
+    },
+    {
+      "rows": [
+        {
+          "rows": [
+            {
+              "source": "Request",
+              "value": "bnb b"
+            },
+            {
+              "source": "Identity",
+              "value": "bnbnb",
+              "identityAttribute": "identityAttribute2"
+            }
+          ],
+          "selectOperation": "OR"
+        },
+        {
+          "rows": [
+            {
+              "source": "Identity",
+              "value": "xvxcvb",
+              "identityAttribute": "identityAttribute2"
+            },
+            {
+              "source": "Identity",
+              "value": "by cvc"
+            }
+          ],
+          "selectOperation": "AND"
+        }
+      ],
+      "selectOperation": "AND"
+    }
+  ],
+  "selectOperation": "AND"
+}
+index.js:8 formattedConditions---- {
+  "conditions": {
+    "AND": [
+      {
+        "Source": "Request",
+        "requestAttribute": "",
+        "requestValue": "nmnbm bn"
+      },
+      {
+        "AND": [
+          {
+            "OR": [
+              {
+                "Source": "Request",
+                "requestAttribute": "",
+                "requestValue": "bnb b"
+              },
+              {
+                "Source": "Identity",
+                "identityAttribute": "identityAttribute2",
+                "identityValue": "bnbnb"
+              }
+            ]
+          },
+          {
+            "AND": [
+              {
+                "Source": "Identity",
+                "identityAttribute": "identityAttribute2",
+                "identityValue": "xvxcvb"
+              },
+              {
+                "Source": "Identity",
+                "identityAttribute": "",
+                "identityValue": "by cvc"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+index.js:8 reconstructedConditions {
+  "conditions": [
+    {
+      "source": "Request",
+      "requestAttribute": null,
+      "value": "nmnbm bn"
+    },
+    {
+      "rows": [
+        {
+          "rows": [
+            {
+              "source": "Request",
+              "requestAttribute": null,
+              "value": "bnb b"
+            },
+            {
+              "source": "Identity",
+              "identityAttribute": "identityAttribute2",
+              "value": "bnbnb"
+            }
+          ],
+          "selectOperation": "OR"
+        },
+        {
+          "rows": [
+            {
+              "source": "Identity",
+              "identityAttribute": "identityAttribute2",
+              "value": "xvxcvb"
+            },
+            {
+              "source": "Identity",
+              "identityAttribute": null,
+              "value": "by cvc"
+            }
+          ],
+          "selectOperation": "AND"
+        }
+      ],
+      "selectOperation": "AND"
+    }
+  ],
+  "selectOperation": "AND"
+}
