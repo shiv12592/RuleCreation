@@ -331,3 +331,48 @@ useEffect(() => {
   }, [])
 
 
+--------------------reformating code----------
+
+const reFormat = (formattedObject) => {
+  // Helper function to process each condition
+  const processCondition = (condition) => {
+    // Check if the condition is a nested structure
+    if (typeof condition === 'object' && condition !== null && !Array.isArray(condition)) {
+      const keys = Object.keys(condition);
+      if (keys.includes('Source')) {
+        // Base condition without nested selectOperation
+        let obj = { source: condition['Source'] || null };
+        if (obj.source === 'Request') {
+          obj.requestAttribute = condition['requestAttribute'] || null;
+          obj.value = condition['requestValue'] || null;
+        } else if (obj.source === 'Identity') {
+          obj.identityAttribute = condition['identityAttribute'] || null;
+          obj.value = condition['identityValue'] || null;
+        } else if (obj.source === 'Location') {
+          obj.locationAttribute = condition['locationAttribute'] || null;
+          obj.value = condition['locationValue'] || null;
+          obj.locationField = condition['locationField'] || null;
+        }
+        return obj;
+      } else {
+        // Nested conditions with selectOperation
+        const selectOperation = keys[0];
+        return {
+          rows: condition[selectOperation].map(processCondition),
+          selectOperation: selectOperation
+        };
+      }
+    }
+    return null; // In case the condition is not an object
+  };
+
+  // Start processing from the root selectOperation
+  const rootSelectOperation = Object.keys(formattedObject)[0];
+  const conditions = formattedObject[rootSelectOperation].map(processCondition);
+
+  return {
+    conditions: conditions.filter(condition => condition !== null), // Filter out any null entries
+    selectOperation: rootSelectOperation
+  };
+};
+
