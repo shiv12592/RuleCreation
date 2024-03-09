@@ -509,3 +509,59 @@ index.js:8 reconstructedConditions {
   ],
   "selectOperation": "AND"
 }
+
+
+----------------object handling----------
+const reFormat = (formattedObject) => {
+  // Validate the input is an object and has the expected structure
+  if (!formattedObject || typeof formattedObject !== 'object') {
+    throw new Error('Invalid input: formattedObject must be an object');
+  }
+
+  const rootSelectOperation = Object.keys(formattedObject)[0];
+  const conditionsArray = formattedObject[rootSelectOperation];
+
+  if (!Array.isArray(conditionsArray)) {
+    throw new Error(`Invalid input: formattedObject.${rootSelectOperation} must be an array`);
+  }
+
+  // Helper function to process each condition
+  const processCondition = (condition) => {
+    // Check if the condition is a nested structure
+    if (typeof condition === 'object' && condition !== null && !Array.isArray(condition)) {
+      const keys = Object.keys(condition);
+      if (keys.includes('Source')) {
+        // Base condition without nested selectOperation
+        let obj = { source: condition['Source'] || null };
+        if (obj.source === 'Request') {
+          obj.requestAttribute = condition['requestAttribute'] || null;
+          obj.value = condition['requestValue'] || null;
+        } else if (obj.source === 'Identity') {
+          obj.identityAttribute = condition['identityAttribute'] || null;
+          obj.value = condition['identityValue'] || null;
+        } else if (obj.source === 'Location') {
+          obj.locationAttribute = condition['locationAttribute'] || null;
+          obj.value = condition['locationValue'] || null;
+          obj.locationField = condition['locationField'] || null;
+        }
+        return obj;
+      } else {
+        // Nested conditions with selectOperation
+        const selectOperation = keys[0];
+        return {
+          rows: condition[selectOperation].map(processCondition),
+          selectOperation: selectOperation
+        };
+      }
+    }
+    return null; // In case the condition is not an object
+  };
+
+  // Process the conditions and filter out any null entries
+  const processedConditions = conditionsArray.map(processCondition).filter(condition => condition !== null);
+
+  return {
+    conditions: processedConditions,
+    selectOperation: rootSelectOperation
+  };
+};
