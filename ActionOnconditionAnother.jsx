@@ -123,4 +123,40 @@ export class EditRulePlain extends Component {
   }
 }
 
+
+
+=============updated actio message============================
+  const ActionOnCondition = ({ action, onChange, ruleType }) => {
+  const handleInputChange = (condition, value) => {
+    onChange({ ...action, [condition]: { message: value } });
+  };
+
+  return (
+    <div>
+      {ruleType === 'Allow' && (
+        <div key="conditionNotMet" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+          <div style={{ marginRight: '10px' }}>Condition Not Met</div>
+          <input
+            type="text"
+            value={action.conditionNotMet.message}
+            onChange={e => handleInputChange('conditionNotMet', e.target.value)}
+            readOnly={!!action.conditionNotMet.message} // Make input read-only if there's an existing message
+          />
+        </div>
+      )}
+      {ruleType === 'Deny' && (
+        <div key="conditionMet" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+          <div style={{ marginRight: '10px' }}>Condition Met</div>
+          <input
+            type="text"
+            value={action.conditionMet.message}
+            onChange={e => handleInputChange('conditionMet', e.target.value)}
+            readOnly={!!action.conditionMet.message} // Make input read-only if there's an existing message
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
   
