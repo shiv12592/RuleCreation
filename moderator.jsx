@@ -264,3 +264,20 @@ const RuleCategoryChange = ({ onChange }) => {
 };
 
 export default RuleCategoryChange;
+
+
+=========================updated moderator==========================
+     <div className="col-md-4">
+                    {/* Show selected moderators with clear button */}
+                    {selectedModerators.length > 0 && (
+                        <div className="selected-value" style={{ borderColor: 'blue' }}>
+                            {selectedModerators.map((moderator, index) => (
+                                <span key={index}>
+                                    {index > 0 && ', '}
+                                    {moderator.userName}
+                                    <button onClick={() => handleRemoveModerator(index)}>X</button>
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
