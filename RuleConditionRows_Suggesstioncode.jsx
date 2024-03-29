@@ -290,15 +290,10 @@ export default RuleConditionRows;
 <div>
   <input
     type="text"
-    value={condition.suggestionValue}
-    onChange={(e) =>
-      isGrouped
-        ? handleChangeInner(index, i, "suggestionValue", e.target.value)
-        : handleChange(index, "suggestionValue", e.target.value)
-    }
+    value={inputCarIdText}
+    onChange={(e) => setInputCarIdText(e.target.value)}
     placeholder="Search by name or ID and select"
     style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
-    onBlur={handleCarIdInputChange} // Call handleCarIdInputChange on text entry
   />
   {showCarIdSuggestions && appSearchList.data && (
     <div className="suggestions">
@@ -307,8 +302,10 @@ export default RuleConditionRows;
           className="suggestion"
           key={app.id}
           onClick={() => {
-            handleCarIdSelection(app); // Call handleCarIdSelection on suggestion click
-            handleClearCarId(); // Clear input text after selection
+            setCarId(app.id); // Set the selected car ID directly
+            setInputCarIdText(''); // Clear the input text after selection
+            // Update condition.suggestionValue directly
+            handleChange(index, "suggestionValue", app.id);
           }}
         >
           ({app.id}) - {app.techOwnerFullName}
@@ -316,6 +313,18 @@ export default RuleConditionRows;
       ))}
     </div>
   )}
+
+  {/* Display selected car ID and 'X' button */}
+  <div>
+    {carId && (
+      <div className="selected-value" style={{ borderColor: 'blue' }}>
+        {carId}
+        <button onClick={() => {
+          setCarId(''); // Clear the selected car ID
+          // Clear the suggestionValue when clearing the selected carId
+          handleChange(index, "suggestionValue", '');
+        }}>X</button>
+      </div>
+    )}
+  </div>
 </div>
-
-
