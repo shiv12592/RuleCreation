@@ -284,3 +284,33 @@ const RuleConditionRows = () => {
 };
 
 export default RuleConditionRows;
+
+-----------------------------
+
+  <div>
+  <input
+    type="text"
+    value={condition.suggestionValue}
+    onChange={(e) =>
+      isGrouped
+        ? handleChangeInner(index, i, "suggestionValue", e.target.value)
+        : handleChange(index, "suggestionValue", e.target.value)
+    }
+    placeholder="Search by name or ID and select"
+    style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
+  />
+  {showCarIdSuggestions && appSearchList.data && (
+    <div className="suggestions">
+      {appSearchList.data.map((app) => (
+        <div
+          className="suggestion"
+          key={app.id}
+          onClick={() => handleCarIdSelection(app)} // Bind handleCarIdSelection to onClick event
+        >
+          ({app.id}) - {app.techOwnerFullName}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
