@@ -287,7 +287,7 @@ export default RuleConditionRows;
 
 -----------------------------
 
-  <div>
+<div>
   <input
     type="text"
     value={condition.suggestionValue}
@@ -298,6 +298,7 @@ export default RuleConditionRows;
     }
     placeholder="Search by name or ID and select"
     style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
+    onBlur={handleCarIdInputChange} // Call handleCarIdInputChange on text entry
   />
   {showCarIdSuggestions && appSearchList.data && (
     <div className="suggestions">
@@ -305,7 +306,10 @@ export default RuleConditionRows;
         <div
           className="suggestion"
           key={app.id}
-          onClick={() => handleCarIdSelection(app)} // Bind handleCarIdSelection to onClick event
+          onClick={() => {
+            handleCarIdSelection(app); // Call handleCarIdSelection on suggestion click
+            handleClearCarId(); // Clear input text after selection
+          }}
         >
           ({app.id}) - {app.techOwnerFullName}
         </div>
@@ -313,4 +317,5 @@ export default RuleConditionRows;
     </div>
   )}
 </div>
+
 
