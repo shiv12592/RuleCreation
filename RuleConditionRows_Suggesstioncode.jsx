@@ -287,44 +287,163 @@ export default RuleConditionRows;
 
 -----------------------------
 
-<div>
-  <input
-    type="text"
-    value={inputCarIdText}
-    onChange={(e) => setInputCarIdText(e.target.value)}
-    placeholder="Search by name or ID and select"
-    style={{ padding: '5px', border: '1px solid #ccc', borderRadius: '5px' }}
-  />
-  {showCarIdSuggestions && appSearchList.data && (
-    <div className="suggestions">
-      {appSearchList.data.map((app) => (
-        <div
-          className="suggestion"
-          key={app.id}
-          onClick={() => {
-            setCarId(app.id); // Set the selected car ID directly
-            setInputCarIdText(''); // Clear the input text after selection
-            // Update condition.suggestionValue directly
-            handleChange(index, "suggestionValue", app.id);
-          }}
-        >
-          ({app.id}) - {app.techOwnerFullName}
-        </div>
-      ))}
-    </div>
-  )}
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { debounce } from "lodash";
+import { searchApps } from "../redux/actions";
+import { getSearchedApps } from "../redux/selectors";
 
-  {/* Display selected car ID and 'X' button */}
-  <div>
-    {carId && (
-      <div className="selected-value" style={{ borderColor: 'blue' }}>
-        {carId}
-        <button onClick={() => {
-          setCarId(''); // Clear the selected car ID
-          // Clear the suggestionValue when clearing the selected carId
-          handleChange(index, "suggestionValue", '');
-        }}>X</button>
+const RuleConditionRows = () => {
+  const [conditions, setConditions] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectOperation, setSelectOperation] = useState("AND");
+  const [isAddClicked, setIsAddClicked] = useState(false);
+  const [inputCarIdText, setInputCarIdText] = useState("");
+  const [isCarIdLoading, setIsCarIdLoading] = useState(false);
+  const [showCarIdSuggestions, setShowCarIdSuggestions] = useState(false);
+  const [carIdValues, setCarIdValues] = useState({});
+
+  const dispatch = useDispatch();
+  const appSearchList = useSelector(getSearchedApps);
+
+  const handleAddConditionRow = () => {
+    setConditions([...conditions, { requestValue: "" }]);
+    setIsAddClicked(true);
+  };
+
+  const handleChange = (index, field, value) => {
+    let updatedConditions = [...conditions];
+    updatedConditions[index][field] = value;
+    setConditions(updatedConditions);
+  };
+
+  const handleSelectRow = (index) => {
+    if (selectedRows.includes(index)) {
+      setSelectedRows(selectedRows.filter((i) => i !== index));
+    } else {
+      setSelectedRows([...selectedRows, index]);
+    }
+  };
+
+  const handleGroupSelected = () => {
+    // Group logic
+  };
+
+  const handleUngroupSelected = () => {
+    // Ungroup logic
+  };
+
+  const handleDeleteSelected = () => {
+    // Delete logic
+  };
+
+  const handleSubmit = () => {
+    // Submit logic
+  };
+
+  const handleCarIdInputChange = (e) => {
+    setInputCarIdText(e.target.value);
+    debounceCarIdInputChange(e.target.value);
+  };
+
+  const debounceCarIdInputChange = debounce((value) => {
+    setIsCarIdLoading(true);
+    dispatch(searchApps(value)).then(() => {
+      setIsCarIdLoading(false);
+    });
+    setShowCarIdSuggestions(e.target.value !== "");
+  }, 300);
+
+  const handleCarIdSelection = (app, index) => {
+    setCarIdValues({ ...carIdValues, [index]: app.id });
+    setInputCarIdText("");
+    setShowCarIdSuggestions(false);
+    let updatedConditions = [...conditions];
+    updatedConditions[index]["requestValue"] = app.id;
+    setConditions(updatedConditions);
+  };
+
+  const handleClearCarId = (index) => {
+    setCarIdValues({ ...carIdValues, [index]: "" });
+    setInputCarIdText("");
+    setShowCarIdSuggestions(false);
+    let updatedConditions = [...conditions];
+    updatedConditions[index]["requestValue"] = "";
+    setConditions(updatedConditions);
+  };
+
+  const renderConditionRow = (condition, index) => {
+    return (
+      <div key={index}>
+        <input
+          type="checkbox"
+          checked={selectedRows.includes(index)}
+          onChange={() => handleSelectRow(index)}
+        />
+        <select
+          value={condition.source || ""}
+          onChange={(e) => handleChange(index, "source", e.target.value)}
+        >
+          <option value="">Select Source</option>
+          <option value="Request">Request</option>
+          <option value="Identity">Identity</option>
+          <option value="Location">Location</option>
+        </select>
+        {condition.source === "Request" && (
+          <>
+            <input
+              type="text"
+              value={inputCarIdText}
+              onChange={handleCarIdInputChange}
+              placeholder="Search by name or ID and select"
+            />
+            {showCarIdSuggestions && appSearchList.data && (
+              <div className="suggestions">
+                {appSearchList.data.map((app) => (
+                  <div
+                    className="suggestion"
+                    key={app.id}
+                    onClick={() => handleCarIdSelection(app, index)}
+                  >
+                    ({app.id}) - {app.techOwnerFullName}
+                  </div>
+                ))}
+              </div>
+            )}
+            {carIdValues[index] && (
+              <div className="selected-value">
+                {carIdValues[index]}
+                <button onClick={() => handleClearCarId(index)}>X</button>
+              </div>
+            )}
+          </>
+        )}
+        {/* Add other fields based on source */}
       </div>
-    )}
-  </div>
-</div>
+    );
+  };
+
+  return (
+    <div>
+      <button onClick={handleAddConditionRow}>Add Condition Row</button>
+      {isAddClicked && (
+        <>
+          <select
+            value={selectOperation}
+            onChange={(e) => setSelectOperation(e.target.value)}
+          >
+            <option value="AND">AND</option>
+            <option value="OR">OR</option>
+          </select>
+          {conditions.map((condition, index) => (
+            <div key={index}>{renderConditionRow(condition, index)}</div>
+          ))}
+        </>
+      )}
+      {/* Add buttons and handlers */}
+    </div>
+  );
+};
+
+export default RuleConditionRows;
+
