@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { debounce } from "lodash";
-import { searchApps } from "../redux/actions";
+import { searchEntitilements } from "../redux/actions";
 import { getSearchedApps } from "../redux/selectors";
 
 const RuleConditionRows = () => {
@@ -11,51 +11,40 @@ const RuleConditionRows = () => {
   const [isAddClicked, setIsAddClicked] = useState(false);
   const dispatch = useDispatch();
   const appSearchList = useSelector(getSearchedApps);
-  const [inputCarIdText, setInputCarIdText] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(""); // New state to store the selected value
+  const [selectedEntitlment, setSeelectedEntitlment] = useState("");
+  const [inputEntitlmnetText, setInputEntilmnetText] = useState("");
+  const [isEntitilmentLoading, setIsEntitilmentLoading] = useState(false);
+  const [showEntitlmentSuggestions, setShowEntitlmentSuggestions] =
+    useState(false);
 
-  const handleAddConditionRow = () => {
-    const newCondition = { source: "", requestAttribute: "", requestValue: "" };
-    setConditions([...conditions, newCondition]);
-    setIsAddClicked(true);
-  };
-
-  const debouncedSearch = debounce((value) => {
-    dispatch(searchApps(value));
+  const debouncedSearch = debounce((text) => {
+    dispatch(searchEntitilements(text));
   }, 300);
 
-  const handleInputChange = (value) => {
-    setInputCarIdText(value);
-    setShowSuggestions(true);
-    debouncedSearch(value);
+  const handleInputChange = (text) => {
+    setInputEntilmnetText(text);
+    setIsEntitilmentLoading(true);
+    debouncedSearch(text);
   };
 
-  const handleSuggestionSelect = (selectedValue, index) => {
-    setInputCarIdText(selectedValue);
-    setSelectedValue(selectedValue);
+  const handleSelectEntitlment = (value) => {
+    setInputEntilmnetText("");
+    setSeelectedEntitlment(value);
+    setIsEntitilmentLoading(false);
+    setShowEntitlmentSuggestions(false);
+    handleChange(selectedRows[0], "requestValue", value);
+  };
 
-    // Update the selected value to condition.requestValue at the specified index
-    const updatedConditions = [...conditions];
-    updatedConditions[index].requestValue = selectedValue;
+  const handleChange = (index, field, value) => {
+    let updatedConditions = [...conditions];
+    updatedConditions[index][field] = value;
     setConditions(updatedConditions);
-
-    setShowSuggestions(false);
   };
 
-  const renderSuggestions = (index) => {
-    if (showSuggestions && appSearchList.data && appSearchList.data.length > 0) {
-      return (
-        <ul>
-          {appSearchList.data.map((item) => (
-            <li key={item.id} onClick={() => handleSuggestionSelect(item.name, index)}>
-              {item.name}
-            </li>
-          ))}
-        </ul>
-      );
-    }
-    return null;
+  const handleChangeInner = (index, i, field, value) => {
+    let updatedConditions = [...conditions];
+    updatedConditions[index].rows[i][field] = value;
+    setConditions(updatedConditions);
   };
 
   const renderConditionRow = (
@@ -65,37 +54,190 @@ const RuleConditionRows = () => {
     isGrouped = false,
     isInner = false
   ) => {
-    // Existing code for condition row rendering
-
-    return (
-      <div style={{ border: "1px solid black", margin: "10px", padding: "10px" }}>
-        {/* Existing code for checkboxes and select dropdown */}
-        {condition.source === "Request" && condition.requestAttribute === "entitlement" ? (
+    return condition.rows && condition.selectOperation ? (
+      <table style={{ border: "1px solid black", margin: "10px" }}>
+        <tbody>
+          <tr style={{ border: "1px solid black" }}>
+            {!isInner && (
+              <td>
+                <input
+                  type="checkbox"
+                  checked={
+                    isGrouped ? condition.checked : selectedRows.includes(index)
+                  }
+                  onChange={() =>
+                    isGrouped
+                      ? handleChangeInner(
+                          index,
+                          i,
+                          "checked",
+                          !condition.checked
+                        )
+                      : handleSelectRow(index)
+                  }
+                />
+              </td>
+            )}
+            <td>
+              {condition.rows.map((row, i) => (
+                <div key={i}>
+                  {renderConditionRow(row, index, i, true, true)}
+                </div>
+              ))}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    ) : (
+      <div
+        style={{ border: "1px solid black", margin: "10px", padding: "10px" }}
+      >
+        <select
+          value={condition.source}
+          onChange={(e) =>
+            isGrouped
+              ? handleChangeInner(index, i, "source", e.target.value)
+              : handleChange(index, "source", e.target.value)
+          }
+        >
+          <option value="">Select Source</option>
+          <option value="Request">Request</option>
+          <option value="Identity">Identity</option>
+          <option value="Location">Location</option>
+        </select>
+        {condition.source === "Request" && (
           <div className="row">
+            <select
+              value={condition.requestAttribute}
+              onChange={(e) =>
+                isGrouped
+                  ? handleChangeInner(
+                      index,
+                      i,
+                      "requestAttribute",
+                      e.target.value
+                    )
+                  : handleChange(index, "requestAttribute", e.target.value)
+              }
+            >
+              <option value="">Select Request Attribute</option>
+              <option value="requesttee">requesttee</option>
+              <option value="entitlement">entitlement</option>
+            </select>
+            {condition.requestAttribute === "entitlement" ? (
+              <div>
+                <input
+                  type="text"
+                  value={inputEntitlmnetText}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                />
+                {isEntitilmentLoading && <div>Loading...</div>}
+                {showEntitlmentSuggestions && (
+                  <div>
+                    {appSearchList.data.map((entitlement) => (
+                      <div
+                        key={entitlement.id}
+                        onClick={() => handleSelectEntitlment(entitlement.name)}
+                      >
+                        {entitlement.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <input
+                type="text"
+                value={condition.requestValue}
+                onChange={(e) =>
+                  isGrouped
+                    ? handleChangeInner(
+                        index,
+                        i,
+                        "requestValue",
+                        e.target.value
+                      )
+                    : handleChange(index, "requestValue", e.target.value)
+                }
+              />
+            )}
+          </div>
+        )}
+        {condition.source === "Identity" && (
+          <div>
+            <select
+              value={condition.identityAttribute}
+              onChange={(e) =>
+                isGrouped
+                  ? handleChangeInner(
+                      index,
+                      i,
+                      "identityAttribute",
+                      e.target.value
+                    )
+                  : handleChange(index, "identityAttribute", e.target.value)
+              }
+            >
+              <option value="">Select Identity Attribute</option>
+              <option value="country code">country code</option>
+              <option value="department number">department number</option>
+            </select>
             <input
               type="text"
-              value={inputCarIdText}
-              onChange={(e) => handleInputChange(e.target.value)}
+              value={condition.identityValue}
+              onChange={(e) =>
+                isGrouped
+                  ? handleChangeInner(index, i, "identityValue", e.target.value)
+                  : handleChange(index, "identityValue", e.target.value)
+              }
             />
-            {renderSuggestions(index)}
-            {/* Display selected value below input box */}
-            {selectedValue && <div>{selectedValue}</div>}
           </div>
-        ) : (
-          // Existing code for other sources and attributes
         )}
-      </div>
-    );
-  };
+        {condition.source === "Location" && (
+          <div>
+            <select
+              value={condition.locationAttribute}
+              onChange={(e) =>
+                isGrouped
+                  ? handleChangeInner(
+                      index,
+                      i,
+                      "locationAttribute",
+                      e.target.value
+                    )
+                  : handleChange(index, "locationAttribute", e.target.value)
+              }
+            >
+              <option value="">Select Location Attribute</option>
+              <option value="RACF">RACF</option>
+              <option value="CAS">CAS</option>
+            </select>
+            <select
+              value={condition.locationField}
+              onChange={(e) =>
+                isGrouped
+                  ? handleChangeInner(index, i, "locationField", e.target.value)
+                  : handleChange(index, "locationField", e.target.value)
+              }
+            >
+              <option value="">Select Location Field</option>
+              <option value="memberOf">memberOf</option>
+              <option value="racfConnect">racfConnect</option>
+            </select>
+            <
 
-  return (
-    <div className="col-md-12 pad-1 card-rounded">
-      {/* Existing code for buttons and table */}
-    </div>
-  );
-};
 
-export default RuleConditionRows;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
