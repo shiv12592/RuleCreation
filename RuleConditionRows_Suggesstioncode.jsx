@@ -1,3 +1,105 @@
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { debounce } from "lodash";
+import { searchApps } from "../redux/actions";
+import { getSearchedApps } from "../redux/selectors";
+
+const RuleConditionRows = () => {
+  const [conditions, setConditions] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectOperation, setSelectOperation] = useState("AND");
+  const [isAddClicked, setIsAddClicked] = useState(false);
+  const dispatch = useDispatch();
+  const appSearchList = useSelector(getSearchedApps);
+
+  const handleAddConditionRow = () => {
+    setConditions([...conditions, {}]);
+    setIsAddClicked(true);
+  };
+
+  // Other functions remain unchanged
+
+  const handleChange = (index, field, value) => {
+    let updatedConditions = [...conditions];
+    updatedConditions[index][field] = value;
+    setConditions(updatedConditions);
+
+    if (field === "requestValue") {
+      // Dispatch API call when requestValue changes
+      dispatch(searchApps(value));
+    }
+  };
+
+  const handleInputChange = (index, value) => {
+    setInputCarIdText(value);
+    setIsCarIdLoading(true);
+
+    // Debounce the API call to avoid frequent requests
+    debouncedSearch(value);
+  };
+
+  const debouncedSearch = debounce((value) => {
+    dispatch(searchApps(value));
+  }, 300); // Adjust debounce delay as needed
+
+  const renderConditionRow = (
+    condition,
+    index,
+    i,
+    isGrouped = false,
+    isInner = false
+  ) => {
+    const isDisabled = () => {
+      return isInner;
+    };
+
+    return condition.rows && condition.selectOperation ? (
+      // Render grouped condition row with nested table
+      // Code for grouped condition row remains unchanged
+    ) : (
+      // Render normal condition row with dropdowns and input
+      <div
+        style={{ border: "1px solid black", margin: "10px", padding: "10px" }}
+      >
+        {/* Existing code for checkboxes and select dropdown */}
+        {condition.source === "Request" && condition.requestAttribute === "entitlement" ? (
+          <div className="row">
+            <input
+              type="text"
+              value={inputCarIdText}
+              onChange={(e) => handleInputChange(index, e.target.value)}
+              disabled={isDisabled()}
+            />
+            {/* Display selected value below input box */}
+            {appSearchList.data && appSearchList.data.length > 0 && (
+              <div>{appSearchList.data[0].name}</div>
+            )}
+          </div>
+        ) : (
+          // Existing code for other sources and attributes
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="col-md-12 pad-1 card-rounded">
+      {/* Existing code for buttons and table */}
+    </div>
+  );
+};
+
+export default RuleConditionRows;
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------
 import React, { useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { searchApps, getSearchedApps } from "./redux/actions"; // Assuming you have actions set up for Redux
