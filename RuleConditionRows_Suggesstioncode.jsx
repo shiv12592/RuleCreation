@@ -13,9 +13,11 @@ const RuleConditionRows = () => {
   const appSearchList = useSelector(getSearchedApps);
   const [inputCarIdText, setInputCarIdText] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedValue, setSelectedValue] = useState(""); // New state to store the selected value
 
   const handleAddConditionRow = () => {
-    setConditions([...conditions, {}]);
+    const newCondition = { source: "", requestAttribute: "", requestValue: "" };
+    setConditions([...conditions, newCondition]);
     setIsAddClicked(true);
   };
 
@@ -29,17 +31,24 @@ const RuleConditionRows = () => {
     debouncedSearch(value);
   };
 
-  const handleSuggestionSelect = (selectedValue) => {
+  const handleSuggestionSelect = (selectedValue, index) => {
     setInputCarIdText(selectedValue);
+    setSelectedValue(selectedValue);
+
+    // Update the selected value to condition.requestValue at the specified index
+    const updatedConditions = [...conditions];
+    updatedConditions[index].requestValue = selectedValue;
+    setConditions(updatedConditions);
+
     setShowSuggestions(false);
   };
 
-  const renderSuggestions = () => {
+  const renderSuggestions = (index) => {
     if (showSuggestions && appSearchList.data && appSearchList.data.length > 0) {
       return (
         <ul>
           {appSearchList.data.map((item) => (
-            <li key={item.id} onClick={() => handleSuggestionSelect(item.name)}>
+            <li key={item.id} onClick={() => handleSuggestionSelect(item.name, index)}>
               {item.name}
             </li>
           ))}
@@ -68,7 +77,9 @@ const RuleConditionRows = () => {
               value={inputCarIdText}
               onChange={(e) => handleInputChange(e.target.value)}
             />
-            {renderSuggestions()}
+            {renderSuggestions(index)}
+            {/* Display selected value below input box */}
+            {selectedValue && <div>{selectedValue}</div>}
           </div>
         ) : (
           // Existing code for other sources and attributes
@@ -85,7 +96,6 @@ const RuleConditionRows = () => {
 };
 
 export default RuleConditionRows;
-
 
 
 
