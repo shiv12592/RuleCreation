@@ -11,36 +11,43 @@ const RuleConditionRows = () => {
   const [isAddClicked, setIsAddClicked] = useState(false);
   const dispatch = useDispatch();
   const appSearchList = useSelector(getSearchedApps);
+  const [inputCarIdText, setInputCarIdText] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleAddConditionRow = () => {
     setConditions([...conditions, {}]);
     setIsAddClicked(true);
   };
 
-  // Other functions remain unchanged
+  const debouncedSearch = debounce((value) => {
+    dispatch(searchApps(value));
+  }, 300);
 
-  const handleChange = (index, field, value) => {
-    let updatedConditions = [...conditions];
-    updatedConditions[index][field] = value;
-    setConditions(updatedConditions);
-
-    if (field === "requestValue") {
-      // Dispatch API call when requestValue changes
-      dispatch(searchApps(value));
-    }
-  };
-
-  const handleInputChange = (index, value) => {
+  const handleInputChange = (value) => {
     setInputCarIdText(value);
-    setIsCarIdLoading(true);
-
-    // Debounce the API call to avoid frequent requests
+    setShowSuggestions(true);
     debouncedSearch(value);
   };
 
-  const debouncedSearch = debounce((value) => {
-    dispatch(searchApps(value));
-  }, 300); // Adjust debounce delay as needed
+  const handleSuggestionSelect = (selectedValue) => {
+    setInputCarIdText(selectedValue);
+    setShowSuggestions(false);
+  };
+
+  const renderSuggestions = () => {
+    if (showSuggestions && appSearchList.data && appSearchList.data.length > 0) {
+      return (
+        <ul>
+          {appSearchList.data.map((item) => (
+            <li key={item.id} onClick={() => handleSuggestionSelect(item.name)}>
+              {item.name}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    return null;
+  };
 
   const renderConditionRow = (
     condition,
@@ -49,31 +56,19 @@ const RuleConditionRows = () => {
     isGrouped = false,
     isInner = false
   ) => {
-    const isDisabled = () => {
-      return isInner;
-    };
+    // Existing code for condition row rendering
 
-    return condition.rows && condition.selectOperation ? (
-      // Render grouped condition row with nested table
-      // Code for grouped condition row remains unchanged
-    ) : (
-      // Render normal condition row with dropdowns and input
-      <div
-        style={{ border: "1px solid black", margin: "10px", padding: "10px" }}
-      >
+    return (
+      <div style={{ border: "1px solid black", margin: "10px", padding: "10px" }}>
         {/* Existing code for checkboxes and select dropdown */}
         {condition.source === "Request" && condition.requestAttribute === "entitlement" ? (
           <div className="row">
             <input
               type="text"
               value={inputCarIdText}
-              onChange={(e) => handleInputChange(index, e.target.value)}
-              disabled={isDisabled()}
+              onChange={(e) => handleInputChange(e.target.value)}
             />
-            {/* Display selected value below input box */}
-            {appSearchList.data && appSearchList.data.length > 0 && (
-              <div>{appSearchList.data[0].name}</div>
-            )}
+            {renderSuggestions()}
           </div>
         ) : (
           // Existing code for other sources and attributes
@@ -90,7 +85,6 @@ const RuleConditionRows = () => {
 };
 
 export default RuleConditionRows;
-
 
 
 
