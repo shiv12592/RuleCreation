@@ -1,3 +1,15 @@
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import DepartmentSearch from "./DepartmentSearch";
+
+const RuleConditionRows = () => {
+  const dispatch = useDispatch();
+  const [conditions, setConditions] = useState([]);
+
+  const handleAddConditionRow = () => {
+    setConditions([...conditions, {}]);
+  };
+
 const handleDepartmentSuggestionClick = (department, index) => {
   const updatedConditions = [...conditions];
   const departmentValues = updatedConditions[index].requestValue || [];
@@ -16,27 +28,6 @@ const handleDepartmentSuggestionClick = (department, index) => {
   updatedConditions[index].requestValue = departmentValues;
   setConditions(updatedConditions);
 };
-=======================
-
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import DepartmentSearch from "./DepartmentSearch";
-
-const RuleConditionRows = () => {
-  const dispatch = useDispatch();
-  const [conditions, setConditions] = useState([]);
-
-  const handleAddConditionRow = () => {
-    setConditions([...conditions, {}]);
-  };
-
-  const handleDepartmentSuggestionClick = (department, index) => {
-    const updatedConditions = [...conditions];
-    const departmentValues = updatedConditions[index].requestValue || [];
-    departmentValues.push(department.id);
-    updatedConditions[index].requestValue = departmentValues;
-    setConditions(updatedConditions);
-  };
 
   const renderConditionRow = (condition, index) => {
     if (condition.requestAttribute === "department no") {
@@ -64,7 +55,7 @@ const RuleConditionRows = () => {
 };
 
 export default RuleConditionRows;
-
+===============
 
 import React, { useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -96,17 +87,24 @@ const DepartmentSearch = ({ handleDepartmentSuggestionClick }) => {
     []
   );
 
-  const handleDepartmentSuggestionClick = (department) => {
-    setSelectedDepartments([...selectedDepartments, department]);
-    setInputDepartmentText(""); // Clear input after selection
-    setShowDepartmentSuggestions(false); // Close suggestions after selection
-  };
+const handleDepartmentSet = (department) => {
+  // Call the parent function to handle adding the department
+  handleDepartmentSuggestionClick(department);
+  
+  // Update local state in the child component
+  setSelectedDepartments([...selectedDepartments, department]);
+  setInputDepartmentText(""); // Clear input after selection
+  setShowDepartmentSuggestions(false); // Close suggestions after selection
+};
 
-  const handleRemoveDepartment = (index) => {
-    const updatedDepartments = [...selectedDepartments];
-    updatedDepartments.splice(index, 1);
-    setSelectedDepartments(updatedDepartments);
-  };
+const handleRemoveDepartment = (department) => {
+  // Call the parent function to handle removing the department
+  handleDepartmentSuggestionClick(department);
+  
+  // Update local state in the child component
+  const updatedDepartments = selectedDepartments.filter((item) => item.id !== department.id);
+  setSelectedDepartments(updatedDepartments);
+};
 
   return (
     <div>
@@ -127,7 +125,7 @@ const DepartmentSearch = ({ handleDepartmentSuggestionClick }) => {
             <div
               className="suggestion"
               key={department.id}
-              onClick={() => handleDepartmentSuggestionClick(department)}
+              onClick={() => handleDepartmentSet(department)}
             >
               ({department.id})
             </div>
@@ -135,22 +133,23 @@ const DepartmentSearch = ({ handleDepartmentSuggestionClick }) => {
         </div>
       )}
       {isDepartmentLoading && <div>Loading...</div>}
-      <div>
-        {selectedDepartments.map((department, index) => (
-          <div key={index}>
-            {department.id}{" "}
-            <button onClick={() => handleRemoveDepartment(index)}>Remove</button>
-          </div>
-        ))}
-      </div>
+      
+<div>
+  {selectedDepartments.map((department) => (
+    <div key={department.id}>
+      {department.id}{" "}
+      <button onClick={() => handleRemoveDepartment(department)}>Remove</button>
     </div>
+  ))}
+</div>
+  
   );
 };
 
 export default DepartmentSearch;
 
 
-=============================================
+============================old deprt search in same file=================
 const handleEntlmentSuggestionClick = (app) => {
   const selectedId = app.id;
   setInputEntilmnetText(""); // Clear the input text
