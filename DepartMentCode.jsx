@@ -1,64 +1,21 @@
+const handleDepartmentSuggestionClick = (department, index) => {
+  const updatedConditions = [...conditions];
+  const departmentValues = updatedConditions[index].requestValue || [];
+  
+  // Check if the department ID already exists in requestValue
+  const existsIndex = departmentValues.findIndex((id) => id === department.id);
+  
+  if (existsIndex !== -1) {
+    // Remove the department ID if it exists
+    departmentValues.splice(existsIndex, 1);
+  } else {
+    // Add the department ID if it doesn't exist
+    departmentValues.push(department.id);
+  }
 
-const DepartmentSearch = ({ handleDepartmentSuggestionClick, handleDepartmentRemove }) => {
-  // Existing code...
-
-  const handleRemoveDepartment = (index) => {
-    const removedDepartment = selectedDepartments[index];
-    handleDepartmentRemove(removedDepartment); // Call parent function to remove department
-    const updatedDepartments = [...selectedDepartments];
-    updatedDepartments.splice(index, 1);
-    setSelectedDepartments(updatedDepartments);
-  };
-
-  return (
-    <div>
-      {/* Existing code... */}
-      <div>
-        {selectedDepartments.map((department, index) => (
-          <div key={index}>
-            {department.id}{" "}
-            <button onClick={() => handleRemoveDepartment(index)}>Remove</button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  updatedConditions[index].requestValue = departmentValues;
+  setConditions(updatedConditions);
 };
-
-
-const RuleConditionRows = () => {
-  // Existing code...
-
-  const handleDepartmentSuggestionClick = (department, index) => {
-    // Existing code...
-  };
-
-  const handleDepartmentRemove = (removedDepartment) => {
-    const updatedConditions = conditions.map((condition) => {
-      if (condition.requestAttribute === "department no") {
-        const updatedRequestValue = condition.requestValue.filter(
-          (id) => id !== removedDepartment.id
-        );
-        return { ...condition, requestValue: updatedRequestValue };
-      }
-      return condition;
-    });
-    setConditions(updatedConditions);
-  };
-
-  // Existing code...
-
-  return (
-    <div className="col-md-12 pad-1 card-rounded">
-      {/* Add Condition Row button */}
-      {/* Group/Un-group/Delete Selected buttons */}
-      {conditions.map((condition, index) => (
-        <div key={index}>{renderConditionRow(condition, index)}</div>
-      ))}
-    </div>
-  );
-};
-
 =======================
 
 import React, { useState } from "react";
