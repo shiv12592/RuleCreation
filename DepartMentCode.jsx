@@ -1,3 +1,139 @@
+
+
+
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import DepartmentSearch from "./DepartmentSearch";
+
+const RuleConditionRows = () => {
+  const dispatch = useDispatch();
+  const [conditions, setConditions] = useState([]);
+
+  const handleAddConditionRow = () => {
+    setConditions([...conditions, {}]);
+  };
+
+  const handleDepartmentSuggestionClick = (department, index) => {
+    const updatedConditions = [...conditions];
+    const departmentValues = updatedConditions[index].requestValue || [];
+    departmentValues.push(department.id);
+    updatedConditions[index].requestValue = departmentValues;
+    setConditions(updatedConditions);
+  };
+
+  const renderConditionRow = (condition, index) => {
+    if (condition.requestAttribute === "department no") {
+      return (
+        <div>
+          <DepartmentSearch
+            handleDepartmentSuggestionClick={(department) =>
+              handleDepartmentSuggestionClick(department, index)
+            }
+          />
+        </div>
+      );
+    }
+    // Render other condition rows as before
+  };
+
+  return (
+    <div className="col-md-12 pad-1 card-rounded">
+      <button onClick={handleAddConditionRow}>Add Condition Row</button>
+      {conditions.map((condition, index) => (
+        <div key={index}>{renderConditionRow(condition, index)}</div>
+      ))}
+    </div>
+  );
+};
+
+export default RuleConditionRows;
+
+
+import React, { useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { debounce } from "lodash";
+import { searchDepartments } from "./action";
+import { getSearchedDepartments } from "./selectors";
+
+const DepartmentSearch = ({ handleDepartmentSuggestionClick }) => {
+  const dispatch = useDispatch();
+  const departmentList = useSelector(getSearchedDepartments);
+  const [inputDepartmentText, setInputDepartmentText] = useState("");
+  const [isDepartmentLoading, setIsDepartmentLoading] = useState(false);
+  const [showDepartmentSuggestions, setShowDepartmentSuggestions] = useState(false);
+  const [selectedDepartments, setSelectedDepartments] = useState([]);
+
+  const handleDepartmentInputChange = (e) => {
+    setInputDepartmentText(e.target.value);
+    debounceInputChange(e.target.value);
+  };
+
+  const debounceInputChange = useCallback(
+    debounce((value) => {
+      setIsDepartmentLoading(true);
+      dispatch(searchDepartments(value)).then(() => {
+        setIsDepartmentLoading(false);
+        setShowDepartmentSuggestions(true); // Show suggestions when data is loaded
+      });
+    }, 300),
+    []
+  );
+
+  const handleDepartmentSuggestionClick = (department) => {
+    setSelectedDepartments([...selectedDepartments, department]);
+    setInputDepartmentText(""); // Clear input after selection
+    setShowDepartmentSuggestions(false); // Close suggestions after selection
+  };
+
+  const handleRemoveDepartment = (index) => {
+    const updatedDepartments = [...selectedDepartments];
+    updatedDepartments.splice(index, 1);
+    setSelectedDepartments(updatedDepartments);
+  };
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={inputDepartmentText}
+        onChange={handleDepartmentInputChange}
+        placeholder="Search by Department and select"
+        style={{
+          padding: "5px",
+          border: "1px solid #ccc",
+          borderRadius: "5px",
+        }}
+      />
+      {showDepartmentSuggestions && departmentList.data && (
+        <div className="suggestions">
+          {departmentList.data.map((department) => (
+            <div
+              className="suggestion"
+              key={department.id}
+              onClick={() => handleDepartmentSuggestionClick(department)}
+            >
+              ({department.id})
+            </div>
+          ))}
+        </div>
+      )}
+      {isDepartmentLoading && <div>Loading...</div>}
+      <div>
+        {selectedDepartments.map((department, index) => (
+          <div key={index}>
+            {department.id}{" "}
+            <button onClick={() => handleRemoveDepartment(index)}>Remove</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default DepartmentSearch;
+
+
+=============================================
 const handleEntlmentSuggestionClick = (app) => {
   const selectedId = app.id;
   setInputEntilmnetText(""); // Clear the input text
