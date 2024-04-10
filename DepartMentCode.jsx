@@ -1,3 +1,94 @@
+update in editPlain class---------
+  import React, { useState, useCallback, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { debounce } from "lodash";
+import { searchDepartments } from "./action";
+import { getSearchedDepartments } from "./selectors";
+
+const DepartmentSearch = ({ handleDepartmentSuggestionClick, departments }) => {
+  const dispatch = useDispatch();
+  const departmentList = useSelector(getSearchedDepartments);
+  const [inputDepartmentText, setInputDepartmentText] = useState("");
+  const [isDepartmentLoading, setIsDepartmentLoading] = useState(false);
+  const [showDepartmentSuggestions, setShowDepartmentSuggestions] = useState(false);
+  const [selectedDepartments, setSelectedDepartments] = useState([]);
+
+  useEffect(() => {
+    // Fetch department details based on the IDs from the parent
+    if (departments && departments.length > 0) {
+      const fetchDepartmentDetails = async () => {
+        setIsDepartmentLoading(true);
+        const departmentDetails = [];
+        for (const departmentId of departments) {
+          const response = await dispatch(searchDepartments(departmentId));
+          const departmentName = response.data.name; // Assuming the API response contains a 'name' field
+          departmentDetails.push({ id: departmentId, name: departmentName });
+        }
+        setSelectedDepartments(departmentDetails);
+        setIsDepartmentLoading(false);
+        setShowDepartmentSuggestions(true);
+      };
+      fetchDepartmentDetails();
+    }
+  }, [departments, dispatch]);
+
+  const handleDepartmentInputChange = (e) => {
+    setInputDepartmentText(e.target.value);
+    debounceInputChange(e.target.value);
+  };
+
+  const debounceInputChange = useCallback(
+    debounce((value) => {
+      setIsDepartmentLoading(true);
+      dispatch(searchDepartments(value)).then(() => {
+        setIsDepartmentLoading(false);
+        setShowDepartmentSuggestions(true); // Show suggestions when data is loaded
+      });
+    }, 300),
+    []
+  );
+
+  const handleRemoveDepartment = (departmentId) => {
+    // Call the parent function to handle removing the department
+    handleDepartmentSuggestionClick(departmentId);
+
+    // Update local state in the child component
+    const updatedDepartments = selectedDepartments.filter((department) => department.id !== departmentId);
+    setSelectedDepartments(updatedDepartments);
+  };
+
+  return (
+    <div>
+      <div>
+        {selectedDepartments.map((department) => (
+          <div key={department.id}>
+            {department.id} - {department.name}
+            <button onClick={() => handleRemoveDepartment(department.id)}>Remove</button>
+          </div>
+        ))}
+      </div>
+
+      <input
+        type="text"
+        value={inputDepartmentText}
+        onChange={handleDepartmentInputChange}
+        placeholder="Search by Department and select"
+        style={{
+          padding: "5px",
+          border: "1px solid #ccc",
+          borderRadius: "5px",
+        }}
+      />
+      {isDepartmentLoading && <div>Loading...</div>}
+    </div>
+  );
+};
+
+export default DepartmentSearch;
+
+
+-------------------------------------------
+
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import DepartmentSearch from "./DepartmentSearch";
