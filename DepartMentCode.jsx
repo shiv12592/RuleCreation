@@ -1,4 +1,5 @@
-update in editPlain class---------
+update in editPlain class
+-------------------------------------------------------------------------------------------
   import React, { useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { debounce } from "lodash";
@@ -87,7 +88,8 @@ const DepartmentSearch = ({ handleDepartmentSuggestionClick, departments }) => {
 export default DepartmentSearch;
 
 
--------------------------------------------
+update in createRule class
+ -- -------------------------------------------------------------------------------------------
 
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -240,7 +242,7 @@ const handleRemoveDepartment = (department) => {
 export default DepartmentSearch;
 
 
-============================old deprt search in same file=================
+-----------------============================old deprt search in same file=================
 const handleEntlmentSuggestionClick = (app) => {
   const selectedId = app.id;
   setInputEntilmnetText(""); // Clear the input text
