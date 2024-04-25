@@ -1,3 +1,46 @@
+const DateRangePicker = () => {
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(null);
+
+  const handleStartDateChange = (date) => {
+    setStartDate(date);
+    if (endDate && date > endDate) {
+      setEndDate(null);
+    }
+  };
+
+  const handleEndDateChange = (date) => {
+    if (date >= startDate) {
+      setEndDate(date);
+    }
+  };
+
+  return (
+    <div>
+      <label>Start Date:</label>
+      <DatePicker
+        selected={startDate}
+        onChange={handleStartDateChange}
+        maxDate={endDate || new Date()}
+        dateFormat="dd/MM/yyyy"
+      />
+
+      <label>End Date:</label>
+      <DatePicker
+        selected={endDate}
+        onChange={handleEndDateChange}
+        minDate={startDate}
+        maxDate={new Date()}
+        dateFormat="dd/MM/yyyy"
+      />
+    </div>
+  );
+};
+
+export default DateRangePicker;
+
+
+==========================
 import React, { useState } from 'react';
 
 const DatePicker = () => {
