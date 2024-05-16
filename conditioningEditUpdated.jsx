@@ -1,10 +1,68 @@
-import React, { useState } from 'react'
+
+import React, { useState, useEffect } from 'react'
 import { Button, Table, Form, Col, Container, Row } from 'react-bootstrap'
-const RuleConditionRows = ({onData}) => {
+const RuleConditionRowsEdit = ({onData}) => {
   const [conditions, setConditions] = useState([])
   const [selectedRows, setSelectedRows] = useState([])
   const [selectOperation, setSelectOperation] = useState('AND')
-  const [isAddClicked, setIsAddClicked] = useState(false) 
+  const [isAddClicked, setIsAddClicked] = useState(false) // State variable to track if the add condition row button has been clicked
+    useEffect(() => {
+    // Set default data when component mounts
+    const defaultData = {
+      conditions: {
+        AND: [
+          {
+            Source: 'Location',
+            attribute: '',
+            value: ['nmnbm bn',
+              'fgfdfhh',
+              'gfddfdfb'
+            ],
+            locationField: ''
+          },
+          {
+            AND: [
+              {
+                OR: [
+                  {
+                    Source: 'Request',
+                    attribute: '',
+                    requestValue: 'bnb b'
+                  },
+                  {
+                    Source: 'Identity',
+                    attribute: 'identityAttribute2',
+                    value: 'bnbnb'
+                  }
+                ]
+              },
+              {
+                AND: [
+                  {
+                    Source: 'Identity',
+                    attribute: 'identityAttribute2',
+                    value: 'xvxcvb'
+                  },
+                  {
+                    Source: 'Identity',
+                    attribute: '',
+                    value: 'by cvc'
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      selectOperation: 'AND'
+    }
+
+    // Reformat default data and set the state
+    const formattedData = reFormat(defaultData.conditions)
+    setConditions(formattedData.conditions)
+    setSelectOperation(defaultData.selectOperation)
+    setIsAddClicked(true)
+  }, [])
   const handleAddConditionRow = () => {
     // Add a new empty condition object into the conditions array
     setConditions([...conditions, {}])
@@ -12,16 +70,20 @@ const RuleConditionRows = ({onData}) => {
   }
 
   const handleChange = (index, field, value) => {
-   // Update specific field value of a particular condition at given index
-   let updatedConditions = [...conditions];
-   if (field === 'locationValue' && value.includes('\n')) {
-     // Split the pasted text by newline character and remove empty entries
-     const newValueArray = value.split('\n').filter((val) => val.trim() !== '');
-     updatedConditions[index][field] = newValueArray; // Store as an array
-   } else {
-     updatedConditions[index][field] = value;
-   }
-   setConditions(updatedConditions);
+    // Update specific field value of a particular condition at given index
+    let updatedConditions = [...conditions];
+
+    if (field === 'locationValue') {
+      // Split the complete data by new line and comma
+      const newValueArray = value.split(/[\n,]+/).filter((entry) => entry.trim() !== '');
+      
+      // Update locationValue with the new array
+      updatedConditions[index][field] = newValueArray;
+    } else {
+      updatedConditions[index][field] = value;
+    }
+  
+    setConditions(updatedConditions);
   }
 
   const handleSelectRow = (index) => {
@@ -129,33 +191,12 @@ const RuleConditionRows = ({onData}) => {
   }
 
   const handleSubmit = () => {
-    // Check if there are any conditions added
-    if (conditions.length === 0) {
-      alert('Please add at least one condition.');
-      return;
-    }
-    // Check if all conditions are filled and selectOperation is not empty
-    const isFieldsFilled = conditions.every(condition => {
-      if (!condition.source) {
-        return false; // Source must be selected
-      }
-      if (condition.source === 'Request') {
-        return condition.requestAttribute && condition.requestValue; // Request requires requestAttribute and value
-      } else if (condition.source === 'Identity') {
-        return condition.identityAttribute && condition.identityValue; // Identity requires identityAttribute and value
-      } 
-      // else if (condition.source === 'Location') {
-      //   return condition.locationAttribute && condition.locationField && condition.locationValue; // Location requires locationAttribute, locationField, and value
-      // }
-      return true; // Other sources are considered filled
-    });
-
-    if (isFieldsFilled && selectOperation.trim() !== '') {
-      // Call the format method and send the data to the parent component
-      onData({ conditions: format(conditions, selectOperation) });
-    } else {
-      alert('Please fill in all fields in conditions and select an operation.');
-    }
+    console.log('conditions, selectOperation---', JSON.stringify({ conditions, selectOperation }, null, 2))
+    const formattedConditions = format(conditions, selectOperation)
+    console.log('formattedConditions----', JSON.stringify({ conditions: formattedConditions }, null, 2))
+    const reconstructedConditions = reFormat(formattedConditions)
+    console.log('reconstructedConditions', JSON.stringify(reconstructedConditions, null, 2))
+    onData({ conditions: format(conditions, selectOperation) });
   }
 
   const format = (conditions, selectOperation) => {
@@ -184,6 +225,49 @@ const RuleConditionRows = ({onData}) => {
       }
     })
     return result
+  }
+
+  const reFormat = (formattedObject) => {
+    // Helper function to process each condition
+    const processCondition = (condition) => {
+      // Check if the condition is a nested structure
+      if (typeof condition === 'object' && condition !== null && !Array.isArray(condition)) {
+        const keys = Object.keys(condition)
+        if (keys.includes('Source')) {
+          // Base condition without nested selectOperation
+          let obj = { source: condition['Source'] || null }
+          if (obj.source === 'Request') {
+            obj.requestAttribute = condition['attribute'] || null
+            obj.requestValue = condition['value'] || null
+          } else if (obj.source === 'Identity') {
+            obj.identityAttribute = condition['attribute'] || null
+            obj.identityValue = condition['value'] || null
+          } else if (obj.source === 'Location') {
+            obj.locationAttribute = condition['attribute'] || null
+            obj.locationValue = condition['value'] || null
+            obj.locationField = condition['locationField'] || null
+          }
+          return obj
+        } else {
+          // Nested conditions with selectOperation
+          const selectOperation = keys[0]
+          return {
+            rows: condition[selectOperation].map(processCondition),
+            selectOperation: selectOperation
+          }
+        }
+      }
+      return null // In case the condition is not an object
+    }
+
+    // Start processing from the root selectOperation
+    const rootSelectOperation = Object.keys(formattedObject)[0]
+    const conditions = formattedObject[rootSelectOperation].map(processCondition)
+
+    return {
+      conditions: conditions.filter((condition) => condition !== null), // Filter out any null entries
+      selectOperation: rootSelectOperation
+    }
   }
 
   const handleChangeInner = (index, i, field, value) => {
@@ -217,6 +301,7 @@ const RuleConditionRows = ({onData}) => {
               </td>
             )}
             <td>
+              <label>Select Operation</label>
               <select
                 value={condition.selectOperation}
                 onChange={(e) => handleChange(index, 'selectOperation', e.target.value)}
@@ -283,8 +368,8 @@ const RuleConditionRows = ({onData}) => {
         )}
 
         {condition.source === 'Identity' && (
-         <div>
-         <select
+          <div>
+          <select
             value={condition.identityAttribute}
             onChange={(e) =>
               isGrouped
@@ -335,10 +420,10 @@ const RuleConditionRows = ({onData}) => {
               <option value="locationField1">locationField1</option>
               <option value="locationField2">locationField2</option>
             </select>
-            <textArea
-              type="text"
-              value={condition.locationValue}
-              onChange={(e) =>
+            <textarea
+              value={Array.isArray(condition.locationValue) ? condition.locationValue.join('\n') : condition.locationValue}
+            // value={['Line 1', 'Line 2', 'Line 3'].join('\n')} 
+            onChange={(e) =>
                 isGrouped ? handleChangeInner(index, i, 'locationValue', e.target.value) : handleChange(index, 'locationValue', e.target.value)
               }
               disabled={isDisabled()} // Add the disabled attribute
@@ -357,6 +442,7 @@ const RuleConditionRows = ({onData}) => {
           <tbody>
             <tr style={{ border: '1px solid black' }}>
               <td>
+                <label>Select Operation</label>
                 <select value={selectOperation} onChange={(e) => setSelectOperation(e.target.value)}>
                   <option value="AND">AND</option>
                   <option value="OR">OR</option>
@@ -387,4 +473,4 @@ const RuleConditionRows = ({onData}) => {
   )
 }
 
-export default RuleConditionRows
+export default RuleConditionRowsEdit
