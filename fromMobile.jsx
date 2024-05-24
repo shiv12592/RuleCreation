@@ -245,15 +245,15 @@ const RuleConditionRows = ({ onData }) => {
             <select
               value={condition.identityAttribute}
               onChange={(e) =>
-                isGrouped ? handleChangeInner(index, i, 'identityAttribute', e.target.value) : handleChange(index, 'identityAttribute', e.target.value)
-              }
+                isGrouped ? handleChangeInner(index, i, 'identityAttribute', e.target.value) : handleChange(index, 'identityAttribute', e.target
+
+
+
+
+
+value)}
               disabled={isDisabled(level)}
-
-
-
-
-
->
+            >
               <option value="">Select Identity Attribute</option>
               <option value="identityAttribute1">identityAttribute1</option>
               <option value="identityAttribute2">identityAttribute2</option>
