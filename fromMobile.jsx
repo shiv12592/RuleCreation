@@ -164,7 +164,7 @@ const RuleConditionRows = ({ onData }) => {
   };
 
   const renderConditionRow = (condition, index, i, isGrouped = false, isInner = false, level = 1) => {
-    const isDisabled = () => {
+    const isDisabled = (level) => {
       return level > 3;
     };
 
@@ -185,7 +185,7 @@ const RuleConditionRows = ({ onData }) => {
               <select
                 value={condition.selectOperation}
                 onChange={(e) => handleChange(index, 'selectOperation', e.target.value)}
-                disabled={isDisabled()}
+                disabled={isDisabled(level)}
               >
                 <option value="AND">AND</option>
                 <option value="OR">OR</option>
@@ -211,7 +211,7 @@ const RuleConditionRows = ({ onData }) => {
         <select
           value={condition.source}
           onChange={(e) => (isGrouped ? handleChangeInner(index, i, 'source', e.target.value) : handleChange(index, 'source', e.target.value))}
-          disabled={isDisabled()}
+          disabled={isDisabled(level)}
         >
           <option value="">Select Source</option>
           <option value="Request">Request</option>
@@ -225,7 +225,7 @@ const RuleConditionRows = ({ onData }) => {
               onChange={(e) =>
                 isGrouped ? handleChangeInner(index, i, 'requestAttribute', e.target.value) : handleChange(index, 'requestAttribute', e.target.value)
               }
-              disabled={isDisabled()}
+              disabled={isDisabled(level)}
             >
               <option value="">Select Request Attribute</option>
               <option value="requestAttribute1">requestAttribute1</option>
@@ -235,7 +235,7 @@ const RuleConditionRows = ({ onData }) => {
               type="text"
               value={condition.requestValue}
               onChange={(e) => (isGrouped ? handleChangeInner(index, i, 'requestValue', e.target.value) : handleChange(index, 'requestValue', e.target.value))}
-              disabled={isDisabled()}
+              disabled={isDisabled(level)}
             />
           </div>
         )}
@@ -247,22 +247,22 @@ const RuleConditionRows = ({ onData }) => {
               onChange={(e) =>
                 isGrouped ? handleChangeInner(index, i, 'identityAttribute', e.target.value) : handleChange(index, 'identityAttribute', e.target.value)
               }
-              disabled={isDisabled()}
-            >
+              disabled={isDisabled(level)}
+
+
+
+
+
+>
               <option value="">Select Identity Attribute</option>
               <option value="identityAttribute1">identityAttribute1</option>
-             
-
-
-
-
-<option value="identityAttribute2">identityAttribute2</option>
+              <option value="identityAttribute2">identityAttribute2</option>
             </select>
             <input
               type="text"
               value={condition.identityValue}
               onChange={(e) => (isGrouped ? handleChangeInner(index, i, 'identityValue', e.target.value) : handleChange(index, 'identityValue', e.target.value))}
-              disabled={isDisabled()}
+              disabled={isDisabled(level)}
             />
           </div>
         )}
@@ -273,7 +273,7 @@ const RuleConditionRows = ({ onData }) => {
               onChange={(e) =>
                 isGrouped ? handleChangeInner(index, i, 'locationAttribute', e.target.value) : handleChange(index, 'locationAttribute', e.target.value)
               }
-              disabled={isDisabled()}
+              disabled={isDisabled(level)}
             >
               <option value="">Select Location Attribute</option>
               <option value="locationAttribute1">locationAttribute1</option>
@@ -284,7 +284,7 @@ const RuleConditionRows = ({ onData }) => {
               onChange={(e) =>
                 isGrouped ? handleChangeInner(index, i, 'locationField', e.target.value) : handleChange(index, 'locationField', e.target.value)
               }
-              disabled={isDisabled()}
+              disabled={isDisabled(level)}
             >
               <option value="">Select Location Field</option>
               <option value="locationField1">locationField1</option>
@@ -295,7 +295,7 @@ const RuleConditionRows = ({ onData }) => {
               onChange={(e) =>
                 isGrouped ? handleChangeInner(index, i, 'locationValue', e.target.value) : handleChange(index, 'locationValue', e.target.value)
               }
-              disabled={isDisabled()}
+              disabled={isDisabled(level)}
             />
           </div>
         )}
