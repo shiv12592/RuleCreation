@@ -165,7 +165,7 @@ const RuleConditionRows = ({ onData }) => {
 
   const renderConditionRow = (condition, index, i, isGrouped = false, isInner = false, level = 1) => {
     const isDisabled = () => {
-      return level === 1;
+      return level > 3;
     };
 
     return condition.rows && condition.selectOperation ? (
@@ -251,20 +251,19 @@ const RuleConditionRows = ({ onData }) => {
             >
               <option value="">Select Identity Attribute</option>
               <option value="identityAttribute1">identityAttribute1</option>
-              <option value="identityAttribute2">identityAttribute2</option>
+             
 
 
 
 
-
-
-</select>
-              <input
-                type="text"
-                value={condition.identityValue}
-                onChange={(e) => (isGrouped ? handleChangeInner(index, i, 'identityValue', e.target.value) : handleChange(index, 'identityValue', e.target.value))}
-                disabled={isDisabled()}
-              />
+<option value="identityAttribute2">identityAttribute2</option>
+            </select>
+            <input
+              type="text"
+              value={condition.identityValue}
+              onChange={(e) => (isGrouped ? handleChangeInner(index, i, 'identityValue', e.target.value) : handleChange(index, 'identityValue', e.target.value))}
+              disabled={isDisabled()}
+            />
           </div>
         )}
         {condition.source === 'Location' && (
