@@ -34,8 +34,26 @@ const RuleConditionRows = ({ onData }) => {
     }
   };
 
+    const areFieldsFilled = (condition, topLevel = true) => {
+    if (condition.rows && condition.selectOperation) {
+      return condition.rows.every((row) => areFieldsFilled(row, false));
+    }
+    if (topLevel && !condition.source) return false;
+    if (condition.source === 'Request') return condition.requestAttribute && condition.requestValue;
+    if (condition.source === 'Identity') return condition.identityAttribute && condition.identityValue;
+    if (condition.source === 'Location') return condition.locationAttribute && condition.locationValue && condition.locationField;
+    return true;
+  };
+
   const handleGroupSelected = () => {
     if (selectedRows.length > 1) {
+
+          const selectedConditions = selectedRows.map(index => conditions[index]);
+            if (!selectedConditions.every((condition) => areFieldsFilled(condition))) {
+              alert('Please fill in all fields in the selected conditions.');
+              return;
+            }
+      
       let groupedConditions = [];
       let groupedRows = [];
       conditions.forEach((condition, index) => {
@@ -112,15 +130,7 @@ const RuleConditionRows = ({ onData }) => {
       return;
     }
     const isFieldsFilled = conditions.every((condition) => {
-      if (!condition.source) {
-        return false;
-      }
-      if (condition.source === 'Request') {
-        return condition.requestAttribute && condition.requestValue;
-      } else if (condition.source === 'Identity') {
-        return condition.identityAttribute && condition.identityValue;
-      }
-      return true;
+    return areFieldsFilled(condition);
     });
 
     if (isFieldsFilled && selectOperation.trim() !== '') {
