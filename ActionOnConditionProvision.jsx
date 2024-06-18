@@ -1,189 +1,343 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState } from "react";
+import { Col, Row } from "react-bootstrap";
+import ActionOnCondition from "./ActionOnCondition";
 
-const ActionOnCondition = ({ action, onChange }) => {
-  const [showInput, setShowInput] = useState({
-    conditionMet: false,
-    conditionNotMet: false,
-    provision: action.provision.map(() => false),
+export default function App() {
+  const [ruleType, setRuleType] = useState("");
+  const [action, setAction] = useState({
+    conditionMet: {
+      provision: [],
+      revoke: [],
+    },
+    conditionNotMet: {
+      message: "",
+    },
   });
+  const [errors, setErrors] = useState({});
 
-  const handleButtonClick = (condition, index) => {
-    if (condition === 'conditionMet' || condition === 'conditionNotMet') {
-      setShowInput(prevState => ({ ...prevState, [condition]: !prevState[condition] }));
+  const handleRuleTypeChange = (e) => {
+    const selectedRuleType = e.target.value;
+    setRuleType(selectedRuleType);
+
+    // Reset action based on selected ruleType
+    if (selectedRuleType === "Allow") {
+      setAction({ conditionNotMet: { message: "" } });
+    } else if (selectedRuleType === "Deny") {
+      setAction({ conditionMet: { message: "" } });
     } else {
-      setShowInput(prevState => ({
+      setAction({
+        conditionMet: {
+          provision: [],
+          revoke: [],
+        },
+      });
+    }
+  };
+
+  const handleActionChange = (newAction) => {
+    setAction(newAction);
+  };
+
+  const addRow = () => {
+    const newRow = {
+      application: "",
+      duration: "",
+      value: "",
+    };
+    if (ruleType === "Auto Provision") {
+      setAction((prevState) => ({
         ...prevState,
-        provision: prevState.provision.map((value, i) => (i === index ? !value : value)),
+        conditionMet: {
+          ...prevState.conditionMet,
+          provision: [...prevState.conditionMet.provision, newRow],
+        },
+      }));
+    } else if (ruleType === "Auto Revoke") {
+      setAction((prevState) => ({
+        ...prevState,
+        conditionMet: {
+          ...prevState.conditionMet,
+          revoke: [...prevState.conditionMet.revoke, newRow],
+        },
       }));
     }
   };
 
-  const handleInputChange = (condition, value, index) => {
-    if (condition === 'conditionMet' || condition === 'conditionNotMet') {
-      onChange({ ...action, [condition]: { message: value } });
-    } else {
-      const updatedProvisions = action.provision.map((provision, i) => {
-        if (i === index) {
-          return { ...provision, path: value };
+  const validate = () => {
+    let validationErrors = {};
+
+    if (ruleType === "Allow") {
+      if (!action.conditionNotMet?.message) {
+        validationErrors.conditionNotMet = "This field is required.";
+      }
+    } else if (ruleType === "Deny") {
+      if (!action.conditionMet?.message) {
+        validationErrors.conditionMet = "Message is required.";
+      }
+    } else if (ruleType === "Auto Provision" || ruleType === "Auto Revoke") {
+      const conditionKey =
+        ruleType === "Auto Provision" ? "provision" : "revoke";
+      if (!action.conditionMet[conditionKey].length) {
+        validationErrors[conditionKey] = "At least one action is required.";
+      }
+      action.conditionMet[conditionKey].forEach((item, index) => {
+        if (!item.application || !item.duration || !item.value) {
+          validationErrors[`${conditionKey}${index}`] =
+            "All fields are required.";
         }
-        return provision;
       });
-      onChange({ ...action, provision: updatedProvisions });
+    }
+
+    setErrors(validationErrors);
+    return Object.keys(validationErrors).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validate()) {
+      console.log(JSON.stringify(action));
     }
   };
 
-  const handleAddProvision = () => {
+  return (
+    <div className="container">
+      <form onSubmit={handleSubmit}>
+        <Col md={12}>
+          <Row>
+            <Col md={6}>
+              <label>Select Rule Type</label>
+            </Col>
+            <Col md={6}>
+              <select value={ruleType} onChange={handleRuleTypeChange}>
+                <option value="">Select</option>
+                <option value="Allow">Allow</option>
+                <option value="Deny">Deny</option>
+                <option value="Auto Provision">Auto Provision</option>
+                <option value="Auto Revoke">Auto Revoke</option>
+              </select>
+            </Col>
+          </Row>
+          <Row>
+            <ActionOnCondition
+              action={action}
+              onChange={handleActionChange}
+              ruleType={ruleType}
+              errors={errors}
+            />
+          </Row>
+          {(ruleType === "Auto Provision" || ruleType === "Auto Revoke") && (
+            <Row>
+              <Col md={12}>
+                <button type="button" onClick={addRow}>
+                  Add Another Row
+                </button>
+              </Col>
+            </Row>
+          )}
+          <Row>
+            <Col md={12}>
+              <button type="submit">Submit</button>
+            </Col>
+          </Row>
+          <Row>
+            <div>
+              <h3>JSON Output:</h3>
+              <pre>{JSON.stringify(action, null, 2)}</pre>
+            </div>
+          </Row>
+        </Col>
+      </form>
+    </div>
+  );
+}
+
+
+
+
+
+import React from "react";
+import PropTypes from "prop-types";
+import { Col, Row } from "react-bootstrap";
+
+const ActionOnCondition = ({ action, onChange, ruleType, errors }) => {
+  const handleInputChange = (conditionKey, index, key, value) => {
+    const updatedRows = [...action.conditionMet[conditionKey]];
+    updatedRows[index] = { ...updatedRows[index], [key]: value };
     onChange({
       ...action,
-      provision: [...action.provision, { application: 'app1', op: 'op1', path: '' }],
+      conditionMet: {
+        ...action.conditionMet,
+        [conditionKey]: updatedRows,
+      },
     });
-    setShowInput(prevState => ({
-      ...prevState,
-      provision: [...prevState.provision, false],
-    }));
   };
 
-  const handleRemoveProvision = (index) => {
-    const updatedProvisions = action.provision.filter((_, i) => i !== index);
-    onChange({ ...action, provision: updatedProvisions });
-    setShowInput(prevState => ({
-      ...prevState,
-      provision: prevState.provision.filter((_, i) => i !== index),
-    }));
+  const handleRemoveRow = (conditionKey, index) => {
+    const updatedRows = action.conditionMet[conditionKey].filter(
+      (_, i) => i !== index
+    );
+    onChange({
+      ...action,
+      conditionMet: {
+        ...action.conditionMet,
+        [conditionKey]: updatedRows,
+      },
+    });
   };
+
+  const handleMessageChange = (conditionKey, value) => {
+    onChange({
+      ...action,
+      [conditionKey]: {
+        ...action[conditionKey],
+        message: value,
+      },
+    });
+  };
+
+  const renderAutoFields = (conditionKey) =>
+    action.conditionMet[conditionKey]?.map((row, index) => (
+      <Row key={index} style={{ marginBottom: "10px" }}>
+        <Col md={2} style={{ marginRight: "10px" }}>
+          <input
+            type="text"
+            placeholder="Application"
+            className="form-control"
+            value={row.application || ""}
+            onChange={(e) =>
+              handleInputChange(
+                conditionKey,
+                index,
+                "application",
+                e.target.value
+              )
+            }
+          />
+          {errors[`application_${index}`] && (
+            <span className="text-danger">
+              {errors[`application_${index}`]}
+            </span>
+          )}
+        </Col>
+        <Col md={2} style={{ marginRight: "10px" }}>
+          <label>Days</label>
+        </Col>
+        <Col md={2} style={{ marginRight: "10px" }}>
+          <select
+            className="form-control"
+            value={row.duration || ""}
+            onChange={(e) =>
+              handleInputChange(conditionKey, index, "duration", e.target.value)
+            }
+          >
+            <option value="">Select</option>
+            {Array.from({ length: 180 }, (_, i) => i + 1).map((day) => (
+              <option key={day} value={day}>
+                {day}
+              </option>
+            ))}
+          </select>
+          {errors[`duration_${index}`] && (
+            <span className="text-danger">{errors[`duration_${index}`]}</span>
+          )}
+        </Col>
+        <Col md={2} style={{ marginRight: "10px" }}>
+          <input
+            type="text"
+            placeholder="Value"
+            className="form-control"
+            value={row.value || ""}
+            onChange={(e) =>
+              handleInputChange(conditionKey, index, "value", e.target.value)
+            }
+          />
+          {errors[`value_${index}`] && (
+            <span className="text-danger">{errors[`value_${index}`]}</span>
+          )}
+        </Col>
+        <Col md={1}>
+          <button
+            type="button"
+            onClick={() => handleRemoveRow(conditionKey, index)}
+            className="btn btn-danger"
+          >
+            Remove
+          </button>
+        </Col>
+      </Row>
+    ));
 
   return (
-    <div>
-      {/* Render conditionMet and conditionNotMet rows */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-        <div>Condition Met:</div>
-        <button type="button" onClick={() => handleButtonClick('conditionMet')}>Message</button>
-        {showInput.conditionMet && (
-          <input
-            type="text"
-            value={action.conditionMet.message}
-            onChange={(e) => handleInputChange('conditionMet', e.target.value)}
-          />
+    <div className="row">
+      <Col md={12}>
+        {ruleType === "Allow" && (
+          <Row
+            key="conditionNotMet"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "10px",
+            }}
+          >
+            <Col md={2} style={{ marginRight: "10px" }}>
+              Return Message
+            </Col>
+            <Col md={8}>
+              <input
+                type="text"
+                placeholder="Return Message"
+                className="form-control"
+                value={action.conditionNotMet?.message || ""}
+                onChange={(e) =>
+                  handleMessageChange("conditionNotMet", e.target.value)
+                }
+              />
+              {errors.conditionNotMet && (
+                <span className="text-danger">{errors.conditionNotMet}</span>
+              )}
+            </Col>
+          </Row>
         )}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-        <div>Condition Not Met:</div>
-        <button type="button" onClick={() => handleButtonClick('conditionNotMet')}>Message</button>
-        {showInput.conditionNotMet && (
-          <input
-            type="text"
-            value={action.conditionNotMet.message}
-            onChange={(e) => handleInputChange('conditionNotMet', e.target.value)}
-          />
+        {ruleType === "Deny" && (
+          <Row
+            key="conditionMet"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "10px",
+            }}
+          >
+            <Col md={2} style={{ marginRight: "10px" }}>
+              Condition Met
+            </Col>
+            <Col md={8}>
+              <input
+                type="text"
+                placeholder="Return Message"
+                className="form-control"
+                value={action.conditionMet?.message || ""}
+                onChange={(e) =>
+                  handleMessageChange("conditionMet", e.target.value)
+                }
+              />
+              {errors.conditionMet && (
+                <span className="text-danger">{errors.conditionMet}</span>
+              )}
+            </Col>
+          </Row>
         )}
-      </div>
-
-      {/* Render provision rows */}
-      {action.provision.map((provision, index) => (
-        <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-          <select value={provision.application} onChange={(e) => handleInputChange('provision', 'application', e.target.value, index)}>
-            <option value="app1">app1</option>
-            <option value="app2">app2</option>
-            <option value="app3">app3</option>
-          </select>
-          <select value={provision.op} onChange={(e) => handleInputChange('provision', 'op', e.target.value, index)}>
-            <option value="op1">op1</option>
-            <option value="op2">op2</option>
-            <option value="op3">op3</option>
-          </select>
-          <input
-            type="text"
-            value={provision.path}
-            onChange={(e) => handleInputChange('provision', 'path', e.target.value, index)}
-          />
-          <button type="button" onClick={() => handleRemoveProvision(index)}>Remove Provision</button>
-        </div>
-      ))}
-      <button type="button" onClick={handleAddProvision}>Add Provision</button>
+        {ruleType === "Auto Provision" && renderAutoFields("provision")}
+        {ruleType === "Auto Revoke" && renderAutoFields("revoke")}
+      </Col>
     </div>
   );
 };
 
 ActionOnCondition.propTypes = {
-  action: PropTypes.shape({
-    conditionMet: PropTypes.shape({
-      message: PropTypes.string,
-    }),
-    conditionNotMet: PropTypes.shape({
-      message: PropTypes.string,
-    }),
-    provision: PropTypes.arrayOf(PropTypes.shape({
-      application: PropTypes.string,
-      op: PropTypes.string,
-      path: PropTypes.string,
-    })),
-  }).isRequired,
+  action: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
+  ruleType: PropTypes.string.isRequired,
+  errors: PropTypes.object,
 };
 
 export default ActionOnCondition;
-
------------------------------------
-
-  import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import ActionOnCondition from './ActionOnCondition'; // Make sure to import the ActionOnCondition component
-
-export class EditRulePlain extends Component {
-  static propTypes = {
-    ruleDetails: PropTypes.object.isRequired,
-  };
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      // ... other state properties
-      action: {
-        conditionMet: {
-          message: props.ruleDetails.action.conditionMet.message || '',
-        },
-        conditionNotMet: {
-          message: props.ruleDetails.action.conditionNotMet.message || '',
-        },
-        provision: props.ruleDetails.action.provision || [
-          // Default provision object if none provided
-          {
-            application: 'app1',
-            op: 'op1',
-            path: '',
-          },
-        ],
-      },
-      // ... other state properties
-    };
-  }
-
-  componentDidMount() {
-    // If you need to perform any setup on mount
-  }
-
-  handleRequestData = (updatedAction) => {
-    // Update the state with the new action
-    this.setState({ action: updatedAction });
-  };
-
-  render() {
-    const { action } = this.state;
-
-    return (
-      <div>
-        {/* ... other components */}
-        <ActionOnCondition
-          action={action}
-          onChange={this.handleRequestData}
-        />
-        {/* ... other components */}
-      </div>
-    );
-  }
-}
-
-export default EditRulePlain;
-
-  
