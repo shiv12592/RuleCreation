@@ -43,6 +43,7 @@ export default function App() {
       application: "",
       duration: "",
       value: "",
+      op: "",
     };
     if (ruleType === "Auto Provision") {
       setAction((prevState) => ({
@@ -78,12 +79,24 @@ export default function App() {
       const conditionKey =
         ruleType === "Auto Provision" ? "provision" : "revoke";
       if (!action.conditionMet[conditionKey].length) {
-        validationErrors[conditionKey] = "At least one action is required.";
+        validationErrors[conditionKey] = "At least one row is required.";
       } else {
-        action.conditionMet[conditionKey].forEach((item, index) => {
-          if (!item.application || !item.duration || !item.value) {
-            validationErrors[`${conditionKey}${index}`] =
-              "All fields in the row are required.";
+        action.conditionMet[conditionKey].forEach((row, index) => {
+          if (!row.application) {
+            validationErrors[`${conditionKey}${index}_application`] =
+              "Application is required.";
+          }
+          if (!row.duration) {
+            validationErrors[`${conditionKey}${index}_duration`] =
+              "Duration is required.";
+          }
+          if (!row.value) {
+            validationErrors[`${conditionKey}${index}_value`] =
+              "Value is required.";
+          }
+          if (!row.op) {
+            validationErrors[`${conditionKey}${index}_op`] =
+              "Operation is required.";
           }
         });
       }
@@ -96,7 +109,8 @@ export default function App() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
-      console.log(JSON.stringify(action));
+      // Process the form submission
+      console.log("Form submitted:", action);
     }
   };
 
@@ -224,7 +238,7 @@ const ActionOnCondition = ({ action, onChange, ruleType, errors }) => {
       >
         <Col md={12}>
           <Row style={{ marginBottom: "10px" }}>
-            <Col md={3}>
+            <Col md={2}>
               <input
                 type="text"
                 placeholder="Application"
@@ -239,16 +253,14 @@ const ActionOnCondition = ({ action, onChange, ruleType, errors }) => {
                   )
                 }
               />
-              {errors[`${conditionKey}_${index}_application`] && (
+              {errors[`${conditionKey}${index}_application`] && (
                 <span className="text-danger">
-                  {errors[`${conditionKey}_${index}_application`]}
+                  {errors[`${conditionKey}${index}_application`]}
                 </span>
               )}
             </Col>
-            <Col md={3}>
+            <Col md={2}>
               <label>Days</label>
-            </Col>
-            <Col md={3}>
               <select
                 className="form-control"
                 value={row.duration || ""}
@@ -268,13 +280,13 @@ const ActionOnCondition = ({ action, onChange, ruleType, errors }) => {
                   </option>
                 ))}
               </select>
-              {errors[`${conditionKey}_${index}_duration`] && (
+              {errors[`${conditionKey}${index}_duration`] && (
                 <span className="text-danger">
-                  {errors[`${conditionKey}_${index}_duration`]}
+                  {errors[`${conditionKey}${index}_duration`]}
                 </span>
               )}
             </Col>
-            <Col md={3}>
+            <Col md={2}>
               <input
                 type="text"
                 placeholder="Value"
@@ -289,15 +301,31 @@ const ActionOnCondition = ({ action, onChange, ruleType, errors }) => {
                   )
                 }
               />
-              {errors[`${conditionKey}_${index}_value`] && (
+              {errors[`${conditionKey}${index}_value`] && (
                 <span className="text-danger">
-                  {errors[`${conditionKey}_${index}_value`]}
+                  {errors[`${conditionKey}${index}_value`]}
                 </span>
               )}
             </Col>
-          </Row>
-          <Row>
-            <Col md={12} className="text-right">
+            <Col md={2}>
+              <select
+                className="form-control"
+                value={row.op || ""}
+                onChange={(e) =>
+                  handleInputChange(conditionKey, index, "op", e.target.value)
+                }
+              >
+                <option value="">Select</option>
+                <option value="add">Add</option>
+                <option value="remove">Remove</option>
+              </select>
+              {errors[`${conditionKey}${index}_op`] && (
+                <span className="text-danger">
+                  {errors[`${conditionKey}${index}_op`]}
+                </span>
+              )}
+            </Col>
+            <Col md={2} className="text-right">
               <button
                 type="button"
                 onClick={() => handleRemoveRow(conditionKey, index)}
