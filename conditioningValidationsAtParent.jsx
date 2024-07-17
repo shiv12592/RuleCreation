@@ -5,7 +5,7 @@ import RuleConditionRows from "./RuleConditionRows";
 export default function App() {
   const [jsonData, setJsonData] = useState(null);
   const [conditionData, setConditionData] = useState(null);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorRequestMessages, setErrorRequestMessages] = useState([]);
 
   const handleConditionData = (data) => {
     setConditionData(data);
@@ -16,44 +16,48 @@ export default function App() {
     if (errorMessages.length === 0) {
       const jsonString = JSON.stringify(conditionData, null, 2);
       setJsonData(jsonString);
-      setErrorMessage("");
+      setErrorRequestMessages([]);
     } else {
-      setErrorMessage(errorMessages.join("\n"));
+      setErrorRequestMessages(errorMessages);
     }
   };
 
   const validateData = (data) => {
-    if (!data || !data.conditions) return [];
+    if (!data) return [];
 
     let errors = [];
 
     const traverse = (obj, path = [], index = 0) => {
       for (const key in obj) {
-        if (typeof obj[key] === "object" && obj[key] !== null) {
+        if (Array.isArray(obj[key]) && obj[key].length === 0) {
+          errors.push(
+            `Array for <${key}> under ${
+              obj.Source
+                ? `${obj.Source} Condition Row Number ${index + 1}`
+                : "condition"
+            } should not be empty.`
+          );
+        } else if (typeof obj[key] === "object" && obj[key] !== null) {
           traverse(obj[key], [...path, key], index);
-        } else {
-          if (obj[key] === "") {
-            errors.push(
-              `Value for <${key}> under ${
-                obj.Source
-                  ? `${obj.Source} Condition Row Number ${index + 1}`
-                  : "condition"
-              } should not be empty.`
-            );
-          }
+        } else if (obj[key] === "") {
+          errors.push(
+            `Value for <${key}> under ${
+              obj.Source
+                ? `${obj.Source} Condition Row Number ${index + 1}`
+                : "condition"
+            } should not be empty.`
+          );
         }
       }
     };
 
-    if (data.conditions.AND) {
-      data.conditions.AND.forEach((condition, index) =>
-        traverse(condition, ["conditions", "AND"], index)
+    if (data.AND) {
+      data.AND.forEach((condition, index) =>
+        traverse(condition, ["AND"], index)
       );
     }
-    if (data.conditions.OR) {
-      data.conditions.OR.forEach((condition, index) =>
-        traverse(condition, ["conditions", "OR"], index)
-      );
+    if (data.OR) {
+      data.OR.forEach((condition, index) => traverse(condition, ["OR"], index));
     }
 
     return errors;
@@ -68,10 +72,12 @@ export default function App() {
       <div className="container">
         <button onClick={handleSubmit}>Submit</button>
       </div>
-      {errorMessage && (
+      {errorRequestMessages.length > 0 && (
         <div style={{ color: "red" }}>
           <h5>Error:</h5>
-          <p>{errorMessage}</p>
+          {errorRequestMessages.map((error, index) => (
+            <p key={index}>{`Error ${index + 1}: ${error}`}</p>
+          ))}
         </div>
       )}
       {jsonData && (
