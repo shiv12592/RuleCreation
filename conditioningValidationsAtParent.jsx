@@ -12,42 +12,51 @@ export default function App() {
   };
 
   const handleSubmit = () => {
-    if (validateData(conditionData)) {
+    const errorMessages = validateData(conditionData);
+    if (errorMessages.length === 0) {
       const jsonString = JSON.stringify(conditionData, null, 2);
       setJsonData(jsonString);
       setErrorMessage("");
+    } else {
+      setErrorMessage(errorMessages.join("\n"));
     }
   };
 
   const validateData = (data) => {
-    if (!data || !data.conditions) return true; // No data to validate
+    if (!data || !data.conditions) return [];
 
-    const errors = [];
+    let errors = [];
 
-    const traverse = (obj, context = []) => {
+    const traverse = (obj, path = [], index = 0) => {
       for (const key in obj) {
-        if (typeof obj[key] === "object") {
-          traverse(obj[key], [...context, key]);
+        if (typeof obj[key] === "object" && obj[key] !== null) {
+          traverse(obj[key], [...path, key], index);
         } else {
           if (obj[key] === "") {
             errors.push(
-              `Value for <${key}> should not be empty at ${context.join(
-                " -> "
-              )}`
+              `Value for <${key}> under ${
+                obj.Source
+                  ? `${obj.Source} Condition Row Number ${index + 1}`
+                  : "condition"
+              } should not be empty.`
             );
           }
         }
       }
     };
 
-    traverse(data);
-
-    if (errors.length > 0) {
-      setErrorMessage(errors.join("\n"));
-      return false;
+    if (data.conditions.AND) {
+      data.conditions.AND.forEach((condition, index) =>
+        traverse(condition, ["conditions", "AND"], index)
+      );
+    }
+    if (data.conditions.OR) {
+      data.conditions.OR.forEach((condition, index) =>
+        traverse(condition, ["conditions", "OR"], index)
+      );
     }
 
-    return true;
+    return errors;
   };
 
   return (
@@ -74,4 +83,3 @@ export default function App() {
     </div>
   );
 }
-
