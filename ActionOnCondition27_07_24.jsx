@@ -216,9 +216,45 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
     });
   };
 
+  const handleValueSuggestionClick = (entlm, conditionKey, index) => {
+    const updatedRows = [...action.conditionMet[conditionKey]];
+    const entlmValues = updatedRows[index].value || [];
+    const existsIndex = entlmValues.findIndex(
+      (item) =>
+        item.location === entlm.authNamespace && item.value === entlm.entlmDn
+    );
+
+    if (existsIndex !== -1) {
+      entlmValues.splice(existsIndex, 1);
+    } else {
+      entlmValues.push({
+        location: entlm.authNamespace,
+        value: entlm.entlmDn,
+        name: entlm.entlmName,
+      });
+    }
+
+    updatedRows[index] = { ...updatedRows[index], value: entlmValues };
+    onChange({
+      ...action,
+      conditionMet: {
+        ...action.conditionMet,
+        [conditionKey]: updatedRows,
+      },
+    });
+  };
+
   const renderAutoFields = (conditionKey) =>
     action.conditionMet[conditionKey]?.map((row, index) => (
       <Row key={index} style={{ marginBottom: "10px" }}>
+        <Col md={2} style={{ marginRight: "10px" }}>
+         <ValueSearch
+            handleValueSuggestionClick={(entlm) =>
+              handleValueSuggestionClick(entlm, conditionKey, index)
+            }
+            selectedEntlmArray={row.value || []}
+          />
+        </Col>
         <Col md={2} style={{ marginRight: "10px" }}>
           <input
             type="text"
@@ -253,17 +289,6 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
               </option>
             ))}
           </select>
-        </Col>
-        <Col md={2} style={{ marginRight: "10px" }}>
-          <input
-            type="text"
-            placeholder="Value"
-            className="form-control"
-            value={row.value || ""}
-            onChange={(e) =>
-              handleInputChange(conditionKey, index, "value", e.target.value)
-            }
-          />
         </Col>
         <Col md={1}>
           <button
