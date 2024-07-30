@@ -235,6 +235,9 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
     }
 
     updatedRows[index] = { ...updatedRows[index], value: entlmValues };
+     // Extract distinct locations and store them in application
+    const distinctLocations = [...new Set(entlmValues.map((item) => item.location))];
+    updatedRows[index].application = distinctLocations;
     onChange({
       ...action,
       conditionMet: {
@@ -256,20 +259,12 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
           />
         </Col>
         <Col md={2} style={{ marginRight: "10px" }}>
-          <input
-            type="text"
-            placeholder="Application"
-            className="form-control"
-            value={row.application || ""}
-            onChange={(e) =>
-              handleInputChange(
-                conditionKey,
-                index,
-                "application",
-                e.target.value
-              )
-            }
-          />
+                 <textarea
+              className="form-control"
+              value={Array.isArray(row.application) ? row.application.join("\n") : ""}
+              readOnly
+              style={{ resize: "vertical" }}
+            />
         </Col>
         <Col md={2} style={{ marginRight: "10px" }}>
           <label>Days</label>
