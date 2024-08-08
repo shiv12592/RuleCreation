@@ -1,3 +1,5 @@
+
+//////////below iss create rule mode with , search value and suggesstion included 
 import React, { useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import ActionOnCondition from "./ActionOnCondition";
@@ -364,7 +366,11 @@ ActionOnCondition.propTypes = {
 };
 
 export default ActionOnCondition;
----------------------------------------------Edit mode-------------------
+
+
+/////////
+///////---------------------------------------------Edit mode-------------------
+///////// not included  suggesstion value
 
 import React, { Component } from "react";
 import { Col, Row } from "react-bootstrap";
@@ -389,10 +395,6 @@ class App extends Component {
               value: "fgjghk",
             },
           ],
-          revoke: [],
-        },
-        conditionNotMet: {
-          message: "",
         },
       },
       errors: [],
@@ -411,10 +413,6 @@ class App extends Component {
           : {
               conditionMet: {
                 provision: [],
-                revoke: [],
-              },
-              conditionNotMet: {
-                message: "",
               },
             },
     });
@@ -430,22 +428,15 @@ class App extends Component {
       duration: "",
       value: "",
     };
-    this.setState((prevState) => {
-      const conditionKey =
-        prevState.ruleType === "Auto Provision" ? "provision" : "revoke";
-      return {
-        action: {
-          ...prevState.action,
-          conditionMet: {
-            ...prevState.action.conditionMet,
-            [conditionKey]: [
-              ...prevState.action.conditionMet[conditionKey],
-              newRow,
-            ],
-          },
+    this.setState((prevState) => ({
+      action: {
+        ...prevState.action,
+        conditionMet: {
+          ...prevState.action.conditionMet,
+          provision: [...prevState.action.conditionMet.provision, newRow],
         },
-      };
-    });
+      },
+    }));
   };
 
   validateAction = () => {
@@ -461,14 +452,12 @@ class App extends Component {
         validationErrors.push("Message field for 'Deny' is required.");
       }
     } else if (ruleType === "Auto Provision" || ruleType === "Auto Revoke") {
-      const conditionKey =
-        ruleType === "Auto Provision" ? "provision" : "revoke";
-      if (!action.conditionMet[conditionKey].length) {
+      if (!action.conditionMet.provision.length) {
         validationErrors.push(
           `At least one action is required for '${ruleType}'.`
         );
       }
-      action.conditionMet[conditionKey].forEach((item, index) => {
+      action.conditionMet.provision.forEach((item, index) => {
         if (!item.application) {
           validationErrors.push(
             `Action Row ${index + 1}, application field cannot be empty.`
@@ -568,32 +557,34 @@ class App extends Component {
 
 export default App;
 
+
+
 import React from "react";
 import PropTypes from "prop-types";
 import { Col, Row } from "react-bootstrap";
 
 const ActionOnCondition = ({ action, onChange, ruleType }) => {
-  const handleInputChange = (conditionKey, index, key, value) => {
-    const updatedRows = [...action.conditionMet[conditionKey]];
+  const handleInputChange = (index, key, value) => {
+    const updatedRows = [...action.conditionMet.provision];
     updatedRows[index] = { ...updatedRows[index], [key]: value };
     onChange({
       ...action,
       conditionMet: {
         ...action.conditionMet,
-        [conditionKey]: updatedRows,
+        provision: updatedRows,
       },
     });
   };
 
-  const handleRemoveRow = (conditionKey, index) => {
-    const updatedRows = action.conditionMet[conditionKey].filter(
+  const handleRemoveRow = (index) => {
+    const updatedRows = action.conditionMet.provision.filter(
       (_, i) => i !== index
     );
     onChange({
       ...action,
       conditionMet: {
         ...action.conditionMet,
-        [conditionKey]: updatedRows,
+        provision: updatedRows,
       },
     });
   };
@@ -608,8 +599,8 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
     });
   };
 
-  const renderAutoFields = (conditionKey) =>
-    action.conditionMet[conditionKey]?.map((row, index) => (
+  const renderAutoFields = () =>
+    action.conditionMet.provision?.map((row, index) => (
       <Row key={index} style={{ marginBottom: "10px" }}>
         <Col md={2} style={{ marginRight: "10px" }}>
           <input
@@ -618,12 +609,7 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
             className="form-control"
             value={row.application || ""}
             onChange={(e) =>
-              handleInputChange(
-                conditionKey,
-                index,
-                "application",
-                e.target.value
-              )
+              handleInputChange(index, "application", e.target.value)
             }
           />
         </Col>
@@ -635,7 +621,7 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
             className="form-control"
             value={row.duration || ""}
             onChange={(e) =>
-              handleInputChange(conditionKey, index, "duration", e.target.value)
+              handleInputChange(index, "duration", e.target.value)
             }
           >
             <option value="">Select</option>
@@ -652,15 +638,13 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
             placeholder="Value"
             className="form-control"
             value={row.value || ""}
-            onChange={(e) =>
-              handleInputChange(conditionKey, index, "value", e.target.value)
-            }
+            onChange={(e) => handleInputChange(index, "value", e.target.value)}
           />
         </Col>
         <Col md={1}>
           <button
             type="button"
-            onClick={() => handleRemoveRow(conditionKey, index)}
+            onClick={() => handleRemoveRow(index)}
             className="btn btn-danger"
           >
             Remove
@@ -722,8 +706,8 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
             </Col>
           </Row>
         )}
-        {ruleType === "Auto Provision" && renderAutoFields("provision")}
-        {ruleType === "Auto Revoke" && renderAutoFields("revoke")}
+        {(ruleType === "Auto Provision" || ruleType === "Auto Revoke") &&
+          renderAutoFields()}
       </Col>
     </div>
   );
@@ -736,4 +720,3 @@ ActionOnCondition.propTypes = {
 };
 
 export default ActionOnCondition;
-
