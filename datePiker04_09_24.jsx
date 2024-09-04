@@ -1,3 +1,6 @@
+
+==========below not using now==================go down=======
+  
 const DateRangePicker = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(null);
@@ -40,7 +43,17 @@ const DateRangePicker = () => {
 export default DateRangePicker;
 
 
-==========================
+====================curremntlu using below in code ======
+
+  using css
+.date-input::placeholder {
+  text-transform: uppercase;
+  font-family: Arial, sans-serif;
+}
+
+
+
+
 import React, { useState } from 'react';
 
 const DatePicker = () => {
@@ -79,6 +92,7 @@ const DatePicker = () => {
     <div>
       <input
         type="date"
+         className="date-input" // Applying custom class for styling
         onChange={(e) => {
           const date = new Date(e.target.value);
           if (!startDate || date >= startDate) {
@@ -90,6 +104,7 @@ const DatePicker = () => {
         type="date"
         onChange={(e) => {
           const date = new Date(e.target.value);
+           className="date-input" // Applying custom class for styling
           if (startDate && date < startDate) {
             setError('End date cannot be before start date.');
           } else {
