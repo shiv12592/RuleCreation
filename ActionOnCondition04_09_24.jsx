@@ -183,7 +183,9 @@ import PropTypes from "prop-types";
 import { Col, Row } from "react-bootstrap";
 
 const ActionOnCondition = ({ action, onChange, ruleType }) => {
-  const handleInputChange = (conditionKey, index, key, value) => {
+ const handleInputChange = (conditionKey, index, key, value) => {
+  const regex = /^[0-9]+(\.[0-9]{0,2})?$/;
+  if (regex.test(value) || value === "") {
     const updatedRows = [...action.conditionMet[conditionKey]];
     updatedRows[index] = { ...updatedRows[index], [key]: value };
     onChange({
@@ -193,8 +195,8 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
         [conditionKey]: updatedRows,
       },
     });
-  };
-
+  }
+};
   const handleRemoveRow = (conditionKey, index) => {
     const updatedRows = action.conditionMet[conditionKey].filter(
       (_, i) => i !== index
@@ -272,20 +274,12 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
           <label>Days</label>
         </Col>
         <Col md={2} style={{ marginRight: "10px" }}>
-          <select
-            className="form-control"
-            value={row.duration || ""}
-            onChange={(e) =>
-              handleInputChange(conditionKey, index, "duration", e.target.value)
-            }
-          >
-            <option value="">Select</option>
-            {Array.from({ length: 180 }, (_, i) => i + 1).map((day) => (
-              <option key={day} value={day}>
-                {day}
-              </option>
-            ))}
-          </select>
+       <input
+          type="text"
+          className="form-control"
+          value={row.duration || ""}
+          onChange={(e) => handleInputChange(conditionKey, index, "duration", e.target.value)}
+        />
         </Col>
         <Col md={1}>
           <button
