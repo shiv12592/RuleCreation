@@ -178,25 +178,26 @@ export default function App() {
   );
 }
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { Col, Row } from "react-bootstrap";
 
 const ActionOnCondition = ({ action, onChange, ruleType }) => {
- const handleInputChange = (conditionKey, index, key, value) => {
-  const regex = /^[0-9]+(\.[0-9]{0,2})?$/;
-  if (regex.test(value) || value === "") {
-    const updatedRows = [...action.conditionMet[conditionKey]];
-    updatedRows[index] = { ...updatedRows[index], [key]: value };
-    onChange({
-      ...action,
-      conditionMet: {
-        ...action.conditionMet,
-        [conditionKey]: updatedRows,
-      },
-    });
-  }
-};
+  const handleInputChange = (conditionKey, index, key, value) => {
+    const regex = /^[0-9]+(\.[0-9]{0,2})?$/;
+    if (regex.test(value) || value === "") {
+      const updatedRows = [...action.conditionMet[conditionKey]];
+      updatedRows[index] = { ...updatedRows[index], [key]: value };
+      onChange({
+        ...action,
+        conditionMet: {
+          ...action.conditionMet,
+          [conditionKey]: updatedRows,
+        },
+      });
+    }
+  };
+
   const handleRemoveRow = (conditionKey, index) => {
     const updatedRows = action.conditionMet[conditionKey].filter(
       (_, i) => i !== index
@@ -239,7 +240,7 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
     }
 
     updatedRows[index] = { ...updatedRows[index], value: entlmValues };
-     // Extract distinct locations and store them in application
+    // Extract distinct locations and store them in application
     const distinctLocations = [...new Set(entlmValues.map((item) => item.location))];
     updatedRows[index].application = distinctLocations;
     onChange({
@@ -251,11 +252,19 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
     });
   };
 
+  // Auto resize textarea
+  const autoResizeTextarea = (element) => {
+    if (element) {
+      element.style.height = "auto";
+      element.style.height = `${element.scrollHeight}px`;
+    }
+  };
+
   const renderAutoFields = (conditionKey) =>
     action.conditionMet[conditionKey]?.map((row, index) => (
       <Row key={index} style={{ marginBottom: "10px" }}>
         <Col md={2} style={{ marginRight: "10px" }}>
-         <ValueSearch
+          <ValueSearch
             handleValueSuggestionClick={(entlm) =>
               handleValueSuggestionClick(entlm, conditionKey, index)
             }
@@ -263,23 +272,25 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
           />
         </Col>
         <Col md={2} style={{ marginRight: "10px" }}>
-                 <textarea
-              className="form-control"
-              value={Array.isArray(row.application) ? row.application.join("\n") : ""}
-              readOnly
-              style={{ resize: "vertical" }}
-            />
+          <textarea
+            className="form-control"
+            value={Array.isArray(row.application) ? row.application.join("\n") : ""}
+            readOnly
+            style={{ resize: "vertical" }}
+          />
         </Col>
         <Col md={2} style={{ marginRight: "10px" }}>
           <label>Days</label>
         </Col>
         <Col md={2} style={{ marginRight: "10px" }}>
-       <input
-          type="text"
-          className="form-control"
-          value={row.duration || ""}
-          onChange={(e) => handleInputChange(conditionKey, index, "duration", e.target.value)}
-        />
+          <input
+            type="text"
+            className="form-control"
+            value={row.duration || ""}
+            onChange={(e) =>
+              handleInputChange(conditionKey, index, "duration", e.target.value)
+            }
+          />
         </Col>
         <Col md={1}>
           <button
@@ -309,14 +320,16 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
               Return Message
             </Col>
             <Col md={8}>
-              <input
-                type="text"
+              <textarea
                 placeholder="Return Message"
                 className="form-control"
                 value={action.conditionNotMet?.message || ""}
                 onChange={(e) =>
                   handleMessageChange("conditionNotMet", e.target.value)
                 }
+                style={{ resize: "none" }}
+                rows={1} // Set the initial rows to 1
+                onInput={(e) => autoResizeTextarea(e.target)}
               />
             </Col>
           </Row>
@@ -334,14 +347,16 @@ const ActionOnCondition = ({ action, onChange, ruleType }) => {
               Condition Met
             </Col>
             <Col md={8}>
-              <input
-                type="text"
+              <textarea
                 placeholder="Return Message"
                 className="form-control"
                 value={action.conditionMet?.message || ""}
                 onChange={(e) =>
                   handleMessageChange("conditionMet", e.target.value)
                 }
+                style={{ resize: "none" }}
+                rows={1}
+                onInput={(e) => autoResizeTextarea(e.target)}
               />
             </Col>
           </Row>
