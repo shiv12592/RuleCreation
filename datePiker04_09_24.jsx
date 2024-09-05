@@ -1,48 +1,3 @@
-
-==========below not using now==================go down=======
-  
-const DateRangePicker = () => {
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(null);
-
-  const handleStartDateChange = (date) => {
-    setStartDate(date);
-    if (endDate && date > endDate) {
-      setEndDate(null);
-    }
-  };
-
-  const handleEndDateChange = (date) => {
-    if (date >= startDate) {
-      setEndDate(date);
-    }
-  };
-
-  return (
-    <div>
-      <label>Start Date:</label>
-      <DatePicker
-        selected={startDate}
-        onChange={handleStartDateChange}
-        maxDate={endDate || new Date()}
-        dateFormat="dd/MM/yyyy"
-      />
-
-      <label>End Date:</label>
-      <DatePicker
-        selected={endDate}
-        onChange={handleEndDateChange}
-        minDate={startDate}
-        maxDate={new Date()}
-        dateFormat="dd/MM/yyyy"
-      />
-    </div>
-  );
-};
-
-export default DateRangePicker;
-
-
 ====================curremntlu using below in code ======
 
   using css
@@ -229,4 +184,32 @@ export class EditRulePlain extends Component {
 }
 
 export const EditRule = reduxForm(formOptions)(EditRulePlain);
+
+==============custom date puicker==================
+The reason you can't set the placeholder text to capitalized DD/MM/YYYY in an <input type="date"> element is that the placeholder and display formatting of input[type="date"] are controlled by the browser, not by the developer. This input type is designed to display a native date picker UI, which varies depending on the user's browser and operating system.
+
+Here are the key reasons:
+
+1. Browser-Controlled UI:
+The input[type="date"] field generates a date picker that is native to the browser, and each browser has its own way of handling the UI for date selection. This includes the formatting of the date and any placeholder text like dd/mm/yyyy or yyyy-mm-dd. The format is typically localized based on the user's settings, and developers cannot customize the text format or the placeholder appearance (including capitalization).
+
+2. No Support for Placeholder Attribute:
+The placeholder attribute is not officially supported for input[type="date"] in HTML5. Even though some browsers may display a localized format like dd/mm/yyyy as a guide for users, it's not technically a "placeholder" that you can control. The browser automatically determines what to show based on the user's locale and browser version.
+
+3. Localization and Date Formats:
+The way dates are formatted in input[type="date"] is based on the browser's localization settings, which depend on the user's region. For example:
+
+In the U.S., the format may default to MM/DD/YYYY.
+In Europe or other parts of the world, it may be DD/MM/YYYY.
+This format is predefined and not customizable through attributes like placeholder or CSS. The browser automatically handles it, so you can't force it to display in all uppercase or a specific format globally.
+
+4. Limited CSS Support:
+While you can apply basic styling like width, background color, and border to an input[type="date"], more complex modifications like altering the case of the placeholder text are not possible. The browser's internal rendering engine controls the placeholder format and how the date picker UI appears.
+
+Alternative Solution:
+If you need more control over how the date is displayed (e.g., you want the user to see DD/MM/YYYY in uppercase as a placeholder), you would need to use a custom date picker component (such as react-datepicker or a similar library) or fall back to using an <input type="text"> field with custom validation and formatting.
+
+In summary, the native behavior of input[type="date"] is dictated by the browser, and its formatting (including the placeholder) is not customizable by the developer. This ensures consistency in the user experience but limits control over visual appearance and format.
+
+
 
