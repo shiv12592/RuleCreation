@@ -1,13 +1,12 @@
 //////////////update 4 with module wrapper
-
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { getAllApprovalRules } from '../../store/rules/selectors';
 import { loadApprovalRulesList, submitAttestData } from '../../store/rules/actionCreators';
 import { PageWrapper } from '../../Common/PageWrapper';
-import ModuleWrapper from '../../Common/ModuleWrapper'; // Assuming ModuleWrapper is imported
-import ErrorComponent from '../../Common/ErrorComponent'; // Assuming ErrorComponent is available
+import ModuleWrapper from '../../Common/ModuleWrapper';
+import ErrorComponent from '../../Common/ErrorComponent';
 
 export const ms2p = (state) => ({
     allApprovalRulesMeta: getAllApprovalRules(state),
@@ -121,7 +120,7 @@ export const attestAllByCheckBoxRows = ({
                                 {/* Pagination Controls */}
                                 <div className="pagination">
                                     <button
-                                        className="btn btn-secondary"
+                                        className="btn btn-sm btn-secondary"
                                         onClick={() => handlePageChange(currentPage - 1)}
                                         disabled={currentPage === 1}
                                     >
@@ -131,7 +130,7 @@ export const attestAllByCheckBoxRows = ({
                                         (_, index) => (
                                             <button
                                                 key={index}
-                                                className={`btn ${
+                                                className={`btn btn-sm ${
                                                     currentPage === index + 1
                                                         ? 'btn-primary'
                                                         : 'btn-secondary'
@@ -143,7 +142,7 @@ export const attestAllByCheckBoxRows = ({
                                         )
                                     )}
                                     <button
-                                        className="btn btn-secondary"
+                                        className="btn btn-sm btn-secondary"
                                         onClick={() => handlePageChange(currentPage + 1)}
                                         disabled={
                                             currentPage ===
@@ -153,42 +152,46 @@ export const attestAllByCheckBoxRows = ({
                                         Next
                                     </button>
                                 </div>
-
-                                {/* Attest All Button or Comment Box */}
-                                {!showCommentBox ? (
-                                    <button
-                                        className="btn btn-primary"
-                                        onClick={handleAttestAll}
-                                        disabled={selectedRows.length === 0}
-                                    >
-                                        Attest All
-                                    </button>
-                                ) : (
-                                    <div className="comment-section">
-                                        <textarea
-                                            className="form-control"
-                                            placeholder="Enter your comments"
-                                            value={comment}
-                                            onChange={(e) => setComment(e.target.value)}
-                                        />
-                                        <button
-                                            className="btn btn-success"
-                                            onClick={handleSubmit}
-                                            disabled={!comment.trim()}
-                                        >
-                                            Submit
-                                        </button>
-                                        <button
-                                            className="btn btn-secondary"
-                                            onClick={handleGoBack}
-                                        >
-                                            Go Back
-                                        </button>
-                                    </div>
-                                )}
                             </>
                         )}
                     />
+                </div>
+                {/* Divider */}
+                <hr />
+
+                {/* Attest All Button or Comment Section */}
+                <div className="col-md-12 pad-1 card-rounded margin-2-t">
+                    {!showCommentBox ? (
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleAttestAll}
+                            disabled={selectedRows.length === 0}
+                        >
+                            Attest All
+                        </button>
+                    ) : (
+                        <div className="comment-section">
+                            <textarea
+                                className="form-control"
+                                placeholder="Enter your comments"
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                            />
+                            <button
+                                className="btn btn-success"
+                                onClick={handleSubmit}
+                                disabled={!comment.trim()}
+                            >
+                                Submit
+                            </button>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={handleGoBack}
+                            >
+                                Go Back
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </PageWrapper>
@@ -196,6 +199,7 @@ export const attestAllByCheckBoxRows = ({
 };
 
 export const attestAllByCheckBoxRowsExport = connect(ms2p, md2p)(attestAllByCheckBoxRows);
+
 
 
 //////////////////////upadte 3 with loading 
