@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { getAllApprovalRules } from '../../store/rules/selectors';
-import { loadApprovalRulesList, submitAttestData } from '../../store/rules/actionCreators';
+import { loadApprovalRulesList } from '../../store/rules/actionCreators';
 import { PageWrapper } from '../../Common/PageWrapper';
 import ModuleWrapper from '../../Common/ModuleWrapper';
 import ErrorComponent from '../../Common/ErrorComponent';
@@ -15,21 +15,17 @@ export const md2p = (dispatch) =>
     bindActionCreators(
         {
             dispatchLoadApprovalRulesList: loadApprovalRulesList,
-            dusptachSubmitAttestData: submitAttestData,
         },
         dispatch
     );
 
-export const attestAllByCheckBoxRows = ({ 
+export const approvalRulesTable = ({ 
     allApprovalRulesMeta, 
-    dispatchLoadApprovalRulesList, 
-    dusptachSubmitAttestData 
+    dispatchLoadApprovalRulesList 
 }) => {
     const page_size = 5; // Set page size here
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedRows, setSelectedRows] = useState([]);
-    const [comment, setComment] = useState('');
-    const [showCommentBox, setShowCommentBox] = useState(false);
+    const [selectedRule, setSelectedRule] = useState(null);
 
     const totalRows = allApprovalRulesMeta?.total || 0; // Get total entries
     const lastPageNumber = Math.ceil(totalRows / page_size); // Calculate the last page number
@@ -44,40 +40,19 @@ export const attestAllByCheckBoxRows = ({
         dispatchLoadApprovalRulesList(currentPage, page_size);
     }, [dispatchLoadApprovalRulesList, currentPage, page_size]);
 
-    // Handle row selection
-    const handleRowSelection = (workItemNo) => {
-        setSelectedRows((prev) =>
-            prev.includes(workItemNo) 
-                ? prev.filter((item) => item !== workItemNo) 
-                : [...prev, workItemNo]
-        );
-    };
-
-    // Handle attest all action
-    const handleAttestAll = () => {
-        setShowCommentBox(true);
-    };
-
-    // Handle submit action
-    const handleSubmit = () => {
-        const data = {
-            workItemNos: selectedRows,
-            comment,
-        };
-        dusptachSubmitAttestData(data);
-        setSelectedRows([]);
-        setComment('');
-        setShowCommentBox(false);
-    };
-
     // Handle pagination navigation
     const handlePageChange = (page) => {
         setCurrentPage(page);
     };
 
-    // Handle "Go Back" action
-    const handleGoBack = () => {
-        setShowCommentBox(false);
+    // Handle rule name click
+    const handleRuleClick = (rule) => {
+        setSelectedRule(rule);
+    };
+
+    // Close the popup
+    const closePopup = () => {
+        setSelectedRule(null);
     };
 
     return (
@@ -95,7 +70,6 @@ export const attestAllByCheckBoxRows = ({
                                 <table className="table">
                                     <thead>
                                         <tr>
-                                            <th>Select</th>
                                             <th>Work Item No</th>
                                             <th>Rule Name</th>
                                             <th>Owner Name</th>
@@ -107,15 +81,16 @@ export const attestAllByCheckBoxRows = ({
                                     <tbody>
                                         {allApprovalRulesMeta?.data?.map((rule) => (
                                             <tr key={rule.id}>
-                                                <td>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedRows.includes(rule.workItemNo)}
-                                                        onChange={() => handleRowSelection(rule.workItemNo)}
-                                                    />
-                                                </td>
                                                 <td>{rule.workItemNo}</td>
-                                                <td>{rule.ruleName}</td>
+                                                <td>
+                                                    <a
+                                                        href="#"
+                                                        onClick={() => handleRuleClick(rule)}
+                                                        className="text-primary"
+                                                    >
+                                                        {rule.ruleName}
+                                                    </a>
+                                                </td>
                                                 <td>{rule.ownerName}</td>
                                                 <td>{rule.ruleCategory}</td>
                                                 <td>{rule.type}</td>
@@ -189,49 +164,30 @@ export const attestAllByCheckBoxRows = ({
                         )}
                     />
                 </div>
-                {/* Divider */}
-                <hr />
-
-                {/* Attest All Button or Comment Section */}
-                <div className="col-md-12 pad-1 card-rounded margin-2-t">
-                    {!showCommentBox ? (
-                        <button
-                            className="btn btn-primary"
-                            onClick={handleAttestAll}
-                            disabled={selectedRows.length === 0}
-                        >
-                            Attest All
-                        </button>
-                    ) : (
-                        <div className="comment-section">
-                            <textarea
-                                className="form-control"
-                                placeholder="Enter your comments"
-                                value={comment}
-                                onChange={(e) => setComment(e.target.value)}
-                            />
-                            <button
-                                className="btn btn-success"
-                                onClick={handleSubmit}
-                                disabled={!comment.trim()}
-                            >
-                                Submit
+                {/* Rule Details Popup */}
+                {selectedRule && (
+                    <div className="popup">
+                        <div className="popup-content">
+                            <button className="close-btn" onClick={closePopup}>
+                                &times;
                             </button>
-                            <button
-                                className="btn btn-secondary"
-                                onClick={handleGoBack}
-                            >
-                                Go Back
-                            </button>
+                            <h3>Rule Details</h3>
+                            <p><strong>Work Item No:</strong> {selectedRule.workItemNo}</p>
+                            <p><strong>Rule Name:</strong> {selectedRule.ruleName}</p>
+                            <p><strong>Owner Name:</strong> {selectedRule.ownerName}</p>
+                            <p><strong>Rule Category:</strong> {selectedRule.ruleCategory}</p>
+                            <p><strong>Type:</strong> {selectedRule.type}</p>
+                            <p><strong>Requester Name:</strong> {selectedRule.requesterName}</p>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </PageWrapper>
     );
 };
 
-export const attestAllByCheckBoxRowsExport = connect(ms2p, md2p)(attestAllByCheckBoxRows);
+export const approvalRulesTableExport = connect(ms2p, md2p)(approvalRulesTable);
+
 
 
 .popup {
