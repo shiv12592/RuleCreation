@@ -6,7 +6,8 @@ import PropTypes from "prop-types";
 const RulesListTable = ({
   ruleSearching,
   handleChangeFilter,
-  handleChangeSearch,
+  searchEnabled,
+  filter,
 }) => {
   const [advancedFilters, setAdvancedFilters] = useState([
     { field: "", operator: "", value: "" },
@@ -45,31 +46,42 @@ const RulesListTable = ({
   const handleFilterChange = (index, key, value) => {
     const updatedFilters = [...advancedFilters];
     updatedFilters[index][key] = value;
-    setAdvancedFilters(updatedFilters);
 
-    // Propagate updated filters to the parent
+    // Clear dependent fields if the field is changed
+    if (key === "field") {
+      updatedFilters[index].operator = "";
+      updatedFilters[index].value = "";
+    }
+
+    setAdvancedFilters(updatedFilters);
     handleChangeFilter(JSON.stringify(updatedFilters));
   };
 
   const removeFilter = (index) => {
     const updatedFilters = advancedFilters.filter((_, i) => i !== index);
     setAdvancedFilters(updatedFilters);
-
-    // Propagate updated filters to the parent
     handleChangeFilter(JSON.stringify(updatedFilters));
   };
 
   const clearAllFilters = () => {
     setAdvancedFilters([{ field: "", operator: "", value: "" }]);
-    handleChangeFilter(""); // Notify parent of reset
+    handleChangeFilter("");
+  };
+
+  const handleSearch = () => {
+    handleChangeSearch(JSON.stringify(advancedFilters));
   };
 
   const allFiltersFilled = advancedFilters.every(
     (filter) => filter.field && filter.operator && filter.value
   );
 
-  const handleSearch = () => {
-    handleChangeSearch(JSON.stringify(advancedFilters));
+  // Dynamically calculate remaining field options for each row
+  const getAvailableFields = (currentIndex) => {
+    const selectedFields = advancedFilters.map((filter, index) =>
+      index !== currentIndex ? filter.field : null
+    );
+    return fieldOptions.filter((opt) => !selectedFields.includes(opt.value));
   };
 
   return (
@@ -112,7 +124,7 @@ const RulesListTable = ({
                       style={{ width: "100%" }}
                     >
                       <option value="">Select Field</option>
-                      {fieldOptions.map((opt) => (
+                      {getAvailableFields(index).map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
                         </option>
@@ -214,9 +226,12 @@ RulesListTable.propTypes = {
   handleChangeSearch: PropTypes.func.isRequired,
   handleChangeFilter: PropTypes.func.isRequired,
   ruleSearching: PropTypes.bool.isRequired,
+  searchEnabled: PropTypes.bool.isRequired,
+  filter: PropTypes.string.isRequired,
 };
 
 export default RulesListTable;
+
 
 
 ///////////////////////////update 1-----normal
