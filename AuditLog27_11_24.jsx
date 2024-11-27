@@ -3,13 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { getAllApprovalRules } from '../../store/rules/selectors';
-import {
-    loadApprovalRulesList,
-    loadApprovalRulesByFilter,
-} from '../../store/rules/actionCreators';
-import { PageWrapper } from '../../Common/PageWrapper';
-import ModuleWrapper from '../../Common/ModuleWrapper';
-import ErrorComponent from '../../Common/ErrorComponent';
+import { loadApprovalRulesList, loadApprovalRulesByFilter } from '../../store/rules/actionCreators';
+import { PageWrapper } from '../Common/PageWrapper';
+import ModuleWrapper from 'iam-react-components';
+import ErrorComponent from '../Common/ErrorComponent';
+
 
 export const ms2p = (state) => ({
     allApprovalRulesMeta: getAllApprovalRules(state),
@@ -41,15 +39,12 @@ export const auditLogForRules = ({
     const startRange = Math.max(1, currentPage - Math.floor(visibleRange / 2));
     const endRange = Math.min(lastPageNumber, startRange + visibleRange - 1);
 
-    // Load data (with or without filters)
+    // Load data initially or when clearing filters
     useEffect(() => {
-        if (isFiltered) {
-            const filterString = JSON.stringify(filters);
-            dispatchLoadApprovalRulesByFilter(filterString, currentPage, page_size);
-        } else {
+        if (!isFiltered) {
             dispatchLoadApprovalRulesList(currentPage, page_size);
         }
-    }, [dispatchLoadApprovalRulesList, dispatchLoadApprovalRulesByFilter, currentPage, page_size, isFiltered, filters]);
+    }, [dispatchLoadApprovalRulesList, currentPage, page_size, isFiltered]);
 
     // Handle rule click
     const handleRuleClick = (rule) => setSelectedRule(rule);
@@ -87,14 +82,16 @@ export const auditLogForRules = ({
     const searchWithFilters = () => {
         setIsFiltered(true);
         setCurrentPage(1);
+        const filterString = JSON.stringify(filters);
+        dispatchLoadApprovalRulesByFilter(filterString, 1, page_size);
     };
 
     // Render filters UI
     const renderFilters = () =>
         filters.map((filter, index) => (
-            <div key={index} className="filter-row">
+            <div key={index} className="filter-row d-flex align-items-center mb-2">
                 <select
-                    className="form-control"
+                    className="form-control mr-2"
                     value={filter.field}
                     onChange={(e) => updateFilter(index, 'field', e.target.value)}
                 >
@@ -106,38 +103,65 @@ export const auditLogForRules = ({
                     <option value="type">Type</option>
                     <option value="requesterName">Requester Name</option>
                 </select>
-                <select
-                    className="form-control"
-                    value={filter.operator}
-                    onChange={(e) => updateFilter(index, 'operator', e.target.value)}
-                >
-                    <option value="Equals">Equals</option>
-                    <option value="NotEquals">Not Equals</option>
-                </select>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={filter.value}
-                    onChange={(e) => updateFilter(index, 'value', e.target.value)}
-                />
+                {filter.field === 'ruleCategory' || filter.field === 'type' ? (
+                    <select
+                        className="form-control mr-2"
+                        value={filter.value}
+                        onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                    >
+                        <option value="">Select Value</option>
+                        {filter.field === 'ruleCategory' && (
+                            <>
+                                <option value="Application">Application</option>
+                                <option value="Organizational">Organizational</option>
+                            </>
+                        )}
+                        {filter.field === 'type' && (
+                            <>
+                                <option value="Create">Create</option>
+                                <option value="Modify">Modify</option>
+                                <option value="Attest">Attest</option>
+                            </>
+                        )}
+                    </select>
+                ) : (
+                    <input
+                        type="text"
+                        className="form-control mr-2"
+                        placeholder="Enter value"
+                        value={filter.value}
+                        onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                    />
+                )}
                 <button className="btn btn-danger" onClick={() => removeFilter(index)}>
                     Remove
                 </button>
             </div>
         ));
 
+    // Handle pagination navigation
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        if (isFiltered) {
+            const filterString = JSON.stringify(filters);
+            dispatchLoadApprovalRulesByFilter(filterString, page, page_size);
+        } else {
+            dispatchLoadApprovalRulesList(page, page_size);
+        }
+    };
+
     return (
         <PageWrapper>
             <div className="anim-slide-up">
                 <div className="col-md-12 pad-1 card-rounded margin-2-t">
                     {/* Filters Section */}
-                    <div className="filter-section">
-                        <button className="btn btn-primary" onClick={addFilter}>
+                    <div className="filter-section mb-3">
+                        <button className="btn btn-primary mb-2" onClick={addFilter}>
                             Add Filter
                         </button>
                         {renderFilters()}
                         <div className="filter-actions">
-                            <button className="btn btn-secondary" onClick={clearFilters}>
+                            <button className="btn btn-secondary mr-2" onClick={clearFilters}>
                                 Clear All
                             </button>
                             <button className="btn btn-success" onClick={searchWithFilters}>
@@ -184,35 +208,55 @@ export const auditLogForRules = ({
                                     </tbody>
                                 </table>
 
-                                {/* Pagination */}
+                                {/* Pagination Controls */}
                                 <div className="pagination d-flex justify-content-center align-items-center">
                                     {currentPage > 1 && (
                                         <button
                                             className="btn btn-sm text-primary font-weight-bold"
-                                            onClick={() => setCurrentPage(currentPage - 1)}
+                                            onClick={() => handlePageChange(currentPage - 1)}
                                         >
                                             {'<'}
                                         </button>
                                     )}
-                                    {startRange > 1 && <span className="mx-2">...</span>}
+                                    {startRange > 1 && (
+                                        <>
+                                            <button
+                                                className="btn btn-sm btn-secondary"
+                                                onClick={() => handlePageChange(1)}
+                                            >
+                                                1
+                                            </button>
+                                            {startRange > 2 && <span className="mx-2">...</span>}
+                                        </>
+                                    )}
                                     {Array.from({ length: endRange - startRange + 1 }, (_, i) => startRange + i).map(
                                         (page) => (
                                             <button
                                                 key={page}
-                                                className={`btn ${
+                                                className={`btn btn-sm ${
                                                     currentPage === page ? 'btn-primary' : 'btn-secondary'
                                                 }`}
-                                                onClick={() => setCurrentPage(page)}
+                                                onClick={() => handlePageChange(page)}
                                             >
                                                 {page}
                                             </button>
                                         )
                                     )}
-                                    {endRange < lastPageNumber && <span className="mx-2">...</span>}
+                                    {endRange < lastPageNumber && (
+                                        <>
+                                            {endRange < lastPageNumber - 1 && <span className="mx-2">...</span>}
+                                            <button
+                                                className="btn btn-sm btn-secondary"
+                                                onClick={() => handlePageChange(lastPageNumber)}
+                                            >
+                                                {lastPageNumber}
+                                            </button>
+                                        </>
+                                    )}
                                     {currentPage < lastPageNumber && (
                                         <button
                                             className="btn btn-sm text-primary font-weight-bold"
-                                            onClick={() => setCurrentPage(currentPage + 1)}
+                                            onClick={() => handlePageChange(currentPage + 1)}
                                         >
                                             {'>'}
                                         </button>
@@ -222,8 +266,7 @@ export const auditLogForRules = ({
                         )}
                     />
                 </div>
-
-                {/* Popup */}
+                {/* Rule Details Popup */}
                 {selectedRule && (
                     <div className="popup">
                         <div className="popup-content">
@@ -306,7 +349,6 @@ export const auditLogForRules = ({
 };
 
 export const auditLogForRulesExport = connect(ms2p, md2p)(auditLogForRules);
-
 
 
 ///////////////////update 3 - for all data show on popup
