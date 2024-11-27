@@ -1,10 +1,12 @@
 ////////////////////update 4 ------filters for search
-
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { getAllApprovalRules } from '../../store/rules/selectors';
-import { loadApprovalRulesList, loadApprovalRulesByFilter } from '../../store/rules/actionCreators';
+import {
+    loadApprovalRulesList,
+    loadApprovalRulesByFilter,
+} from '../../store/rules/actionCreators';
 import { PageWrapper } from '../../Common/PageWrapper';
 import ModuleWrapper from '../../Common/ModuleWrapper';
 import ErrorComponent from '../../Common/ErrorComponent';
@@ -27,126 +29,123 @@ export const auditLogForRules = ({
     dispatchLoadApprovalRulesList,
     dispatchLoadApprovalRulesByFilter,
 }) => {
-    const page_size = 5; // Set page size
+    const page_size = 5; // Page size
     const [currentPage, setCurrentPage] = useState(1);
-    const [filters, setFilters] = useState([{ field: '', operator: 'equals', value: '' }]);
     const [selectedRule, setSelectedRule] = useState(null);
+    const [filters, setFilters] = useState([]);
+    const [isFiltered, setIsFiltered] = useState(false);
 
     const totalRows = allApprovalRulesMeta?.total || 0; // Total entries
-    const lastPageNumber = Math.ceil(totalRows / page_size);
+    const lastPageNumber = Math.ceil(totalRows / page_size); // Last page
+    const visibleRange = 5; // Range of pages visible
+    const startRange = Math.max(1, currentPage - Math.floor(visibleRange / 2));
+    const endRange = Math.min(lastPageNumber, startRange + visibleRange - 1);
 
+    // Load data (with or without filters)
     useEffect(() => {
-        const searchText = filters
-            .filter((filter) => filter.field && filter.value)
-            .map(({ field, operator, value }) => ({ field, operator, value }));
-        const filterString = JSON.stringify(searchText);
-        if (searchText.length > 0) {
+        if (isFiltered) {
+            const filterString = JSON.stringify(filters);
             dispatchLoadApprovalRulesByFilter(filterString, currentPage, page_size);
         } else {
             dispatchLoadApprovalRulesList(currentPage, page_size);
         }
-    }, [dispatchLoadApprovalRulesList, dispatchLoadApprovalRulesByFilter, filters, currentPage, page_size]);
+    }, [dispatchLoadApprovalRulesList, dispatchLoadApprovalRulesByFilter, currentPage, page_size, isFiltered, filters]);
 
-    const handleAddFilter = () => {
-        setFilters([...filters, { field: '', operator: 'equals', value: '' }]);
+    // Handle rule click
+    const handleRuleClick = (rule) => setSelectedRule(rule);
+
+    // Close popup
+    const closePopup = () => setSelectedRule(null);
+
+    // Add a filter row
+    const addFilter = () => {
+        setFilters([...filters, { field: '', operator: 'Equals', value: '' }]);
     };
 
-    const handleRemoveFilter = (index) => {
-        setFilters(filters.filter((_, i) => i !== index));
-    };
-
-    const handleClearAll = () => {
-        setFilters([{ field: '', operator: 'equals', value: '' }]);
-        setCurrentPage(1);
-    };
-
-    const handleFilterChange = (index, key, value) => {
+    // Update a filter row
+    const updateFilter = (index, key, value) => {
         const updatedFilters = [...filters];
         updatedFilters[index][key] = value;
         setFilters(updatedFilters);
     };
 
-    const handlePageChange = (page) => {
-        setCurrentPage(page);
+    // Remove a filter row
+    const removeFilter = (index) => {
+        const updatedFilters = filters.filter((_, i) => i !== index);
+        setFilters(updatedFilters);
     };
 
-    const handleRuleClick = (rule) => {
-        setSelectedRule(rule);
+    // Clear all filters
+    const clearFilters = () => {
+        setFilters([]);
+        setIsFiltered(false);
+        setCurrentPage(1);
+        dispatchLoadApprovalRulesList(1, page_size);
     };
 
-    const closePopup = () => {
-        setSelectedRule(null);
+    // Perform search
+    const searchWithFilters = () => {
+        setIsFiltered(true);
+        setCurrentPage(1);
     };
+
+    // Render filters UI
+    const renderFilters = () =>
+        filters.map((filter, index) => (
+            <div key={index} className="filter-row">
+                <select
+                    className="form-control"
+                    value={filter.field}
+                    onChange={(e) => updateFilter(index, 'field', e.target.value)}
+                >
+                    <option value="">Select Field</option>
+                    <option value="workItemNo">Work Item No</option>
+                    <option value="ruleName">Rule Name</option>
+                    <option value="ownerName">Owner Name</option>
+                    <option value="ruleCategory">Rule Category</option>
+                    <option value="type">Type</option>
+                    <option value="requesterName">Requester Name</option>
+                </select>
+                <select
+                    className="form-control"
+                    value={filter.operator}
+                    onChange={(e) => updateFilter(index, 'operator', e.target.value)}
+                >
+                    <option value="Equals">Equals</option>
+                    <option value="NotEquals">Not Equals</option>
+                </select>
+                <input
+                    type="text"
+                    className="form-control"
+                    value={filter.value}
+                    onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                />
+                <button className="btn btn-danger" onClick={() => removeFilter(index)}>
+                    Remove
+                </button>
+            </div>
+        ));
 
     return (
         <PageWrapper>
             <div className="anim-slide-up">
                 <div className="col-md-12 pad-1 card-rounded margin-2-t">
+                    {/* Filters Section */}
                     <div className="filter-section">
-                        <h3>Search Filters</h3>
-                        <button className="btn btn-success" onClick={handleAddFilter}>
-                            Add Search Filter
+                        <button className="btn btn-primary" onClick={addFilter}>
+                            Add Filter
                         </button>
-                        {filters.map((filter, index) => (
-                            <div key={index} className="filter-row">
-                                <select
-                                    value={filter.field}
-                                    onChange={(e) => handleFilterChange(index, 'field', e.target.value)}
-                                >
-                                    <option value="">Select Field</option>
-                                    <option value="workItemNo">Work Item No</option>
-                                    <option value="ruleName">Rule Name</option>
-                                    <option value="ownerName">Owner Name</option>
-                                    <option value="requesterName">Requester Name</option>
-                                    <option value="ruleCategory">Rule Category</option>
-                                    <option value="type">Type</option>
-                                </select>
-                                <select
-                                    value={filter.operator}
-                                    onChange={(e) => handleFilterChange(index, 'operator', e.target.value)}
-                                >
-                                    <option value="equals">Equals</option>
-                                    <option value="notEquals">Not Equals</option>
-                                </select>
-                                {filter.field === 'ruleCategory' || filter.field === 'type' ? (
-                                    <select
-                                        value={filter.value}
-                                        onChange={(e) => handleFilterChange(index, 'value', e.target.value)}
-                                    >
-                                        <option value="">Select Value</option>
-                                        {filter.field === 'ruleCategory' && (
-                                            <>
-                                                <option value="Application">Application</option>
-                                                <option value="Organizational">Organizational</option>
-                                            </>
-                                        )}
-                                        {filter.field === 'type' && (
-                                            <>
-                                                <option value="Create">Create</option>
-                                                <option value="Modify">Modify</option>
-                                                <option value="Attest">Attest</option>
-                                            </>
-                                        )}
-                                    </select>
-                                ) : (
-                                    <input
-                                        type="text"
-                                        value={filter.value}
-                                        onChange={(e) => handleFilterChange(index, 'value', e.target.value)}
-                                        placeholder="Enter Value"
-                                    />
-                                )}
-                                <button className="btn btn-danger" onClick={() => handleRemoveFilter(index)}>
-                                    Remove
-                                </button>
-                            </div>
-                        ))}
+                        {renderFilters()}
                         <div className="filter-actions">
-                            <button className="btn btn-secondary" onClick={handleClearAll}>
+                            <button className="btn btn-secondary" onClick={clearFilters}>
                                 Clear All
+                            </button>
+                            <button className="btn btn-success" onClick={searchWithFilters}>
+                                Search
                             </button>
                         </div>
                     </div>
+
                     <ModuleWrapper
                         {...allApprovalRulesMeta}
                         whenError={() => <ErrorComponent error={allApprovalRulesMeta.error} />}
@@ -184,30 +183,36 @@ export const auditLogForRules = ({
                                         ))}
                                     </tbody>
                                 </table>
+
+                                {/* Pagination */}
                                 <div className="pagination d-flex justify-content-center align-items-center">
                                     {currentPage > 1 && (
                                         <button
                                             className="btn btn-sm text-primary font-weight-bold"
-                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            onClick={() => setCurrentPage(currentPage - 1)}
                                         >
                                             {'<'}
                                         </button>
                                     )}
-                                    {Array.from({ length: lastPageNumber }, (_, i) => i + 1).map((page) => (
-                                        <button
-                                            key={page}
-                                            className={`btn btn-sm ${
-                                                currentPage === page ? 'btn-primary' : 'btn-secondary'
-                                            }`}
-                                            onClick={() => handlePageChange(page)}
-                                        >
-                                            {page}
-                                        </button>
-                                    ))}
+                                    {startRange > 1 && <span className="mx-2">...</span>}
+                                    {Array.from({ length: endRange - startRange + 1 }, (_, i) => startRange + i).map(
+                                        (page) => (
+                                            <button
+                                                key={page}
+                                                className={`btn ${
+                                                    currentPage === page ? 'btn-primary' : 'btn-secondary'
+                                                }`}
+                                                onClick={() => setCurrentPage(page)}
+                                            >
+                                                {page}
+                                            </button>
+                                        )
+                                    )}
+                                    {endRange < lastPageNumber && <span className="mx-2">...</span>}
                                     {currentPage < lastPageNumber && (
                                         <button
                                             className="btn btn-sm text-primary font-weight-bold"
-                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            onClick={() => setCurrentPage(currentPage + 1)}
                                         >
                                             {'>'}
                                         </button>
@@ -217,7 +222,8 @@ export const auditLogForRules = ({
                         )}
                     />
                 </div>
-                {/* Rule Details Popup */}
+
+                {/* Popup */}
                 {selectedRule && (
                     <div className="popup">
                         <div className="popup-content">
@@ -300,6 +306,7 @@ export const auditLogForRules = ({
 };
 
 export const auditLogForRulesExport = connect(ms2p, md2p)(auditLogForRules);
+
 
 
 ///////////////////update 3 - for all data show on popup
