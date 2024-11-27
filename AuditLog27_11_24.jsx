@@ -1,3 +1,226 @@
+////////with filter validation not the all code
+import React, { useEffect, useState } from "react";
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
+import { getAllApprovalRules } from "../../store/rules/selectors";
+import { loadApprovalRulesList } from "../../store/rules/actionCreators";
+import { PageWrapper } from "../../Common/PageWrapper";
+import ModuleWrapper from "../../Common/ModuleWrapper";
+import ErrorComponent from "../../Common/ErrorComponent";
+
+export const ms2p = (state) => ({
+  allApprovalRulesMeta: getAllApprovalRules(state),
+});
+
+export const md2p = (dispatch) =>
+  bindActionCreators(
+    {
+      dispatchLoadApprovalRulesList: loadApprovalRulesList,
+    },
+    dispatch
+  );
+
+export const auditLogForRules = ({
+  allApprovalRulesMeta,
+  dispatchLoadApprovalRulesList,
+}) => {
+  const page_size = 5; // Set page size here
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState([
+    { field: "", operator: "Equals", value: "" },
+  ]);
+
+  const [isSearchEnabled, setIsSearchEnabled] = useState(false);
+
+  const totalRows = allApprovalRulesMeta?.total || 0; // Get total entries
+  const lastPageNumber = Math.ceil(totalRows / page_size); // Calculate the last page number
+
+  const visibleRange = 5; // Pagination range
+  const startRange = Math.max(1, currentPage - Math.floor(visibleRange / 2));
+  const endRange = Math.min(lastPageNumber, startRange + visibleRange - 1);
+
+  useEffect(() => {
+    // Initially load all data when the component is mounted
+    dispatchLoadApprovalRulesList(currentPage, page_size);
+  }, [dispatchLoadApprovalRulesList, currentPage, page_size]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const addFilter = () => {
+    // Ensure that the last filter is filled before adding a new one
+    const lastFilter = filters[filters.length - 1];
+    if (lastFilter.field && lastFilter.value) {
+      setFilters([...filters, { field: "", operator: "Equals", value: "" }]);
+    }
+  };
+
+  const updateFilter = (index, key, value) => {
+    const updatedFilters = [...filters];
+    updatedFilters[index][key] = value;
+    setFilters(updatedFilters);
+    validateFilters(updatedFilters);
+  };
+
+  const removeFilter = (index) => {
+    const updatedFilters = filters.filter((_, i) => i !== index);
+    setFilters(updatedFilters);
+    validateFilters(updatedFilters);
+  };
+
+  const validateFilters = (filtersToValidate) => {
+    // Enable Search only if all filters are filled and no duplicate fields exist
+    const allFilled = filtersToValidate.every(
+      (filter) => filter.field && filter.value
+    );
+    const uniqueFields = new Set(filtersToValidate.map((filter) => filter.field));
+    setIsSearchEnabled(allFilled && uniqueFields.size === filtersToValidate.length);
+  };
+
+  const clearFilters = () => {
+    setFilters([{ field: "", operator: "Equals", value: "" }]);
+    setIsSearchEnabled(false);
+  };
+
+  const searchWithFilters = () => {
+    if (isSearchEnabled) {
+      // Perform the filtered search logic here
+      console.log("Searching with filters:", filters);
+      // Dispatch an action to load filtered data
+      dispatchLoadApprovalRulesList(currentPage, page_size, filters);
+    }
+  };
+
+  return (
+    <PageWrapper>
+      <div className="anim-slide-up">
+        <div className="col-md-12 pad-1 card-rounded margin-2-t">
+          <h5 className="mb-3 text-primary">Search Audit Log By Following Filters</h5>
+
+          {/* Filters Section */}
+          <div className="filter-section mb-4">
+            {/* Add Filter Button */}
+            <div className="d-flex justify-content-between mb-3">
+              <button
+                className="btn btn-sm btn-primary"
+                onClick={addFilter}
+                disabled={!filters[filters.length - 1]?.field || !filters[filters.length - 1]?.value}
+              >
+                Add Filter
+              </button>
+            </div>
+
+            {/* Filters Table */}
+            <table className="table table-bordered table-sm">
+              <thead>
+                <tr>
+                  <th style={{ width: "25%" }}>Field</th>
+                  <th style={{ width: "20%" }}>Operation</th>
+                  <th style={{ width: "35%" }}>Value</th>
+                  <th style={{ width: "10%" }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filters.map((filter, index) => (
+                  <tr key={index}>
+                    <td>
+                      <select
+                        className="form-control form-control-sm"
+                        value={filter.field}
+                        onChange={(e) =>
+                          updateFilter(index, "field", e.target.value)
+                        }
+                      >
+                        <option value="">Select Field</option>
+                        <option value="workItemNo">Work Item No</option>
+                        <option value="ruleName">Rule Name</option>
+                        <option value="ownerName">Owner Name</option>
+                        <option value="ruleCategory">Rule Category</option>
+                        <option value="type">Type</option>
+                        <option value="requesterName">Requester Name</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        className="form-control form-control-sm"
+                        value={filter.operator}
+                        onChange={(e) =>
+                          updateFilter(index, "operator", e.target.value)
+                        }
+                      >
+                        <option value="Equals">Equals</option>
+                        <option value="NotEquals">Not Equals</option>
+                        <option value="Contains">Contains</option>
+                        <option value="DoesNotContain">Does Not Contain</option>
+                        <option value="StartsWith">Starts With</option>
+                        <option value="EndsWith">Ends With</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control form-control-sm"
+                        value={filter.value}
+                        onChange={(e) =>
+                          updateFilter(index, "value", e.target.value)
+                        }
+                        placeholder="Enter value"
+                      />
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => removeFilter(index)}
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Filter Action Buttons */}
+            <div className="filter-actions mt-3 d-flex justify-content-end">
+              <button
+                className="btn btn-sm btn-secondary mr-2"
+                onClick={clearFilters}
+              >
+                Clear All
+              </button>
+              <button
+                className="btn btn-sm btn-success"
+                onClick={searchWithFilters}
+                disabled={!isSearchEnabled}
+              >
+                Search
+              </button>
+            </div>
+          </div>
+
+          {/* Rules Table and Pagination */}
+          <ModuleWrapper
+            {...allApprovalRulesMeta}
+            whenError={() => (
+              <ErrorComponent error={allApprovalRulesMeta.error} />
+            )}
+            whenLoaded={() => (
+              <>
+                {/* Table and Pagination Controls */}
+                <div> {/* Existing rules table and pagination go here */}</div>
+              </>
+            )}
+          />
+        </div>
+      </div>
+    </PageWrapper>
+  );
+};
+
+export const auditLogForRulesExport = connect(ms2p, md2p)(auditLogForRules);
+
+
 //////////////////////////////update 6 --filter in tabular
 
 {/* Filters Section */}
