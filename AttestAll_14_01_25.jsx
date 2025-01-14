@@ -1,3 +1,76 @@
+//// ppop-up window
+
+const handleSubmit = async () => {
+    const data = {
+        workItemNos: selectedRows,
+        enforceLeastPrevilege: enforceLeastPrevilege ? 'yes' : 'no',
+        enforceSeperationOfDuties: enforceSeperationOfDuties ? 'yes' : 'no',
+    };
+
+    try {
+        await dusptachSubmitAttestData(data);
+        openPopupWindow(`Attest submitted for ${selectedRows.join(', ')}`);
+    } catch (error) {
+        openPopupWindow('Error encountered while submitting attest data.');
+    } finally {
+        setTimeout(() => window.scrollTo(0, 0), 300);
+    }
+};
+
+// Function to open a new popup window
+const openPopupWindow = (message) => {
+    const popup = window.open(
+        '',
+        '_blank',
+        'width=400,height=200,scrollbars=no,toolbar=no,location=no,status=no,menubar=no'
+    );
+
+    popup.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Message</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 20px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    text-align: center;
+                    height: 100%;
+                }
+                .message {
+                    font-size: 16px;
+                    margin-bottom: 20px;
+                }
+                .button {
+                    padding: 10px 20px;
+                    background-color: #007bff;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                }
+                .button:hover {
+                    background-color: #0056b3;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="message">${message}</div>
+            <button class="button" onclick="window.opener.location.reload(); window.close();">Go Back</button>
+        </body>
+        </html>
+    `);
+
+    popup.document.close();
+};
+
 ///////////update 10 - 14-01-25 with try catch block and empty list message
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
