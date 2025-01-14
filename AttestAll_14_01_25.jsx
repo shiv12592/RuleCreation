@@ -1,75 +1,90 @@
 //// ppop-up window
+import React, { useState } from 'react';
 
-const handleSubmit = async () => {
-    const data = {
-        workItemNos: selectedRows,
-        enforceLeastPrevilege: enforceLeastPrevilege ? 'yes' : 'no',
-        enforceSeperationOfDuties: enforceSeperationOfDuties ? 'yes' : 'no',
+const AttestPage = () => {
+    const [showPopup, setShowPopup] = useState(false);
+    const [popupMessage, setPopupMessage] = useState('');
+
+    const handleSubmit = async () => {
+        const data = {
+            workItemNos: selectedRows,
+            enforceLeastPrevilege: enforceLeastPrevilege ? 'yes' : 'no',
+            enforceSeperationOfDuties: enforceSeperationOfDuties ? 'yes' : 'no',
+        };
+
+        try {
+            await dusptachSubmitAttestData(data);
+            setPopupMessage(`Attest submitted for ${selectedRows.join(', ')}`);
+            setShowPopup(true); // Show the pop-up modal
+        } catch (error) {
+            setPopupMessage('Error encountered while submitting attest data.');
+            setShowPopup(true); // Show the pop-up modal
+        } finally {
+            setTimeout(() => window.scrollTo(0, 0), 300);
+        }
     };
 
-    try {
-        await dusptachSubmitAttestData(data);
-        openPopupWindow(`Attest submitted for ${selectedRows.join(', ')}`);
-    } catch (error) {
-        openPopupWindow('Error encountered while submitting attest data.');
-    } finally {
-        setTimeout(() => window.scrollTo(0, 0), 300);
-    }
-};
+    const handleGoBack = () => {
+        setShowPopup(false); // Close the modal
+        window.location.reload(); // Refresh the page
+    };
 
-// Function to open a new popup window
-const openPopupWindow = (message) => {
-    const popup = window.open(
-        '',
-        '_blank',
-        'width=400,height=200,scrollbars=no,toolbar=no,location=no,status=no,menubar=no'
+    return (
+        <div>
+            {/* Your main form or content here */}
+            <button onClick={handleSubmit}>Submit</button>
+
+            {/* Modal Pop-up */}
+            {showPopup && (
+                <div style={styles.overlay}>
+                    <div style={styles.modal}>
+                        <p>{popupMessage}</p>
+                        <button onClick={handleGoBack} style={styles.button}>
+                            Go Back
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
     );
-
-    popup.document.write(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Message</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    margin: 0;
-                    padding: 20px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    text-align: center;
-                    height: 100%;
-                }
-                .message {
-                    font-size: 16px;
-                    margin-bottom: 20px;
-                }
-                .button {
-                    padding: 10px 20px;
-                    background-color: #007bff;
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                }
-                .button:hover {
-                    background-color: #0056b3;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="message">${message}</div>
-            <button class="button" onclick="window.opener.location.reload(); window.close();">Go Back</button>
-        </body>
-        </html>
-    `);
-
-    popup.document.close();
 };
+
+// CSS-in-JS styles
+const styles = {
+    overlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,
+    },
+    modal: {
+        background: 'white',
+        padding: '20px',
+        borderRadius: '8px',
+        textAlign: 'center',
+        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+        maxWidth: '400px',
+        width: '90%',
+    },
+    button: {
+        marginTop: '20px',
+        padding: '10px 20px',
+        backgroundColor: '#007bff',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+    },
+};
+
+export default AttestPage;
+
 
 ///////////update 10 - 14-01-25 with try catch block and empty list message
 import React, { useEffect, useState } from 'react';
