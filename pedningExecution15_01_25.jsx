@@ -1,37 +1,111 @@
-//////////////////pass data from parent class
+import { useHistory } from 'react-router-dom';
 
-<Link
-    to={{
-        pathname: getPathAttestAllByCheckBox,
-        state: { ruleName: rule.ruleName, ruleNo: rule.ruleNo, ruleVersion: rule.ruleVersion },
-    }}
-    title={`Execute and more actions - ${rule.ruleName}`}
-    className="text-primary"
->
-    {rule.ruleName}
-</Link>
+export const ExecutionRules = ({ allExecutionRulesMeta, dispatchExecutionList }) => {
+    const history = useHistory();
 
+    useEffect(() => {
+        dispatchExecutionList(1, 20);
+    }, [dispatchExecutionList]);
 
-import React from 'react';
-import { useLocation } from 'react-router-dom';
-
-const RuleDetails = () => {
-    const location = useLocation();
-
-    // Extract parameters from location state
-    const { ruleName, ruleNo, ruleVersion } = location.state || {};
+    const handleNavigateToThreshold = (rule) => {
+        history.push({
+            pathname: '/threshold',
+            state: {
+                ruleName: rule.ruleName,
+                ruleNo: rule.ruleNo,
+                ruleVersion: rule.ruleVersion,
+            },
+        });
+    };
 
     return (
-        <div className="container">
-            <h1 className="header-title">
-                {`The Threshold List for ${ruleName} with Rule No ${ruleNo} and Version ${ruleVersion}`}
-            </h1>
-            {/* Rest of your component content */}
-        </div>
+        <PageWrapper>
+            <div className="anim-slide-up">
+                <div className="col-md-12 pad-1 card-rounded margin-2-t">
+                    <ModuleWrapper
+                        {...allExecutionRulesMeta}
+                        whenError={() => <ErrorComponent error={allExecutionRulesMeta?.error} />}
+                        whenLoaded={() =>
+                            allExecutionRulesMeta?.data?.length > 0 ? (
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Rule No</th>
+                                            <th>Rule Name</th>
+                                            <th>Rule Version</th>
+                                            <th>Execution Count</th>
+                                            <th>Type</th>
+                                            <th>Requester Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {allExecutionRulesMeta.data.map((rule) => (
+                                            <tr key={rule.ruleNo}>
+                                                <td>{rule.ruleNo}</td>
+                                                <td>
+                                                    <button
+                                                        onClick={() => handleNavigateToThreshold(rule)}
+                                                        className="btn btn-link text-primary"
+                                                    >
+                                                        {rule.ruleName}
+                                                    </button>
+                                                </td>
+                                                <td>{rule.ruleVersion}</td>
+                                                <td>{rule.executionCount}</td>
+                                                <td>{rule.type}</td>
+                                                <td>{rule.requesterName}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p>No execution rules found.</p>
+                            )
+                        }
+                    />
+                </div>
+            </div>
+        </PageWrapper>
     );
 };
 
-export default RuleDetails;
+
+import { useLocation } from 'react-router-dom';
+
+export const ThresholdExecutionList = ({
+    allApprovalRulesMeta,
+    dispatchLoadApprovalRulesList,
+    dusptachSubmitExecuteRuleData,
+}) => {
+    const location = useLocation();
+    const { ruleName, ruleNo, ruleVersion } = location.state || {};
+
+    useEffect(() => {
+        dispatchLoadApprovalRulesList(1, 5);
+    }, [dispatchLoadApprovalRulesList]);
+
+    return (
+        <PageWrapper>
+            <div className="anim-slide-up">
+                <h3 className="header-title">
+                    {`Executing Rule: ${ruleName || 'N/A'} (No: ${ruleNo || 'N/A'}, Version: ${ruleVersion || 'N/A'})`}
+                </h3>
+                {/* Rest of your component */}
+            </div>
+        </PageWrapper>
+    );
+};
+
+
+
+
+
+//////////////////pass data from parent class
+getPath.js
+export const getPathAttestAllByCheckBox = ({}) => `/threshold`
+
+RouterRoot.js
+<Route exact = (true) path="/threshold" component={child component name}
 
 
 
@@ -59,7 +133,7 @@ export const md2p = (dispatch) =>
         dispatch
     );
 
-export const attestAllByCheckBoxRows = ({
+export const ThresholdExecutionList  = ({
     allApprovalRulesMeta,
     dispatchLoadApprovalRulesList,
     dusptachSubmitExecuteRuleData,
@@ -251,7 +325,7 @@ export const attestAllByCheckBoxRows = ({
     );
 };
 
-export const attestAllByCheckBoxRowsExport = connect(ms2p, md2p)(attestAllByCheckBoxRows);
+export const ThresholdExecutionListExport = connect(ms2p, md2p)(ThresholdExecutionList );
 
 
 
