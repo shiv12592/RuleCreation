@@ -1,5 +1,41 @@
-///////////////////update 2 child compoent for go back and comment box on execution
+//////////////////pass data from parent class
 
+<Link
+    to={{
+        pathname: getPathAttestAllByCheckBox,
+        state: { ruleName: rule.ruleName, ruleNo: rule.ruleNo, ruleVersion: rule.ruleVersion },
+    }}
+    title={`Execute and more actions - ${rule.ruleName}`}
+    className="text-primary"
+>
+    {rule.ruleName}
+</Link>
+
+
+import React from 'react';
+import { useLocation } from 'react-router-dom';
+
+const RuleDetails = () => {
+    const location = useLocation();
+
+    // Extract parameters from location state
+    const { ruleName, ruleNo, ruleVersion } = location.state || {};
+
+    return (
+        <div className="container">
+            <h1 className="header-title">
+                {`The Threshold List for ${ruleName} with Rule No ${ruleNo} and Version ${ruleVersion}`}
+            </h1>
+            {/* Rest of your component content */}
+        </div>
+    );
+};
+
+export default RuleDetails;
+
+
+
+///////////////////update 2 child compoent for go back and comment box on execution
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -8,7 +44,7 @@ import { loadApprovalRulesList, submitExecuteRuleData } from '../../store/rules/
 import { PageWrapper } from '../../Common/PageWrapper';
 import ModuleWrapper from '../../Common/ModuleWrapper';
 import ErrorComponent from '../../Common/ErrorComponent';
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 export const ms2p = (state) => ({
     allApprovalRulesMeta: getAllApprovalRules(state),
@@ -23,14 +59,18 @@ export const md2p = (dispatch) =>
         dispatch
     );
 
-export const attestAllByCheckBoxRows = ({ allApprovalRulesMeta, dispatchLoadApprovalRulesList, dusptachSubmitExecuteRuleData }) => {
+export const attestAllByCheckBoxRows = ({
+    allApprovalRulesMeta,
+    dispatchLoadApprovalRulesList,
+    dusptachSubmitExecuteRuleData,
+}) => {
     const page_size = 5; 
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedRows, setSelectedRows] = useState([]);
     const [comment, setComment] = useState('');
     const [showCommentBox, setShowCommentBox] = useState(false);
     const [executeFlag, setExecuteFlag] = useState(null);
-    const navigate = useNavigate();
+    const history = useHistory();
 
     const totalRows = allApprovalRulesMeta?.total || 0; 
     const lastPageNumber = Math.ceil(totalRows / page_size); 
@@ -68,7 +108,7 @@ export const attestAllByCheckBoxRows = ({ allApprovalRulesMeta, dispatchLoadAppr
         if (showCommentBox) {
             setShowCommentBox(false);
         } else {
-            navigate(-1); // Redirect to parent
+            history.goBack(); // Use history to navigate back
         }
     };
 
@@ -212,6 +252,7 @@ export const attestAllByCheckBoxRows = ({ allApprovalRulesMeta, dispatchLoadAppr
 };
 
 export const attestAllByCheckBoxRowsExport = connect(ms2p, md2p)(attestAllByCheckBoxRows);
+
 
 
 //child file -- 
