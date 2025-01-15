@@ -8,13 +8,10 @@ export const ExecutionRules = ({ allExecutionRulesMeta, dispatchExecutionList })
     }, [dispatchExecutionList]);
 
     const handleNavigateToThreshold = (rule) => {
-        history.push({
-            pathname: '/threshold',
-            state: {
-                ruleName: rule.ruleName,
-                ruleNo: rule.ruleNo,
-                ruleVersion: rule.ruleVersion,
-            },
+        history.push('/threshold', {
+            ruleName: rule.ruleName,
+            ruleNo: rule.ruleNo,
+            ruleVersion: rule.ruleVersion,
         });
     };
 
@@ -70,15 +67,31 @@ export const ExecutionRules = ({ allExecutionRulesMeta, dispatchExecutionList })
 };
 
 
-import { useLocation } from 'react-router-dom';
+import React from 'react';
+import { Route } from 'react-router-dom';
+import ExecutionRules from './ExecutionRules';
+import ThresholdExecutionList from './ThresholdExecutionList';
+
+<Route
+    exact
+    path="/threshold"
+    render={(props) => (
+        <ThresholdExecutionList
+            {...props}
+            ruleData={props.location.state} // Pass the state directly as props
+        />
+    )}
+/>
+<Route exact path="/" component={ExecutionRules} />;
+
 
 export const ThresholdExecutionList = ({
+    ruleData,
     allApprovalRulesMeta,
     dispatchLoadApprovalRulesList,
     dusptachSubmitExecuteRuleData,
 }) => {
-    const location = useLocation();
-    const { ruleName, ruleNo, ruleVersion } = location.state || {};
+    const { ruleName, ruleNo, ruleVersion } = ruleData || {};
 
     useEffect(() => {
         dispatchLoadApprovalRulesList(1, 5);
@@ -95,6 +108,7 @@ export const ThresholdExecutionList = ({
         </PageWrapper>
     );
 };
+
 
 
 
