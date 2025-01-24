@@ -12,6 +12,8 @@ I also really admire how you manage to balance your family and work so gracefull
 Transition to Work:
 Discuss Current Work:
 
+"Param, Kapil has been the main driving force behind the business logic and workflows in the Rule Service. While I focus more on the UI aspects, we sometimes don’t have full visibility into all the changes and features he’s planning to add in the future. If there’s something specific you need clarity on, I can always follow up with him to get the details."
+
 "Regarding the current work on the Rule Service, things are going well on the UI part that I'm handling. I know you're aware that Alex is managing the API side, but I just wanted to mention that I also have experience with APIs and would love to work on them more in the future if the opportunity arises. For now, though, I'm coordinating closely with Alex to ensure everything aligns with his perspective on the backend."
 Acknowledge Challenges (if needed):
 
