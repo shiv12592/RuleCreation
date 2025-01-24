@@ -1,5 +1,25 @@
 Here's the updated template based on the provided details and image:
 
+Starting the Conversation:
+Greet Warmly & Connect Personally:
+"Hi Param, it's so nice to catch up with you after so long! How are you and the kids doing? I hope they're doing great—how's life in Phoenix?"
+(If she asks about you or your family):
+"Oh, Ashvika is keeping us on our toes—she's two now and incredibly naughty! It's such a fun and tiring phase, but we're really enjoying it."
+Transition to Work:
+Discuss Current Work:
+
+"Regarding the current work on the Rule Service, things are going well on the UI part that I'm handling. I know you're aware that Alex is managing the API side, but I just wanted to mention that I also have experience with APIs and would love to work on them more in the future if the opportunity arises. For now, though, I'm coordinating closely with Alex to ensure everything aligns with his perspective on the backend."
+Acknowledge Challenges (if needed):
+
+"As a contractor, I've been putting my best into this role, but I have faced a few challenges, like balancing responsibilities or sometimes managing the scope of tasks without having full-time access to certain resources. However, I’ve been learning and trying to contribute as much as possible."
+Closing the Call:
+Bring Up Your Request for Permanent Payroll:
+"Param, before we wrap up, I wanted to check with you—have you had a chance to consider my earlier request about moving to the permanent payroll with Amex? I know we discussed it briefly last time, and I truly enjoy working here and contributing to the team. I'd love to explore if that's still a possibility."
+Additional Tips:
+Stay positive and focus on how much you enjoy the work and the team.
+Mention how being on the payroll could help you contribute even more effectively (e.g., stability, access to resources).
+End with gratitude: "Thank you so much for taking the time to discuss this with me, and for always being supportive. It really means a lot."
+
 
 ---
 
