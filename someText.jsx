@@ -5,6 +5,10 @@ Greet Warmly & Connect Personally:
 "Hi Param, it's so nice to catch up with you after so long! How are you and the kids doing? I hope they're doing great—how's life in Phoenix?"
 (If she asks about you or your family):
 "Oh, Ashvika is keeping us on our toes—she's two now and incredibly naughty! It's such a fun and tiring phase, but we're really enjoying it."
+
+I also really admire how you manage to balance your family and work so gracefully. It’s something I look up to, and it motivates me to find that balance in my own life as well. It’s always great to work with someone who sets such an example."
+
+  
 Transition to Work:
 Discuss Current Work:
 
