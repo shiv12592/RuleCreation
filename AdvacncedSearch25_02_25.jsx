@@ -1,3 +1,136 @@
+////////new filter 
+
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+
+const RulesListTable = ({ handleChangeSearch }) => {
+  const [advancedFilters, setAdvancedFilters] = useState([
+    { field: "", value: "" },
+  ]);
+  const [isAdvancedSearch, setIsAdvancedSearch] = useState(false);
+
+  const fieldOptions = [
+    { value: "ruleNo", label: "Rule No" },
+    { value: "state", label: "State" },
+    { value: "name", label: "Name" },
+    { value: "owner", label: "Owner" },
+    { value: "category", label: "Category" },
+  ];
+
+  const valueOptions = {
+    state: [
+      { value: "active", label: "Active" },
+      { value: "disabled", label: "Disabled" },
+      { value: "inactive", label: "Inactive" },
+    ],
+    category: [
+      { value: "application", label: "Application" },
+      { value: "organizational", label: "Organizational" },
+    ],
+  };
+
+  const handleFilterChange = (index, key, value) => {
+    const updatedFilters = [...advancedFilters];
+    updatedFilters[index][key] = value;
+    
+    // Clear value if the field is changed
+    if (key === "field") {
+      updatedFilters[index].value = "";
+    }
+    setAdvancedFilters(updatedFilters);
+  };
+
+  const removeFilter = (index) => {
+    const updatedFilters = advancedFilters.filter((_, i) => i !== index);
+    setAdvancedFilters(updatedFilters);
+  };
+
+  const addNewFilter = () => {
+    setAdvancedFilters([...advancedFilters, { field: "", value: "" }]);
+  };
+
+  const clearAllFilters = () => {
+    setAdvancedFilters([{ field: "", value: "" }]);
+  };
+
+  const handleSearch = () => {
+    const queryString = advancedFilters
+      .filter(filter => filter.field && filter.value)
+      .map(filter => `${filter.field}=${encodeURIComponent(filter.value)}`)
+      .join("&");
+    handleChangeSearch(queryString);
+  };
+
+  return (
+    <div>
+      {!isAdvancedSearch && (
+        <button onClick={() => setIsAdvancedSearch(true)} style={{ backgroundColor: "green", color: "white", padding: "10px 20px", border: "none", cursor: "pointer" }}>
+          Add New Filter
+        </button>
+      )}
+      {isAdvancedSearch && (
+        <div>
+          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "20px" }}>
+            <thead>
+              <tr>
+                <th style={{ border: "1px solid black", padding: "10px" }}>Field</th>
+                <th style={{ border: "1px solid black", padding: "10px" }}>Value</th>
+                <th style={{ border: "1px solid black", padding: "10px" }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {advancedFilters.map((currentFilter, index) => (
+                <tr key={index}>
+                  <td style={{ border: "1px solid black", padding: "10px" }}>
+                    <select value={currentFilter.field} onChange={(e) => handleFilterChange(index, "field", e.target.value)} style={{ width: "100%" }}>
+                      <option value="">Select Field</option>
+                      {fieldOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td style={{ border: "1px solid black", padding: "10px" }}>
+                    {valueOptions[currentFilter.field] ? (
+                      <select value={currentFilter.value} onChange={(e) => handleFilterChange(index, "value", e.target.value)} style={{ width: "100%" }}>
+                        <option value="">Select Value</option>
+                        {valueOptions[currentFilter.field].map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input type="text" value={currentFilter.value} placeholder="Enter Value" onChange={(e) => handleFilterChange(index, "value", e.target.value)} style={{ width: "100%" }} />
+                    )}
+                  </td>
+                  <td style={{ border: "1px solid black", padding: "10px" }}>
+                    <button onClick={() => removeFilter(index)} style={{ backgroundColor: "red", color: "white", padding: "5px 10px", border: "none", cursor: "pointer" }}>
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ marginTop: "10px" }}>
+            <button onClick={clearAllFilters} style={{ marginRight: "10px", backgroundColor: "orange", color: "white", padding: "10px 20px", border: "none", cursor: "pointer" }}>
+              Clear All
+            </button>
+            <button onClick={handleSearch} style={{ backgroundColor: "green", color: "white", padding: "10px 20px", border: "none", cursor: "pointer" }}>
+              Search
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+RulesListTable.propTypes = {
+  handleChangeSearch: PropTypes.func.isRequired,
+};
+
+export default RulesListTable;
+
+
 ///////////////////////////update 2- search filters in tabular formate
 
 import React, { useState } from "react";
