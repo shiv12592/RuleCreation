@@ -1,3 +1,367 @@
+/////////////////2nd attemp filter withintable header
+
+import PropTypes from 'prop-types';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Paginator } from '../Common/Paginator';
+import { getPathCreateNewRule } from '../getPaths';
+import { MSG_NO_APP_RECORDS_SEARCH, PAGE_SIZE } from './constants';
+import { RuleNoField } from "./RuleNoField";
+import { RuleStatusField } from './RuleStatusField';
+import { RuleStateField } from "./RuleStateField";
+import { RuleNameField } from './RuleNameField';
+import { RuleOwnerField } from './RuleOwnerField';
+import { RuleCategoryField } from './RuleCategoryField';
+import { RuleTypeField } from './RuleTypeField';
+
+export const TABLE_LABELS = {
+  ruleNo: 'Rule No. ',
+  Name: 'Name',
+  owner: 'Owner',
+  category: 'Category',
+  accessType: 'Type',
+  status: 'Status',
+  state: 'State',
+  action: 'Action',
+};
+
+export const columns = [
+  {
+    title: TABLE_LABELS.ruleNo,
+    value: (ruleDetails) => <RuleNoField appDetails={ruleDetails} />,
+  },
+  {
+    title: TABLE_LABELS.status,
+    value: (ruleDetails) => <RuleStatusField appDetails={ruleDetails} />,
+  },
+  {
+    title: TABLE_LABELS.state,
+    value: (ruleDetails) => <RuleStateField appDetails={ruleDetails} />,
+  },
+  {
+    title: TABLE_LABELS.Name,
+    value: (ruleDetails) => <RuleNameField appDetails={ruleDetails} />,
+  },
+  {
+    title: TABLE_LABELS.owner,
+    value: (ruleDetails) => <RuleOwnerField appDetails={ruleDetails} />,
+  },
+  {
+    title: TABLE_LABELS.category,
+    value: (ruleDetails) => <RuleCategoryField appDetails={ruleDetails} />,
+  },
+  {
+    title: TABLE_LABELS.accessType,
+    value: (ruleDetails) => <RuleTypeField appDetails={ruleDetails} />,
+  },
+];
+
+export const RulesListTable = (props) => {
+  const {
+    rulesList,
+    currentPage,
+    total,
+    handlePageChange,
+    dataAsOfDate,
+    handleChangeSearch,
+    handleChangeFilter,
+    ruleSearching,
+    searchEnabled,
+    roles,
+  } = props;
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const showPaginator = total > PAGE_SIZE;
+
+  // Local state for each of the 7 filter inputs
+  const [localFilters, setLocalFilters] = useState({
+    ruleNo: "",
+    status: "",
+    state: "",
+    name: "",
+    owner: "",
+    category: "",
+    type: ""
+  });
+
+  const handleFilterChange = (key, value) => {
+    setLocalFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  // Clear all filters and notify the parent with an empty string.
+  const handleClearFilters = () => {
+    const cleared = {
+      ruleNo: "",
+      status: "",
+      state: "",
+      name: "",
+      owner: "",
+      category: "",
+      type: ""
+    };
+    setLocalFilters(cleared);
+    handleChangeFilter("");
+  };
+
+  // Build the filter string (e.g., "ruleNo=100&status=Approved&name=shiv") and notify parent.
+  const handleResultFilters = () => {
+    const filterParts = [];
+    Object.keys(localFilters).forEach(key => {
+      if (localFilters[key]) {
+        filterParts.push(`${key}=${encodeURIComponent(localFilters[key])}`);
+      }
+    });
+    const filterString = filterParts.join("&");
+    handleChangeFilter(filterString);
+    handleChangeSearch(filterString);
+  };
+
+  // When no data is found (and search is active), render a table with the filter row and a "no records" row.
+  if ((!rulesList || rulesList.length === 0) && searchEnabled) {
+    return (
+      <div className="border">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>
+                <input
+                  type="number"
+                  placeholder="Rule No"
+                  value={localFilters.ruleNo}
+                  onChange={(e) => handleFilterChange('ruleNo', e.target.value)}
+                  className="form-control"
+                />
+              </th>
+              <th>
+                <select
+                  value={localFilters.status}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                  className="form-control"
+                >
+                  <option value="">Status</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Draft">Draft</option>
+                  <option value="Deactivate">Deactivate</option>
+                </select>
+              </th>
+              <th>
+                <select
+                  value={localFilters.state}
+                  onChange={(e) => handleFilterChange('state', e.target.value)}
+                  className="form-control"
+                >
+                  <option value="">State</option>
+                  <option value="Active">Active</option>
+                  <option value="Disabled">Disabled</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </th>
+              <th>
+                <input
+                  type="text"
+                  placeholder="Name"
+                  value={localFilters.name}
+                  onChange={(e) => handleFilterChange('name', e.target.value)}
+                  className="form-control"
+                  pattern="[A-Za-z0-9 ]*"
+                />
+              </th>
+              <th>
+                <input
+                  type="text"
+                  placeholder="Owner"
+                  value={localFilters.owner}
+                  onChange={(e) => handleFilterChange('owner', e.target.value)}
+                  className="form-control"
+                  pattern="^\\S*$"
+                />
+              </th>
+              <th>
+                <select
+                  value={localFilters.category}
+                  onChange={(e) => handleFilterChange('category', e.target.value)}
+                  className="form-control"
+                >
+                  <option value="">Category</option>
+                  <option value="Application">Application</option>
+                  <option value="Organization">Organization</option>
+                </select>
+              </th>
+              <th>
+                <select
+                  value={localFilters.type}
+                  onChange={(e) => handleFilterChange('type', e.target.value)}
+                  className="form-control"
+                >
+                  <option value="">Type</option>
+                  <option value="Allow">Allow</option>
+                  <option value="Deny">Deny</option>
+                  <option value="Auto Provision">Auto Provision</option>
+                  <option value="Auto Revoke">Auto Revoke</option>
+                </select>
+              </th>
+            </tr>
+            <tr>
+              <th colSpan="7">
+                <button className="btn btn-secondary" onClick={handleClearFilters}>
+                  Clear Filter
+                </button>
+                <button className="btn btn-primary ml-2" onClick={handleResultFilters}>
+                  Result
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colSpan="7">{MSG_NO_APP_RECORDS_SEARCH}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return (
+    <div className="row pad-0-t">
+      {/* Custom table with filter row as the header */}
+      <table className="table">
+        <thead>
+          <tr>
+            <th>
+              <input
+                type="number"
+                placeholder="Rule No"
+                value={localFilters.ruleNo}
+                onChange={(e) => handleFilterChange('ruleNo', e.target.value)}
+                className="form-control"
+              />
+            </th>
+            <th>
+              <select
+                value={localFilters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="form-control"
+              >
+                <option value="">Status</option>
+                <option value="Approved">Approved</option>
+                <option value="Draft">Draft</option>
+                <option value="Deactivate">Deactivate</option>
+              </select>
+            </th>
+            <th>
+              <select
+                value={localFilters.state}
+                onChange={(e) => handleFilterChange('state', e.target.value)}
+                className="form-control"
+              >
+                <option value="">State</option>
+                <option value="Active">Active</option>
+                <option value="Disabled">Disabled</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </th>
+            <th>
+              <input
+                type="text"
+                placeholder="Name"
+                value={localFilters.name}
+                onChange={(e) => handleFilterChange('name', e.target.value)}
+                className="form-control"
+                pattern="[A-Za-z0-9 ]*"
+              />
+            </th>
+            <th>
+              <input
+                type="text"
+                placeholder="Owner"
+                value={localFilters.owner}
+                onChange={(e) => handleFilterChange('owner', e.target.value)}
+                className="form-control"
+                pattern="^\\S*$"
+              />
+            </th>
+            <th>
+              <select
+                value={localFilters.category}
+                onChange={(e) => handleFilterChange('category', e.target.value)}
+                className="form-control"
+              >
+                <option value="">Category</option>
+                <option value="Application">Application</option>
+                <option value="Organization">Organization</option>
+              </select>
+            </th>
+            <th>
+              <select
+                value={localFilters.type}
+                onChange={(e) => handleFilterChange('type', e.target.value)}
+                className="form-control"
+              >
+                <option value="">Type</option>
+                <option value="Allow">Allow</option>
+                <option value="Deny">Deny</option>
+                <option value="Auto Provision">Auto Provision</option>
+                <option value="Auto Revoke">Auto Revoke</option>
+              </select>
+            </th>
+          </tr>
+          <tr>
+            <th colSpan="7">
+              <button className="btn btn-secondary" onClick={handleClearFilters}>
+                Clear Filter
+              </button>
+              <button className="btn btn-primary ml-2" onClick={handleResultFilters}>
+                Result
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rulesList && rulesList.map((rule, index) => (
+            <tr key={index}>
+              <td>{columns[0].value(rule)}</td>
+              <td>{columns[1].value(rule)}</td>
+              <td>{columns[2].value(rule)}</td>
+              <td>{columns[3].value(rule)}</td>
+              <td>{columns[4].value(rule)}</td>
+              <td>{columns[5].value(rule)}</td>
+              <td>{columns[6].value(rule)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {showPaginator && (
+        <Paginator
+          key={`pg${currentPage}`}
+          totalPages={totalPages}
+          currentPage={currentPage + 1}
+          handLePageChange={handlePageChange}
+        />
+      )}
+      <h6 className="btn-tertiary margin-1-l" style={{ fontStyle: "italic" }}>
+        Total Count of Rules : {total}
+      </h6>
+    </div>
+  );
+};
+
+RulesListTable.propTypes = {
+  rulesList: PropTypes.array,
+  total: PropTypes.number.isRequired,
+  currentPage: PropTypes.number.isRequired,
+  handlePageChange: PropTypes.func.isRequired,
+  dataAsOfDate: PropTypes.string.isRequired,
+  handleChangeSearch: PropTypes.func.isRequired,
+  handleChangeFilter: PropTypes.func.isRequired,
+  ruleSearching: PropTypes.bool.isRequired,
+  searchEnabled: PropTypes.bool.isRequired,
+  roles: PropTypes.array.isRequired,
+};
+
+RulesListTable.defaultProps = {
+  rulesList: null,
+};
 
 //////////////////////////////1st attempt
 export const HomePlain = (props) => {
