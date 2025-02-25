@@ -19,25 +19,30 @@ export const HomePlain = (props) => {
 
   const { roles } = currentUser.data;
   const role = roles[0];
+
   const [state, setState] = useState({
     currentPage: currentAppsPageNo,
     currentPageApproval: currentAppsPageNoApproval,
   });
-  // Filter now is an object. Default to empty object.
-  const [filter, setFilter] = useState(currentAppsSearchTxt || {});
+  // Maintain the applied filter as an object (initially empty)
+  const [appliedFilter, setAppliedFilter] = useState({});
+  // Flag to indicate that a filtered search is active
   const [searchEnabled, setSearchEnabled] = useState(false);
-  const [currentPageBackup, setCurrentPageBackup] = useState(0);
   const [ruleSearching, setRuleSearching] = useState(false);
 
+  // This effect triggers when the current page or the applied filter changes.
   useEffect(() => {
-    if (currentAppsSearchTxt && Object.keys(currentAppsSearchTxt).length > 0) {
-      dispatchSearchHomeAppsList(filter, state.currentPage + 1, PAGE_SIZE, role, true);
-      setSearchEnabled(true);
+    if (Object.keys(appliedFilter).length > 0) {
+      // A filter is applied; call the search action with the filter object.
+      dispatchSearchHomeAppsList(appliedFilter, state.currentPage + 1, PAGE_SIZE, role, true);
     } else {
+      // No filter is applied; load the unfiltered rules.
       dispatchLoadRulesList(state.currentPage + 1, PAGE_SIZE, role);
     }
-  }, [role, state.currentPage, currentAppsSearchTxt]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, state.currentPage, appliedFilter]);
 
+  // Approval list useEffect remains unchanged.
   useEffect(() => {
     dispatchLoadApprovalRulesList(state.currentPageApproval + 1, PAGE_SIZE);
   }, [role, state.currentPageApproval]);
@@ -47,12 +52,8 @@ export const HomePlain = (props) => {
       ...prevState,
       currentPage: newPageBase1 - 1,
     }));
-    if (searchEnabled) {
-      dispatchSearchHomeAppsList(filter, newPageBase1, PAGE_SIZE, role, true);
-    } else {
-      dispatchLoadRulesList(newPageBase1, PAGE_SIZE, role);
-    }
     dispatchLoadCurrentAppsPageNo(newPageBase1 - 1);
+    // When page changes, the useEffect above will run automatically.
   };
 
   const handleApprovalPageChange = (newPageBase1) => {
@@ -64,33 +65,33 @@ export const HomePlain = (props) => {
     dispatchLoadCurrentAppsPageNoApproval(newPageBase1 - 1);
   };
 
-  // Accept filters as an object instead of a single string
-  const handleChangeSearch = async (newFilters) => {
-    setSearchEnabled(true);
-    setRuleSearching(true);
-    const searchFilters = newFilters !== undefined ? newFilters : filter;
-    if (searchFilters && Object.keys(searchFilters).length > 0) {
-      dispatchLoadCurrentAppsSearchTxt(searchFilters);
-      const status = await dispatchSearchHomeAppsList(searchFilters, 1, PAGE_SIZE, role, true);
+  // Called when the user clicks “Result” in the child.
+  // newFilterObj is an object with field/value pairs.
+  const handleChangeSearch = async (newFilterObj) => {
+    if (Object.keys(newFilterObj).length > 0) {
+      setSearchEnabled(true);
+      setRuleSearching(true);
+      // Optionally update store (if needed)
+      dispatchLoadCurrentAppsSearchTxt(newFilterObj);
+      // Reset to page 0 for a new search
+      setState(prevState => ({
+        ...prevState,
+        currentPage: 0,
+      }));
+      // Update the applied filter – this change will trigger the useEffect.
+      setAppliedFilter(newFilterObj);
+      const status = await dispatchSearchHomeAppsList(newFilterObj, 1, PAGE_SIZE, role, true);
       if (status) {
-        setState(prevState => ({
-          ...prevState,
-          currentPage: 0,
-        }));
         setRuleSearching(false);
       }
     }
   };
 
-  // Update the filter object. If empty, reset searchEnabled.
-  const handleChangeFilter = (inFilter) => {
-    setFilter(inFilter);
-    if (!inFilter || Object.keys(inFilter).length === 0) {
+  // Called when the child clears the filters.
+  const handleChangeFilter = (newFilterObj) => {
+    if (!newFilterObj || Object.keys(newFilterObj).length === 0) {
       setSearchEnabled(false);
-      setState(prevState => ({
-        ...prevState,
-        currentPage: currentPageBackup,
-      }));
+      setAppliedFilter({});
       dispatchLoadCurrentAppsSearchTxt(null);
     }
   };
@@ -113,7 +114,7 @@ export const HomePlain = (props) => {
                   currentPage={state.currentPage}
                   handlePageChange={handlePageChange}
                   dataAsOfDate={allRules.dataAsOfDate}
-                  filter={filter}
+                  filter={appliedFilter} // pass the applied filter object
                   handleChangeSearch={handleChangeSearch}
                   handleChangeFilter={handleChangeFilter}
                   ruleSearching={ruleSearching}
@@ -123,7 +124,6 @@ export const HomePlain = (props) => {
             )}
           />
         </div>
-        {/* ApprovalList part is unchanged */}
         <div className="col-md-12 pad-1 card-rounded margin-2-t">
           <ModuleWrapper
             {...allApprovalRulesMeta}
@@ -158,7 +158,7 @@ HomePlain.propTypes = {
   currentAppsPageNo: PropTypes.number,
   currentAppsPageNoApproval: PropTypes.number,
   dispatchLoadCurrentAppsSearchTxt: PropTypes.func.isRequired,
-  currentAppsSearchTxt: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  currentAppsSearchTxt: PropTypes.object,
   dispatchLoadCurrentEntimsSearchTxt: PropTypes.func.isRequired,
 };
 
@@ -169,7 +169,6 @@ HomePlain.defaultProps = {
 };
 
 export const Home = connect(ms2p, md2p)(HomePlain);
-
 
 
 import PropTypes from 'prop-types';
@@ -203,7 +202,7 @@ export const RulesListTable = (props) => {
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const showPaginator = total > PAGE_SIZE;
 
-  // Local state for filter inputs (one per column)
+  // Local state for the filter inputs for each column.
   const [localFilters, setLocalFilters] = useState({
     ruleNo: "",
     status: "",
@@ -214,12 +213,12 @@ export const RulesListTable = (props) => {
     type: ""
   });
 
-  const handleFilterChange = (key, value) => {
+  const handleLocalFilterChange = (key, value) => {
     setLocalFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  // Clear filters and pass an empty object upward
-  const handleClearFilters = () => {
+  // Clear local filters and notify the parent with an empty filter object.
+  const handleClear = () => {
     const cleared = {
       ruleNo: "",
       status: "",
@@ -233,16 +232,15 @@ export const RulesListTable = (props) => {
     handleChangeFilter({});
   };
 
-  // Build the filter object from non-empty values and pass it upward
-  const handleResultFilters = () => {
-    const filterObject = {};
+  // When "Result" is clicked, gather nonempty filter values into an object and send it upward.
+  const handleResult = () => {
+    const filterObj = {};
     Object.keys(localFilters).forEach(key => {
       if (localFilters[key]) {
-        filterObject[key] = localFilters[key];
+        filterObj[key] = localFilters[key];
       }
     });
-    handleChangeFilter(filterObject);
-    handleChangeSearch(filterObject);
+    handleChangeSearch(filterObj);
   };
 
   return (
@@ -259,21 +257,21 @@ export const RulesListTable = (props) => {
             <th>Category</th>
             <th>Type</th>
           </tr>
-          {/* Filter row with input/select controls */}
+          {/* Filter row with controlled input/selects */}
           <tr>
             <th>
               <input
                 type="number"
                 placeholder="Rule No"
                 value={localFilters.ruleNo}
-                onChange={(e) => handleFilterChange('ruleNo', e.target.value)}
+                onChange={(e) => handleLocalFilterChange('ruleNo', e.target.value)}
                 className="form-control"
               />
             </th>
             <th>
               <select
                 value={localFilters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
+                onChange={(e) => handleLocalFilterChange('status', e.target.value)}
                 className="form-control"
               >
                 <option value="">Status</option>
@@ -285,7 +283,7 @@ export const RulesListTable = (props) => {
             <th>
               <select
                 value={localFilters.state}
-                onChange={(e) => handleFilterChange('state', e.target.value)}
+                onChange={(e) => handleLocalFilterChange('state', e.target.value)}
                 className="form-control"
               >
                 <option value="">State</option>
@@ -299,7 +297,7 @@ export const RulesListTable = (props) => {
                 type="text"
                 placeholder="Name"
                 value={localFilters.name}
-                onChange={(e) => handleFilterChange('name', e.target.value)}
+                onChange={(e) => handleLocalFilterChange('name', e.target.value)}
                 className="form-control"
                 pattern="[A-Za-z0-9 ]*"
               />
@@ -309,7 +307,7 @@ export const RulesListTable = (props) => {
                 type="text"
                 placeholder="Owner"
                 value={localFilters.owner}
-                onChange={(e) => handleFilterChange('owner', e.target.value)}
+                onChange={(e) => handleLocalFilterChange('owner', e.target.value)}
                 className="form-control"
                 pattern="^\\S*$"
               />
@@ -317,7 +315,7 @@ export const RulesListTable = (props) => {
             <th>
               <select
                 value={localFilters.category}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
+                onChange={(e) => handleLocalFilterChange('category', e.target.value)}
                 className="form-control"
               >
                 <option value="">Category</option>
@@ -328,7 +326,7 @@ export const RulesListTable = (props) => {
             <th>
               <select
                 value={localFilters.type}
-                onChange={(e) => handleFilterChange('type', e.target.value)}
+                onChange={(e) => handleLocalFilterChange('type', e.target.value)}
                 className="form-control"
               >
                 <option value="">Type</option>
@@ -339,13 +337,13 @@ export const RulesListTable = (props) => {
               </select>
             </th>
           </tr>
-          {/* Action row for Clear and Result buttons, right-aligned */}
+          {/* Action row with small, right‑aligned buttons */}
           <tr>
             <th colSpan="7" className="text-right">
-              <button className="btn btn-sm btn-secondary mr-2" onClick={handleClearFilters}>
+              <button className="btn btn-sm btn-secondary mr-2" onClick={handleClear}>
                 Clear Filter
               </button>
-              <button className="btn btn-sm btn-primary" onClick={handleResultFilters}>
+              <button className="btn btn-sm btn-primary" onClick={handleResult}>
                 Result
               </button>
             </th>
@@ -394,6 +392,7 @@ RulesListTable.propTypes = {
   dataAsOfDate: PropTypes.string.isRequired,
   handleChangeSearch: PropTypes.func.isRequired,
   handleChangeFilter: PropTypes.func.isRequired,
+  filter: PropTypes.object.isRequired,
   ruleSearching: PropTypes.bool.isRequired,
   searchEnabled: PropTypes.bool.isRequired,
   roles: PropTypes.array.isRequired,
@@ -402,6 +401,8 @@ RulesListTable.propTypes = {
 RulesListTable.defaultProps = {
   rulesList: null,
 };
+
+    
 
 
 //////dynamic filter
