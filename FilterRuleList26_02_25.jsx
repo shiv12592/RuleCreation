@@ -1,3 +1,407 @@
+//////dynamic filter
+
+export const searchHomeRules = (
+  filters, // now an object of field/value pairs
+  pageno,
+  pagesize,
+  role,
+  forceFetch = false
+) =>
+  LoadResource({
+    action: ACTIONS.searchHomeRules,
+    apiUrl: `${apiUrl}v1/rules?${qs.stringify({ pageno, pagesize, ...filters })}`,
+    forceFetch,
+    path: ['homeRulesSearchList', 'all', 'search'],
+    datapath: ['homeRulesSearchList', 'all', 'search', 'data'],
+  });
+
+
+
+
+export const HomePlain = (props) => {
+  const {
+    currentAppsPageNo,
+    currentAppsPageNoApproval,
+    searchedRulesMeta,
+    allRulesMeta,
+    dispatchLoadRulesList,
+    dispatchLoadApprovalRulesList,
+    allApprovalRulesMeta,
+    dispatchSearchHomeAppsList,
+    currentUser,
+    dispatchLoadCurrentAppsPageNo,
+    dispatchLoadCurrentAppsPageNoApproval,
+    dispatchLoadCurrentAppsSearchTxt,
+    currentAppsSearchTxt,
+  } = props;
+
+  const { roles } = currentUser.data;
+  const role = roles[0];
+  const [state, setState] = useState({
+    currentPage: currentAppsPageNo,
+    currentPageApproval: currentAppsPageNoApproval,
+  });
+  // Filter is now an object (empty by default)
+  const [filter, setFilter] = useState(currentAppsSearchTxt || {});
+  const [searchEnabled, setSearchEnabled] = useState(false);
+  const [currentPageBackup, setCurrentPageBackup] = useState(0);
+  const [currentPageBackupApproval, setCurrentPageBackupApproval] = useState(0);
+  const [ruleSearching, setRuleSearching] = useState(false);
+
+  useEffect(() => {
+    if (currentAppsSearchTxt && Object.keys(currentAppsSearchTxt).length > 0) {
+      dispatchSearchHomeAppsList(filter, state.currentPage + 1, PAGE_SIZE, role, true);
+      setSearchEnabled(true);
+    } else {
+      dispatchLoadRulesList(state.currentPage + 1, PAGE_SIZE, role);
+    }
+  }, [role, state.currentPage, currentAppsSearchTxt]);
+
+  useEffect(() => {
+    dispatchLoadApprovalRulesList(state.currentPageApproval + 1, PAGE_SIZE);
+  }, [role, state.currentPageApproval]);
+
+  // Accept filters as an object
+  const handleChangeSearch = async (newFilters) => {
+    setSearchEnabled(true);
+    setRuleSearching(true);
+    const searchFilters = newFilters !== undefined ? newFilters : filter;
+    if (searchFilters && Object.keys(searchFilters).length > 0) {
+      dispatchLoadCurrentAppsSearchTxt(searchFilters);
+      const status = await dispatchSearchHomeAppsList(searchFilters, 1, PAGE_SIZE, role, true);
+      if (status) {
+        setState(prevState => ({
+          ...prevState,
+          currentPage: 0,
+        }));
+        setCurrentPageBackup(state.currentPage);
+        setRuleSearching(false);
+      }
+    }
+  };
+
+  const handleChangeFilter = (inFilter) => {
+    setFilter(inFilter);
+    if (!inFilter || Object.keys(inFilter).length === 0) {
+      setSearchEnabled(false);
+      setState(prevState => ({
+        ...prevState,
+        currentPage: currentPageBackup,
+      }));
+      dispatchLoadCurrentAppsSearchTxt(null);
+    }
+  };
+
+  const allRules = searchEnabled ? searchedRulesMeta : allRulesMeta;
+
+  return (
+    <PageWrapper>
+      <div className="anim-slide-up">
+        <div className="col-md-12 pad-1 card-rounded">
+          <ModuleWrapper
+            {...allRules}
+            whenError={() => (<ErrorComponent error={allRules.error} />)}
+            whenLoaded={(rulesList) => (
+              <React.Fragment>
+                <RulesListTable
+                  rulesList={rulesList}
+                  total={allRules.total}
+                  roles={roles}
+                  currentPage={state.currentPage}
+                  handlePageChange={handlePageChange}
+                  dataAsOfDate={allRules.dataAsOfDate}
+                  filter={filter}
+                  handleChangeSearch={handleChangeSearch}
+                  handleChangeFilter={handleChangeFilter}
+                  ruleSearching={ruleSearching}
+                  searchEnabled={searchEnabled}
+                />
+              </React.Fragment>
+            )}
+          />
+        </div>
+        <div className="col-md-12 pad-1 card-rounded margin-2-t">
+          <ModuleWrapper
+            {...allApprovalRulesMeta}
+            whenError={() => (<ErrorComponent error={allApprovalRulesMeta.error} />)}
+            whenLoaded={(appsList) => (
+              <React.Fragment>
+                <ApprovalsListTable
+                  appsList={appsList}
+                  total={allApprovalRulesMeta.total}
+                  roles={roles}
+                  currentPage={state.currentPageApproval}
+                  handlePageChange={handleApprovalPageChange}
+                />
+              </React.Fragment>
+            )}
+          />
+        </div>
+      </div>
+    </PageWrapper>
+  );
+};
+
+HomePlain.propTypes = {
+  allRulesMeta: PropTypes.object,
+  allApprovalRulesMeta: PropTypes.object,
+  dispatchLoadRulesList: PropTypes.func.isRequired,
+  dispatchLoadApprovalRulesList: PropTypes.func.isRequired,
+  currentUser: PropTypes.object.isRequired,
+  searchedRulesMeta: PropTypes.object,
+  dispatchLoadCurrentAppsPageNo: PropTypes.func.isRequired,
+  dispatchLoadCurrentAppsPageNoApproval: PropTypes.func.isRequired,
+  currentAppsPageNo: PropTypes.number,
+  currentAppsPageNoApproval: PropTypes.number,
+  dispatchLoadCurrentAppsSearchTxt: PropTypes.func.isRequired,
+  currentAppsSearchTxt: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  dispatchLoadCurrentEntimsSearchTxt: PropTypes.func.isRequired,
+};
+
+HomePlain.defaultProps = {
+  currentAppsPageNo: 0,
+  currentAppsPageNoApproval: 0,
+  currentAppsSearchTxt: {},
+};
+
+export const Home = connect(ms2p, md2p)(HomePlain);
+
+
+
+
+
+import PropTypes from 'prop-types';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Paginator } from '../Common/Paginator';
+import { getPathCreateNewRule } from '../getPaths';
+import { MSG_NO_APP_RECORDS_SEARCH, PAGE_SIZE } from './constants';
+import { RuleNoField } from "./RuleNoField";
+import { RuleStatusField } from './RuleStatusField';
+import { RuleStateField } from "./RuleStateField";
+import { RuleNameField } from './RuleNameField';
+import { RuleOwnerField } from './RuleOwnerField';
+import { RuleCategoryField } from './RuleCategoryField';
+import { RuleTypeField } from './RuleTypeField';
+
+export const RulesListTable = (props) => {
+  const {
+    rulesList,
+    currentPage,
+    total,
+    handlePageChange,
+    dataAsOfDate,
+    handleChangeSearch,
+    handleChangeFilter,
+    ruleSearching,
+    searchEnabled,
+    roles,
+  } = props;
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const showPaginator = total > PAGE_SIZE;
+
+  // Local state for filter inputs
+  const [localFilters, setLocalFilters] = useState({
+    ruleNo: "",
+    status: "",
+    state: "",
+    name: "",
+    owner: "",
+    category: "",
+    type: ""
+  });
+
+  const handleFilterChange = (key, value) => {
+    setLocalFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  // Clear filters and pass an empty object upward
+  const handleClearFilters = () => {
+    const cleared = {
+      ruleNo: "",
+      status: "",
+      state: "",
+      name: "",
+      owner: "",
+      category: "",
+      type: ""
+    };
+    setLocalFilters(cleared);
+    handleChangeFilter({});
+  };
+
+  // Build the filter object from non-empty values and pass it upward
+  const handleResultFilters = () => {
+    const filterObject = {};
+    Object.keys(localFilters).forEach(key => {
+      if (localFilters[key]) {
+        filterObject[key] = localFilters[key];
+      }
+    });
+    handleChangeFilter(filterObject);
+    handleChangeSearch(filterObject);
+  };
+
+  return (
+    <div className="row pad-0-t">
+      <table className="table">
+        <thead>
+          {/* Heading row for column titles */}
+          <tr>
+            <th>Rule No.</th>
+            <th>Status</th>
+            <th>State</th>
+            <th>Name</th>
+            <th>Owner</th>
+            <th>Category</th>
+            <th>Type</th>
+          </tr>
+          {/* Filter row with input/select controls */}
+          <tr>
+            <th>
+              <input
+                type="number"
+                placeholder="Rule No"
+                value={localFilters.ruleNo}
+                onChange={(e) => handleFilterChange('ruleNo', e.target.value)}
+                className="form-control"
+              />
+            </th>
+            <th>
+              <select
+                value={localFilters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="form-control"
+              >
+                <option value="">Status</option>
+                <option value="Approved">Approved</option>
+                <option value="Draft">Draft</option>
+                <option value="Deactivate">Deactivate</option>
+              </select>
+            </th>
+            <th>
+              <select
+                value={localFilters.state}
+                onChange={(e) => handleFilterChange('state', e.target.value)}
+                className="form-control"
+              >
+                <option value="">State</option>
+                <option value="Active">Active</option>
+                <option value="Disabled">Disabled</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </th>
+            <th>
+              <input
+                type="text"
+                placeholder="Name"
+                value={localFilters.name}
+                onChange={(e) => handleFilterChange('name', e.target.value)}
+                className="form-control"
+                pattern="[A-Za-z0-9 ]*"
+              />
+            </th>
+            <th>
+              <input
+                type="text"
+                placeholder="Owner"
+                value={localFilters.owner}
+                onChange={(e) => handleFilterChange('owner', e.target.value)}
+                className="form-control"
+                pattern="^\\S*$"
+              />
+            </th>
+            <th>
+              <select
+                value={localFilters.category}
+                onChange={(e) => handleFilterChange('category', e.target.value)}
+                className="form-control"
+              >
+                <option value="">Category</option>
+                <option value="Application">Application</option>
+                <option value="Organization">Organization</option>
+              </select>
+            </th>
+            <th>
+              <select
+                value={localFilters.type}
+                onChange={(e) => handleFilterChange('type', e.target.value)}
+                className="form-control"
+              >
+                <option value="">Type</option>
+                <option value="Allow">Allow</option>
+                <option value="Deny">Deny</option>
+                <option value="Auto Provision">Auto Provision</option>
+                <option value="Auto Revoke">Auto Revoke</option>
+              </select>
+            </th>
+          </tr>
+          {/* Action row for Clear and Result buttons */}
+          <tr>
+            <th colSpan="7" className="text-right">
+              <button className="btn btn-sm btn-secondary mr-2" onClick={handleClearFilters}>
+                Clear Filter
+              </button>
+              <button className="btn btn-sm btn-primary" onClick={handleResultFilters}>
+                Result
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {(!rulesList || rulesList.length === 0) && searchEnabled ? (
+            <tr>
+              <td colSpan="7">{MSG_NO_APP_RECORDS_SEARCH}</td>
+            </tr>
+          ) : (
+            rulesList && rulesList.map((rule, index) => (
+              <tr key={index}>
+                <td>{<RuleNoField appDetails={rule} />}</td>
+                <td>{<RuleStatusField appDetails={rule} />}</td>
+                <td>{<RuleStateField appDetails={rule} />}</td>
+                <td>{<RuleNameField appDetails={rule} />}</td>
+                <td>{<RuleOwnerField appDetails={rule} />}</td>
+                <td>{<RuleCategoryField appDetails={rule} />}</td>
+                <td>{<RuleTypeField appDetails={rule} />}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+      {showPaginator && (
+        <Paginator
+          key={`pg${currentPage}`}
+          totalPages={totalPages}
+          currentPage={currentPage + 1}
+          handLePageChange={handlePageChange}
+        />
+      )}
+      <h6 className="btn-tertiary mt-2" style={{ fontStyle: "italic" }}>
+        Total Count of Rules: {total}
+      </h6>
+    </div>
+  );
+};
+
+RulesListTable.propTypes = {
+  rulesList: PropTypes.array,
+  total: PropTypes.number.isRequired,
+  currentPage: PropTypes.number.isRequired,
+  handlePageChange: PropTypes.func.isRequired,
+  dataAsOfDate: PropTypes.string.isRequired,
+  handleChangeSearch: PropTypes.func.isRequired,
+  handleChangeFilter: PropTypes.func.isRequired,
+  ruleSearching: PropTypes.bool.isRequired,
+  searchEnabled: PropTypes.bool.isRequired,
+  roles: PropTypes.array.isRequired,
+};
+
+RulesListTable.defaultProps = {
+  rulesList: null,
+};
+
+
 /////////////////2nd attemp filter withintable header
 
 import PropTypes from 'prop-types';
