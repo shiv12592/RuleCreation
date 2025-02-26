@@ -1,0 +1,5 @@
+When the SimulationPopUp opens, it immediately calls the simulateCounts API at /v1/simulate using a POST request, sending the condition object (e.g., { ecn: 'someEcnValue', simulate: true }) to fetch summary count data (like affected users, entitlements, etc.).
+When the user clicks the "View Details" button, the simulateResults API is triggered at /v1/simulateResults via a GET request. This call passes additional filter criteria (such as entitlementName, userName, pageNo, and pageSize) along with the original condition to retrieve detailed simulation results.
+Clicking the "Export" button invokes the simulateResultsExport API at /v1/simulateResultsExport through a GET request, sending the condition data plus an export flag so that the server returns a CSV file for download.
+The condition data is built and continuously updated in the CreateRule page by the RuleConditionRows component, ensuring that the most recent rules configuration is sent to the backend.
+Each API call occurs at specific user interaction stages: opening the popup triggers the summary count call, viewing details retrieves the detailed list, and exporting initiates the CSV download.
