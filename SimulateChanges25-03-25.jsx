@@ -551,3 +551,125 @@ export const initialState = {
 export const getsimulateCountsList = ({ rules }) => rules.simulateCountsList || {};
 export const getsimulateResultsList = ({ rules }) => rules.simulateResultsList || {};
 export const getsimulateResultsExport = ({ rules }) => rules.simulateResultsExport || {};
+
+
+
+// server.js
+const express = require('express');
+const app = express();
+const cors = require('cors');
+const port = 3011; // or any port you prefer
+
+app.use(cors());
+
+// Mock data for simulateCounts
+// Suppose these come from your real DB in production
+const mockSimulateCounts = {
+  affectedUsersCount: 10,
+  affectedEntitlementsCount: 2,
+  accessToAdd: 3,
+  accessToRemove: 1,
+};
+
+// Mock data for simulateResults (detailed list)
+let mockSimulateResults = [
+  {
+    entitlementName: 'PRC-AXP-EH-1a-puller-paas-iq',
+    userName: 'Tony Stark',
+    empIdOrExtNumber: '1234567',
+    lastName: 'Nick Fury',
+    ruleScript: 'Add',
+  },
+  {
+    entitlementName: 'PRC-AXP-EH-2a-puller-paas-iq',
+    userName: 'Steve Rogers',
+    empIdOrExtNumber: '2345678',
+    lastName: 'Nick Fury',
+    ruleScript: 'Add',
+  },
+  {
+    entitlementName: 'PRC-AXP-EH-3a-puller-paas-iq',
+    userName: 'Natasha Romanoff',
+    empIdOrExtNumber: '3456789',
+    lastName: 'Nick Fury',
+    ruleScript: 'Add',
+  },
+  {
+    entitlementName: 'request_service_3_a_requestee E3',
+    userName: 'Mickey Mouse',
+    empIdOrExtNumber: '9876543',
+    lastName: 'Walt Disney',
+    ruleScript: 'Remove',
+  },
+  {
+    entitlementName: 'request_service_3_a_requestee E3',
+    userName: 'Donald Duck',
+    empIdOrExtNumber: '6789123',
+    lastName: 'Walt Disney',
+    ruleScript: 'Remove',
+  },
+];
+
+// // Endpoint for simulate counts
+// app.get('/v1/simulate', (req, res) => {
+//   // parse any query params if needed
+//   // e.g. condition = req.query
+//   // Return the mockSimulateCounts
+//   res.json({
+//     success: true,
+//     data: mockSimulateCounts,
+//   });
+// });
+// Endpoint for simulate counts (now expecting a POST)
+app.use(express.json());
+
+// Change this endpoint to POST
+app.post('/v1/simulate', (req, res) => {
+  console.log('Received condition:', req.body);
+  res.json({
+    success: true,
+    data: mockSimulateCounts,  // Or process req.body and send desired data
+  });
+});
+
+// Endpoint for simulate results (view details)
+app.get('/v1/simulateResults', (req, res) => {
+  // parse query for pageno, pagesize, filter, etc.
+  // e.g. const { pageno, pagesize, ...condition } = req.query;
+  // For simplicity, returning all mockSimulateResults
+  // If you want to handle filtering or pagination, you can do so here.
+
+  // Example: filter by userName
+  // if (req.query.userName) {
+  //   ...
+  // }
+
+  res.json({
+    success: true,
+    data: mockSimulateResults,
+  });
+});
+
+// Endpoint for simulate results export
+app.get('/v1/simulateResultsExport', (req, res) => {
+  // parse query for export, condition, etc.
+  // In a real scenario, you’d generate CSV and send it as a file download
+  // For the mock, just return the same data or a CSV string
+  const csvHeader = 'Entitlement Name,User Name,Emp ID/Ext,Last Name,Rule Script\n';
+  const csvRows = mockSimulateResults
+    .map(
+      (row) =>
+        `${row.entitlementName},${row.userName},${row.empIdOrExtNumber},${row.lastName},${row.ruleScript}`
+    )
+    .join('\n');
+  const csvContent = csvHeader + csvRows;
+
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="simulate_export.csv"');
+  res.send(csvContent);
+});
+
+app.listen(port, () => {
+  console.log(`Mock server is running on http://localhost:${port}`);
+});
+
